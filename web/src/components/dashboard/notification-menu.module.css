@@ -1,0 +1,422 @@
+/* Bildirim paneli (Notification Menu) — Apple Design & Glassmorphic popover. */
+
+.wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.wrapOpen {
+  z-index: 60;
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  z-index: 95;
+  animation: backdropFade 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes backdropFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.trigger {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.triggerActive {
+  background: var(--color-hover);
+  color: var(--color-text-primary);
+  border-color: var(--color-border);
+}
+
+/* Dokunma hedefi 44px kuralı (Fitts) */
+.trigger::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44px;
+  height: 44px;
+  margin: -22px 0 0 -22px;
+  border-radius: var(--radius-full);
+}
+
+.triggerCompact {
+  width: 36px;
+  height: 36px;
+}
+
+.trigger:hover {
+  background: var(--color-hover);
+  color: var(--color-text-primary);
+  border-color: var(--color-border);
+}
+
+.trigger:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  pointer-events: none;
+  box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 60%, transparent);
+}
+
+/* Popover Panel — Apple Design & Glassmorphic popover */
+.panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 370px;
+  max-width: calc(100vw - 32px);
+  max-height: min(520px, 80vh);
+  display: flex;
+  flex-direction: column;
+  background: color-mix(in srgb, var(--color-bg-elevated) 92%, #0a0c14);
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
+  border: 1px solid color-mix(in srgb, var(--color-border) 70%, var(--color-accent) 25%);
+  border-radius: var(--radius-lg, 16px);
+  box-shadow:
+    0 16px 48px -12px rgba(0, 0, 0, 0.75),
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+  z-index: 100;
+  overflow: hidden;
+  animation: panelIn 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: top right;
+}
+
+@keyframes panelIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Mobil görünüm (< 640px / sm breakpoint):
+   Tetikleyiciye göreceli 370px genişlik ekran dışına taştığı için,
+   mobilde ortalanmış yüzen modal (fixed inset-x-4 top-16) olarak konumlanır.
+   Tavan genişlik 360px max ve güvenli safe padding (mx-4) uygulanır. */
+@media (max-width: 639px) {
+  .panel {
+    position: fixed;
+    top: max(60px, calc(env(safe-area-inset-top, 0px) + 56px));
+    left: 16px;
+    right: 16px;
+    margin-left: auto;
+    margin-right: auto;
+    width: calc(100vw - 2rem);
+    max-width: 360px;
+    max-height: calc(100dvh - 84px);
+    transform-origin: top center;
+    border-radius: var(--radius-lg, 16px);
+    box-shadow:
+      0 20px 50px -10px rgba(0, 0, 0, 0.85),
+      0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+  }
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .panel {
+    background: var(--elev-2, var(--color-bg-elevated, #16161c));
+  }
+  .backdrop {
+    background: rgba(0, 0, 0, 0.65);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .panel {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: var(--elev-2, var(--color-bg-elevated, #16161c));
+  }
+  .backdrop {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: rgba(0, 0, 0, 0.65);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel,
+  .backdrop {
+    animation: none;
+  }
+}
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-bg) 40%, transparent);
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.panelTitle {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--color-text-primary);
+}
+
+.countPill {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--color-accent) 20%, transparent);
+  color: var(--color-accent);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.clearBtn {
+  background: transparent;
+  border: none;
+  color: var(--color-text-tertiary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm, 6px);
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.clearBtn:hover {
+  color: var(--color-text-primary);
+  background: var(--color-hover);
+}
+
+.clearBtn:focus-visible {
+  outline: 2px solid var(--color-accent);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* Kart */
+.card {
+  position: relative;
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md, 12px);
+  background: color-mix(in srgb, var(--color-bg) 60%, transparent);
+  border: 1px solid var(--color-border);
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.card:hover {
+  border-color: color-mix(in srgb, var(--color-accent) 40%, transparent);
+  background: color-mix(in srgb, var(--color-bg) 80%, transparent);
+}
+
+.cardIconBox {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  margin-top: 2px;
+}
+
+.iconToneInfo {
+  background: color-mix(in srgb, #6366f1 18%, transparent);
+  color: #818cf8;
+  border: 1px solid color-mix(in srgb, #6366f1 30%, transparent);
+}
+
+.iconToneWarning {
+  background: color-mix(in srgb, #f59e0b 18%, transparent);
+  color: #fbbf24;
+  border: 1px solid color-mix(in srgb, #f59e0b 30%, transparent);
+}
+
+.iconToneSocial {
+  background: color-mix(in srgb, var(--color-accent) 22%, transparent);
+  color: var(--color-accent);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 36%, transparent);
+}
+
+.cardContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.cardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.cardTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  line-height: 1.3;
+}
+
+.dismissBtn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.dismissBtn:hover {
+  color: var(--color-text-primary);
+  background: var(--color-hover);
+}
+
+.cardBody {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--color-text-secondary);
+  word-break: break-word;
+}
+
+.cardMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: 2px;
+}
+
+.cardHint {
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+}
+
+.cardLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-accent);
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  cursor: pointer;
+  transition: color 0.15s ease, opacity 0.15s ease;
+}
+
+.cardLink:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.cardLink:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Boş Durum */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8) var(--space-5);
+  text-align: center;
+  gap: var(--space-3);
+}
+
+.emptyIconPod {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--color-border) 40%, transparent);
+  color: var(--color-text-tertiary);
+  border: 1px solid var(--color-border);
+}
+
+.emptyTitle {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.emptyDesc {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+  max-width: 240px;
+  line-height: 1.4;
+}

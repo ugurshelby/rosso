@@ -1,0 +1,326 @@
+.sceneSection {
+  position: relative;
+  min-height: 100dvh;
+  min-height: 100svh;
+  height: 100dvh;
+  width: 100%;
+  scroll-snap-align: start;
+  scroll-snap-stop: normal;
+  box-sizing: border-box;
+  background:
+    radial-gradient(circle at var(--y-focus-x, 70%) 25%, color-mix(in srgb, var(--y-glow, #6366f1) 22%, transparent) 0%, transparent 68%),
+    linear-gradient(180deg, var(--y-from, #1e1b4b) 0%, rgba(5, 5, 8, 0.94) 50%, var(--y-to, #08040C) 100%);
+  overflow: hidden;
+  contain: content;
+}
+
+.horizontalTrack {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scroll-behavior: smooth;
+}
+
+.horizontalTrack::-webkit-scrollbar {
+  display: none;
+}
+
+.doorPanel {
+  flex: 0 0 100%;
+  min-width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  scroll-snap-align: start;
+  scroll-snap-stop: normal;
+  padding: clamp(var(--space-4), 4vw, var(--space-8));
+  box-sizing: border-box;
+}
+
+.doorContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  max-width: 760px;
+  width: 100%;
+  text-align: center;
+  margin: 0 auto;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+}
+
+.yearNum {
+  font-family: var(--font-journey, 'Bodoni Moda', Georgia, serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(2.4rem, 6vw, 3.8rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: color-mix(in srgb, var(--y-accent, #ec4899) 30%, #ffffff);
+  margin: 0;
+}
+
+.breakBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  background: rgba(239, 68, 68, 0.16);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #fca5a5;
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.doorArtworkWrap {
+  --artwork-size: clamp(200px, 32vmin, 380px);
+  --artwork-radius: 10px;
+  width: var(--artwork-size);
+  aspect-ratio: 1 / 1;
+  margin: 0 auto;
+  box-shadow: 0 20px 50px -14px rgba(0, 0, 0, 0.8), 0 0 35px -8px color-mix(in srgb, var(--y-glow, #6366f1) 28%, transparent);
+}
+
+.mansetBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.mansetDeger {
+  font-family: var(--font-social, 'Barlow Semi Condensed', sans-serif);
+  font-weight: 900;
+  font-size: clamp(3.5rem, 9vw, 6.5rem);
+  line-height: 0.92;
+  letter-spacing: -0.03em;
+  color: var(--y-accent, #ec4899);
+}
+
+.mansetEtiket {
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.evidencePromptBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  font-family: var(--font-geist-sans, sans-serif);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease, transform 120ms ease;
+  margin-top: var(--space-2);
+}
+
+.evidencePromptBtn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.evidencePromptBtn:active {
+  transform: scale(0.97);
+}
+
+/* ── Panel 2: Kanıt Sahnesi (Spotify Ergonomisi) ─────────────────────────── */
+
+.evidencePanel {
+  flex: 0 0 100%;
+  min-width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  scroll-snap-align: start;
+  scroll-snap-stop: normal;
+  padding: clamp(var(--space-4), 4vw, var(--space-8));
+  box-sizing: border-box;
+}
+
+.evidenceContent {
+  display: flex;
+  flex-direction: column;
+  max-width: 820px;
+  width: 100%;
+  height: 100%;
+  max-height: 86dvh;
+  box-sizing: border-box;
+  background: rgba(18, 18, 18, 0.75);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-lg, 12px);
+  padding: clamp(var(--space-3), 3vw, var(--space-6));
+  box-shadow: 0 24px 60px -16px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.evidenceHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.evidenceTitle {
+  font-family: var(--font-geist-sans, sans-serif);
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.backToDoorBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.6);
+  font-family: var(--font-geist-sans, sans-serif);
+  font-size: 12px;
+  cursor: pointer;
+  transition: color 140ms ease, border-color 140ms ease, transform 140ms ease;
+}
+
+.backToDoorBtn:hover {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.backToDoorBtn:active {
+  transform: scale(0.97);
+}
+
+.trackList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding-right: var(--space-1);
+}
+
+/* Spotify Track Row */
+.trackRow {
+  display: flex;
+  align-items: center;
+  height: 48px;
+  min-height: 48px;
+  gap: var(--space-3);
+  padding: 0 var(--space-3);
+  border-radius: 4px;
+  background: transparent;
+  transition: background 140ms ease;
+  user-select: none;
+}
+
+.trackRow:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.trackRow:active {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.trackIndexCol {
+  width: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 13px;
+  color: #b3b3b3;
+  flex-shrink: 0;
+}
+
+.trackRow:hover .trackIndexNum {
+  display: none;
+}
+
+.trackPlayIcon {
+  display: none;
+  color: #ffffff;
+}
+
+.trackRow:hover .trackPlayIcon {
+  display: block;
+}
+
+.trackCoverCol {
+  --artwork-size: 38px;
+  --artwork-radius: 4px;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+}
+
+.trackMetaCol {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+  gap: 2px;
+}
+
+.trackTitle {
+  font-family: var(--font-geist-sans, sans-serif);
+  font-size: 14px;
+  font-weight: 500;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+}
+
+.trackArtist {
+  font-family: var(--font-geist-sans, sans-serif);
+  font-size: 12px;
+  font-weight: 400;
+  color: #b3b3b3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+}
+
+.trackPlaysCol {
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 12px;
+  color: #767676;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}

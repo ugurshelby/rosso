@@ -1,0 +1,137 @@
+/* Kart 6 — "The Unbroken Chain" (FAZ R1.5).
+   ★ Tarif kabul kriteridir:
+     1. TEK ODAK — grid hücresi yok, mobil ve masaüstünde mutlak merkez
+     2. Mikro nokta dokusu: seriyi temsil eder, opacity 0.1, amber
+     3. Glow: TEK div + box-shadow. ÜST ÜSTE blur YASAK (kirli leke kuralı)
+     4. Outline sayı: -webkit-text-stroke + transparent → ışık içinden geçer
+     5. Tarih etiketi dikeyde esnek boşlukla ayrılır (mobilde yapışmaz) */
+
+.frame {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  background: #050506;
+  container-type: size;
+  overflow: hidden;
+  /* Tek odak: içerik her viewport'ta mutlak merkezde. */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Nokta dokusu ── */
+.dots {
+  position: absolute;
+  inset: 8%;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  justify-content: center;
+  gap: clamp(10px, 2.2cqw, 22px);
+  pointer-events: none;
+}
+
+/* H-FAZ 3 (2026-08-02): 0.1 opaklıkta noktalar pratikte görünmüyordu —
+   "süreklilik" metaforu okunmuyor, kart boş hissediyordu. 0.18 hâlâ
+   sayının önüne geçmez ama doku artık var. */
+.dot {
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  opacity: 0.18;
+}
+
+/* ── TEK katman glow ──
+   H-FAZ 3: yayılım ve opaklık artırıldı (R3: "boş / eksik his").
+   Katman SAYISI değişmedi — üst üste blur yasağı korunuyor. */
+.glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1px;
+  height: 1px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  box-shadow: 0 0 160px 60px var(--color-accent);
+  opacity: 0.42;
+  pointer-events: none;
+}
+
+/* H-FAZ 0 (2026-08-02): dikey padding genislik tabanliydi (`cqw`) — dar
+   telefonda story-bar ve kunye seridinin altina giriyordu. Yatay padding
+   korunur; dikey chrome token'indan gelir (recap-stage.module.css). */
+.content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--recap-chrome-top, 40px) clamp(1.25rem, 5cqw, 3rem)
+    var(--recap-chrome-bottom, 56px);
+  min-width: 0;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: clamp(0.55rem, 1.4cqw, 0.7rem);
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--accent) 85%, white);
+  margin-bottom: clamp(var(--space-2), 1.5cqh, var(--space-4));
+}
+
+/* Lüks Rosso gradyanı + zarif glow ile ışıldayan sayı */
+.number {
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(6rem, 30cqi, 18rem);
+  line-height: 0.85;
+  letter-spacing: -0.04em;
+  margin: 0;
+  background: linear-gradient(
+    180deg,
+    #ffffff 20%,
+    rgba(255, 255, 255, 0.75) 55%,
+    color-mix(in srgb, var(--accent) 70%, white) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 45px color-mix(in srgb, var(--accent) 35%, transparent));
+}
+
+.label {
+  font-family: var(--font-mono), monospace;
+  font-size: clamp(0.6rem, 1.9cqw, 0.9rem);
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  color: var(--color-text-secondary);
+  margin-top: clamp(0.75rem, 2cqh, 1.25rem);
+  max-width: 24ch;
+  text-wrap: balance;
+}
+
+.rangePill {
+  margin-top: clamp(2dvh, 4cqh, 4dvh);
+  padding: clamp(var(--space-2), 1.5cqh, var(--space-3)) clamp(var(--space-4), 3cqw, var(--space-6));
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--color-text-primary) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-text-primary) 12%, transparent);
+  backdrop-filter: blur(12px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Tarih etiketi: kapsül içinde rahat ve dengeli */
+.range {
+  font-family: var(--font-mono), monospace;
+  font-size: clamp(0.55rem, 1.6cqw, 0.75rem);
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  color: color-mix(in srgb, var(--color-text-primary) 75%, transparent);
+  max-width: 32ch;
+  text-wrap: balance;
+  white-space: nowrap;
+}

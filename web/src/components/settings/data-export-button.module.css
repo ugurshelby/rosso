@@ -1,0 +1,16 @@
+/* Verilerimi talep et — yalnız spinner animasyonu (görsel dil page.module.css'te). */
+.spin {
+  animation: data-export-spin 1s linear infinite;
+}
+
+@keyframes data-export-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spin {
+    animation: none;
+  }
+}

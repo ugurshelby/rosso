@@ -1,0 +1,681 @@
+/* FAZ MOOD — /mood yüzeyi.
+ *
+ * 2026-08-11 (Sahip, gece oturumu): mood detay hero'su artık ayrı bir
+ * bileşen DEĞİL — `MoodHero` (`mood-hero.tsx`) `playlist-detail.module.css`
+ * sınıflarını kullanıyor, playlist detay hero'suyla BİREBİR aynı DOM/CSS
+ * iskeleti. Bu dosyada kalan: liste (kart ızgarası) başlığı, geri linki,
+ * "hazırlanıyor" durumu, çalışma alanı (şarkı çıkarma) — hero'ya ait
+ * hiçbir sınıf artık burada YOK.
+ */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.detailPage {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* ── Liste başlığı ──────────────────────────────────────────────────────── */
+.eyebrow {
+  font-family: var(--font-mono, monospace);
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-1);
+}
+
+.title {
+  font-size: var(--text-3xl, 1.875rem);
+  font-weight: var(--font-bold);
+  line-height: 1.1;
+  color: var(--color-text-primary);
+}
+
+.subtitle {
+  margin-top: var(--space-2);
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+  max-width: 60ch;
+  line-height: 1.5;
+}
+
+.header {
+  margin-bottom: var(--space-2);
+}
+
+/* ── Detay: geri linki ──────────────────────────────────────────────────── */
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  width: fit-content;
+}
+
+.backLink:hover {
+  color: var(--color-text-primary);
+}
+
+/* Paket hazırlanıyor durumu (2026-08-01, Aşama 3 · paket #6).
+   `mood_pkg` üretilene kadar sayfa CANLI HESABA DÜŞMEZ — bu durumu gösterir
+   (§12.4-A bağlayıcı kuralı). Dashboard'daki `.statsPreparing` ile aynı dil. */
+.preparing {
+  margin: 0;
+  padding: var(--space-8) 0;
+  text-align: center;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: var(--text-xs);
+  letter-spacing: 0.06em;
+  color: var(--color-text-tertiary);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ÇALIŞMA ALANI (migration 0255) — listeyi Spotify'a göndermeden önce düzenle
+
+   Sahip: *"Ruhunu sevdim, içerik pürüzlü → listeye gir, şarkı çıkar,
+   sonra Spotify'a ekle."*
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.workspaceBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-4);
+}
+
+.workspaceCount {
+  margin: 0;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: var(--text-xs);
+  letter-spacing: 0.06em;
+  color: var(--color-text-tertiary);
+}
+
+.workspaceUndo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  /* 44px dokunma hedefi (Fitts) — mevcut `.addButton` ile aynı ölçü. */
+  min-height: 44px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: var(--text-xs);
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: border-color var(--duration-base) ease, color var(--duration-base) ease;
+}
+
+.workspaceUndo:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--color-accent) 60%, transparent);
+  color: var(--color-text-primary);
+}
+
+.workspaceUndo:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.workspaceError {
+  margin: 0 0 var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--color-error, #EF4444);
+}
+
+/* Liste + çıkarma düğmeleri iki katman:
+   `TrackTable` PAYLAŞILAN bileşen (playlist detay da kullanıyor) — ona
+   mood'a özel prop eklemek onu kirletirdi. Düğmeler ızgarada hizalanıyor. */
+.workspaceList {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-2);
+  align-items: start;
+}
+
+.workspaceActions {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.workspaceActions li {
+  /* Satır yüksekliği `TrackTable` satırlarıyla hizalı — ölçü oradan geliyor. */
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 56px;
+  position: relative;
+}
+
+/* Açık etiket menüsünü taşıyan satır öne çıkar. `motion.li` (layout
+   animasyonu) her satıra kendi katmanını veriyor; menünün z-index'i o
+   katmandan KAÇAMIYOR ve alttaki satırlar menünün ÜSTÜNE boyanıyordu
+   (ölçüldü: menü DOM'da açık, ekranda görünmez). */
+.workspaceActions li:has([aria-expanded='true']),
+.elenenSatir:has([aria-expanded='true']) {
+  z-index: 30;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   UYGUNLUK ETİKETİ (2026-09-22, migration 0338)
+   Düğme + satır içi menü. Tonlar Deep Violet paletinden türetilir; kırmızı
+   yalnız "alakasız"da (tek gerçek ret), "sevmedim" sıcak nötr — listeye AİT
+   bir parçayı alarm rengiyle göstermemek için.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.etiketKap {
+  position: relative;
+  display: inline-flex;
+}
+
+.etiketBtn {
+  --etiket-ton: var(--color-text-tertiary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--etiket-ton);
+  cursor: pointer;
+  position: relative;
+  transition:
+    color var(--duration-base) ease,
+    background var(--duration-base) ease,
+    transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* 44px dokunma hedefi (Fitts) — `.removeBtn` ile aynı teknik. */
+.etiketBtn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44px;
+  height: 44px;
+  margin: -22px 0 0 -22px;
+  border-radius: var(--radius-full);
+}
+
+.etiketBtn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--etiket-ton) 14%, transparent);
+  color: var(--color-text-primary);
+}
+
+/* Anında dokunma geri bildirimi (apple-design: pointer-down, bırakmayı beklemez). */
+.etiketBtn:active:not(:disabled),
+.etiketSecenek:active {
+  transform: scale(0.94);
+}
+
+.etiketBtn:focus-visible,
+.etiketSecenek:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.etiketBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.etiketAlakasiz { --etiket-ton: var(--color-error, #EF4444); }
+.etiketSevmedim { --etiket-ton: #D9A066; }
+.etiketUygun    { --etiket-ton: var(--color-accent-gold, #6E86FF); }
+.etiketCokSevdim { --etiket-ton: var(--color-accent); }
+
+/* Etiketli düğme tonunu gösterir; etiketsiz sessiz kalır. */
+.etiketBtn.etiketAlakasiz,
+.etiketBtn.etiketSevmedim,
+.etiketBtn.etiketUygun,
+.etiketBtn.etiketCokSevdim {
+  color: var(--etiket-ton);
+  background: color-mix(in srgb, var(--etiket-ton) 12%, transparent);
+}
+
+.etiketMenu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 40;
+  min-width: 268px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-radius: var(--radius-lg, 12px);
+  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
+  /* Malzeme: bulanık zemin, üstte ince ışık kenarı. %96 opak — ölçüldü:
+     %82'de alttaki satırların düğmeleri menünün içinden seçiliyor ve
+     kısayol rakamlarıyla karışıyordu (okunabilirlik > saydamlık). */
+  background: color-mix(in srgb, var(--color-surface) 96%, transparent);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    var(--shadow-popover, 0 16px 32px -8px rgba(0, 0, 0, 0.6));
+  transform-origin: top right;
+}
+
+.etiketSecenek {
+  --etiket-ton: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 44px;
+  padding: 6px 10px;
+  border: none;
+  border-radius: var(--radius-md, 8px);
+  background: transparent;
+  color: var(--color-text-primary);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background var(--duration-base) ease,
+    transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.etiketSecenek > svg {
+  flex-shrink: 0;
+  color: var(--etiket-ton);
+}
+
+.etiketSecenek:hover {
+  background: color-mix(in srgb, var(--etiket-ton) 12%, transparent);
+}
+
+.etiketSecenekSecili {
+  background: color-mix(in srgb, var(--etiket-ton) 16%, transparent);
+}
+
+.etiketSecenekMetin {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.etiketSecenekAd {
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.etiketSecenekAciklama {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+}
+
+.etiketKisayol {
+  flex-shrink: 0;
+  min-width: 20px;
+  padding: 1px 5px;
+  border-radius: 5px;
+  border: 1px solid var(--color-border);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+  text-align: center;
+}
+
+.etiketKaldir {
+  margin-top: 2px;
+  border-top: 1px solid var(--color-border);
+  border-radius: 0 0 var(--radius-md, 8px) var(--radius-md, 8px);
+  color: var(--color-text-secondary);
+}
+
+.workspaceEtiketSayisi {
+  color: var(--color-text-tertiary);
+}
+
+/* ── Elenenler ─────────────────────────────────────────────────────────── */
+
+.elenenler {
+  margin-top: var(--space-6);
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-3);
+}
+
+.elenenlerBaslik {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: 0 var(--space-2);
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: var(--text-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.elenenlerBaslik:hover {
+  color: var(--color-text-primary);
+}
+
+.elenenlerOk {
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.elenenlerOkAcik {
+  transform: rotate(180deg);
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.elenenlerListe {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+}
+
+.elenenSatir {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 52px;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-md, 8px);
+  position: relative;
+  color: var(--color-text-secondary);
+}
+
+.elenenSatir:hover {
+  background: color-mix(in srgb, var(--color-text-primary) 4%, transparent);
+}
+
+.elenenMetin {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.elenenBaslik,
+.elenenSanatci {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.elenenBaslik {
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+}
+
+.elenenSanatci {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .etiketBtn,
+  .etiketSecenek,
+  .elenenlerOk,
+  .elenenlerOkAcik {
+    transition: none;
+  }
+  .etiketBtn:active:not(:disabled),
+  .etiketSecenek:active {
+    transform: none;
+  }
+}
+
+.removeBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  position: relative;
+  transition: color var(--duration-base) ease, background var(--duration-base) ease;
+}
+
+/* Görsel çap 32px kalır (satır ritmi bozulmasın), dokunma alanı 44px. */
+.removeBtn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44px;
+  height: 44px;
+  margin: -22px 0 0 -22px;
+  border-radius: var(--radius-full);
+}
+
+.removeBtn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-error, #EF4444) 12%, transparent);
+  color: var(--color-error, #EF4444);
+}
+
+.removeBtn:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.removeBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  /* Dar ekranda çıkarma sütunu daralır ama kaybolmaz — dokunma alanı
+     `::after` sayesinde 44px kalıyor. */
+  .workspaceList {
+    gap: var(--space-1);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   KATALOG (2026-09-18 yeniden kurgu) — Hero + 3 section (Rosso's Picks /
+   Your Years / Daily Picks). `playlists.module.css`in genel `.grid`i
+   (auto-fill) her section için kullanılıyor — section'lar farklı kart
+   sayılarında (7/değişken/5) olduğu için sabit sütun sayısı zorlanmıyor.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* Rosso's Picks — 7 SABİT kart. Genel `.grid` (auto-fill) geniş ekranda 6
+   sütuna kırılıp son satırda 1 kart yalnız bırakıyordu (asimetrik). 7, 4'e
+   en yakın simetrik bölünmeyi verir: 4 üstte + 3 altta. */
+@media (min-width: 1024px) {
+  .rossoPicksGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* Your Years — kart sayısı kullanıcıya göre değişken. Auto-fill tek kartta
+   aşırı geniş bir hücre üretiyordu; sabit üst sınırla kartlar kompakt kalır
+   ve sola yaslı büyür (ortalanmaz, çünkü yıl sayısı arttıkça soldan sağa
+   kronolojik okunması doğal). */
+.yearsGrid {
+  grid-template-columns: repeat(auto-fill, minmax(140px, 160px));
+}
+
+.sectionHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.sectionTitle {
+  font-size: var(--text-xl, 1.25rem);
+  font-weight: var(--font-bold);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--color-text-primary);
+}
+
+/* ── Hero — liste sayfası tanıtımı, tekil mood hero'sundan AYRI ────────── */
+.catalogHero {
+  position: relative;
+  border-radius: var(--radius-xl, 20px);
+  overflow: hidden;
+  padding: var(--space-8) var(--space-6);
+  min-height: 240px;
+  display: flex;
+  align-items: flex-end;
+  isolation: isolate;
+}
+
+.catalogHeroBackdrop {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    linear-gradient(160deg, color-mix(in srgb, var(--color-accent) 32%, transparent) 0%, transparent 55%),
+    url('/vibe-cards/stormbearer.webp'),
+    url('/vibe-cards/synthwave-romantic.webp');
+  background-size: cover, 55% auto, 45% auto;
+  background-position: center, left -10% top, right -10% bottom;
+  background-repeat: no-repeat;
+  filter: blur(2px) saturate(115%);
+  transform: scale(1.05);
+}
+
+.catalogHero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(180deg, rgba(10, 8, 16, 0.35) 0%, rgba(10, 8, 16, 0.82) 100%);
+  backdrop-filter: blur(6px) saturate(140%);
+}
+
+.catalogHeroContent {
+  max-width: 60ch;
+}
+
+.catalogTitle {
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-weight: var(--font-bold);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: #F5F0FF;
+}
+
+.catalogSubtitle {
+  margin-top: var(--space-3);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  color: rgba(245, 240, 255, 0.82);
+}
+
+/* ── Your Years kart — kapak zaten yıl sayısını içeriyor ────────────────── */
+.yearCard {
+  display: block;
+  text-decoration: none;
+  border-radius: var(--radius-lg, 16px);
+  overflow: hidden;
+  transition: transform var(--duration-base) ease;
+}
+
+.yearCard:hover {
+  transform: translateY(-2px);
+}
+
+.yearCoverWrap {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-lg, 16px);
+  overflow: hidden;
+  background: var(--color-surface-secondary, #1a1420);
+}
+
+.yearCoverImg {
+  object-fit: cover;
+}
+
+.yearFallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-2xl, 1.5rem);
+  font-weight: var(--font-bold);
+  color: var(--color-text-secondary);
+}
+
+/* ── Your Years detay hero ───────────────────────────────────────────────── */
+.yearHero {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-5);
+  flex-wrap: wrap;
+}
+
+.yearHeroCoverWrap {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  flex-shrink: 0;
+  border-radius: var(--radius-lg, 16px);
+  overflow: hidden;
+}
+
+.yearExportBtn {
+  margin-top: var(--space-4);
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--space-5);
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+  color: var(--color-on-accent, #fff);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium, 500);
+  cursor: pointer;
+  transition: transform 100ms ease-out;
+}
+
+.yearExportBtn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.yearExportBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Liner Notes — kapak altındaki tek satırlık küratör fısıltısı (Katman D).
+   Sessiz: accent yok, kart yok; yalnız italik ikincil metin. */
+.kuratorNotu {
+  margin: var(--space-4) 0 0;
+  max-width: 48ch;
+  font-size: 0.9375rem;
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+  text-wrap: pretty;
+}

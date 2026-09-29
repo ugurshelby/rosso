@@ -1,0 +1,172 @@
+/*
+  Landing / Marketing — Sinematik Gece + gümüş spot (landing'e özel).
+  Siyah perde üzerine düşen gümüş ışık; dashboard paletlerinden bağımsız.
+  Otorite: docs/design/katmanlar/landing-design.md §3
+*/
+
+/*
+  ─── FAZ 1: Responsive omurga (2026-08-05) ───────────────────────────────
+
+  Landing CSS'inde **20 farklı breakpoint** ölçüldü (`399/400`, `599/600/601`,
+  `767/768`, `899/900` gibi bir-piksel farklı ikizler dahil). Sonuç: aynı
+  ekran genişliğinde iki kural birden ya da hiçbiri uygulanıyordu.
+
+  Aşağıdaki 6 token TEK kaynak. `@media` sorguları CSS değişkeni kabul
+  ETMEZ — bu yüzden token'lar doğrudan sorguya yazılamaz; belge + referans
+  görevi görürler ve `--step-*` gibi akışkan hesaplarda kullanılırlar.
+  Yeni kural yazarken bu altı değerin DIŞINA çıkma:
+
+    xs  360px   küçük telefon
+    sm  480px   telefon
+    md  768px   tablet dikey
+    lg  1024px  tablet yatay / küçük dizüstü
+    xl  1280px  masaüstü
+    2xl 1536px  geniş masaüstü
+
+  Kanıt: `docs/audit/landing-responsive-audit.md` + `faz0-overflow.json`.
+*/
+.marketing-theme,
+body.marketing-route-active {
+  --mkt-bp-xs: 360px;
+  --mkt-bp-sm: 480px;
+  --mkt-bp-md: 768px;
+  --mkt-bp-lg: 1024px;
+  --mkt-bp-xl: 1280px;
+  --mkt-bp-2xl: 1536px;
+
+  /*
+    Akışkan tipografi — `clamp(min, tercih, max)`.
+
+    Neden: sabit px'te 320px telefonda başlık taşıyor, 2560px'te kayboluyordu;
+    her aralık için ayrı `@media` yazmak da yukarıdaki breakpoint enflasyonunu
+    doğurmuştu. `clamp` aradaki HER genişlikte sürekli ölçekler.
+
+    `vw` katsayısı 360px→1280px arasını kapsar; `rem` tabanı erişilebilirlik
+    için korunur (kullanıcı tarayıcı yazı boyutunu büyütünce büyür).
+    ⚠ Alt sınır asla 14px'in altına inmez (mobil-design.md min gövde).
+  */
+  --mkt-step--1: clamp(0.82rem, 0.78rem + 0.20vw, 0.94rem);
+  --mkt-step-0: clamp(0.94rem, 0.88rem + 0.30vw, 1.06rem);
+  --mkt-step-1: clamp(1.10rem, 1.00rem + 0.50vw, 1.35rem);
+  --mkt-step-2: clamp(1.35rem, 1.15rem + 1.00vw, 1.90rem);
+  --mkt-step-3: clamp(1.70rem, 1.30rem + 2.00vw, 2.75rem);
+  --mkt-step-4: clamp(2.10rem, 1.45rem + 3.25vw, 4.00rem);
+  --mkt-step-5: clamp(2.60rem, 1.55rem + 5.25vw, 5.75rem);
+
+  /* Akışkan boşluk — aynı gerekçe, aynı ölçek mantığı. */
+  --mkt-space-xs: clamp(0.5rem, 0.42rem + 0.4vw, 0.75rem);
+  --mkt-space-sm: clamp(0.75rem, 0.62rem + 0.65vw, 1.25rem);
+  --mkt-space-md: clamp(1.25rem, 0.95rem + 1.5vw, 2.5rem);
+  --mkt-space-lg: clamp(2rem, 1.4rem + 3vw, 4.5rem);
+  --mkt-space-xl: clamp(3rem, 1.9rem + 5.5vw, 7rem);
+
+  --mkt-glass-blur: 28px;
+  --mkt-glass-saturate: 1.42;
+  --mkt-glass-specular: rgba(255, 255, 255, 0.11);
+  --landing-glow-silver-bright: #f2efea;
+  --landing-glow-silver-dim: #8a8680;
+  --landing-spot-core: rgba(242, 239, 234, 0.16);
+  --landing-spot-soft: rgba(216, 212, 204, 0.08);
+
+  /* Dekoratif (vitrin sahneleri + landing bölüm dokunuşları — düşük doygunluk) */
+  --landing-glow-rose: #b8a4a8;
+  --landing-glow-rose-soft: rgba(184, 164, 168, 0.16);
+  --landing-glow-violet: #9a94b8;
+  --landing-glow-violet-soft: rgba(154, 148, 184, 0.14);
+  --landing-glow-wine: #6e4a52;
+  --landing-glow-wine-soft: rgba(110, 74, 82, 0.17);
+
+  /* ─── Zemin — sinema perdesi siyahı ─── */
+  --landing-bg-deep: #030303;
+  --landing-bg-base: #070707;
+  --landing-bg-elevated: #141414;
+  --landing-bg-sunken: #000000;
+
+  --color-bg: var(--landing-bg-base);
+  --color-bg-elevated: var(--landing-bg-elevated);
+  --color-bg-sunken: var(--landing-bg-sunken);
+  --color-border: #2a2a2a;
+  --color-border-strong: #3d3d3d;
+
+  --color-surface: var(--landing-bg-elevated);
+  --color-surface-hover: #1a1a1a;
+  --color-surface-raised: #1f1f1f;
+
+  --color-bg-base: var(--color-bg);
+  --color-hover: rgba(255, 255, 255, 0.06);
+  --color-text-muted: var(--color-text-tertiary);
+
+  --color-text-primary: #f0ece6;
+  --color-text-secondary: #b8b4ae;
+  --color-text-tertiary: #7a7670;
+  --color-text-inverse: #030303;
+
+  /* ─── Vurgu — gümüş spot (amber değil) ─── */
+  --landing-cta-highlight: #f6f4f0;
+  --landing-cta-mid: #d4d0c8;
+  --landing-cta-deep: #a8a49c;
+  --landing-cta-text: #0a0908;
+  --landing-cta-border: #e8e4dc;
+
+  --color-accent: var(--landing-glow-silver);
+  --color-accent-hover: var(--landing-glow-silver-bright);
+  --color-accent-subtle: rgba(216, 212, 204, 0.14);
+  --color-accent-muted: rgba(216, 212, 204, 0.08);
+  --color-accent-fg: #0a0908;
+  --color-accent-gold: #c4c0b8;
+
+  --color-nav-bg: #050505;
+  --color-nav-border: #222222;
+
+  --color-success: #b8b4ae;
+  --color-warning: var(--landing-glow-silver);
+  --color-error: #ef4444;
+  --color-error-hover: #dc2626;
+  --color-info: #9a94b8;
+
+  --color-spotify: #1db954;
+  --color-apple: #fc3c44;
+  --color-yt-music: #ff0000;
+
+  --background: var(--landing-bg-deep);
+  --foreground: var(--color-text-primary);
+}
+
+.marketing-theme {
+  position: relative;
+  isolation: isolate;
+  background-color: var(--landing-bg-deep);
+  background-image:
+    radial-gradient(
+      ellipse 55% 42% at 8% -4%,
+      var(--landing-glow-rose-soft),
+      transparent 58%
+    ),
+    radial-gradient(
+      ellipse 48% 38% at 92% 8%,
+      var(--landing-glow-violet-soft),
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 80% 50% at 12% -8%,
+      var(--landing-spot-soft),
+      transparent 58%
+    ),
+    radial-gradient(
+      ellipse 65% 45% at 88% 12%,
+      color-mix(in srgb, var(--landing-glow-silver) 5%, transparent),
+      transparent 55%
+    ),
+    linear-gradient(
+      180deg,
+      var(--landing-bg-deep) 0%,
+      var(--landing-bg-base) 50%,
+      var(--landing-bg-deep) 100%
+    );
+  color: var(--color-text-primary);
+}
+
+body.marketing-route-active {
+  background: var(--landing-bg-deep);
+  color: var(--color-text-primary);
+}

@@ -1,0 +1,24 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-10);
+  max-width: 100%;
+}
+
+.sectionLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  font-family: var(--font-geist-mono, monospace);
+  font-weight: var(--font-bold);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+  margin: 0 0 var(--space-4);
+}
+
+.sectionLabel svg {
+  color: var(--color-accent);
+  flex-shrink: 0;
+}

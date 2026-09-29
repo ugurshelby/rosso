@@ -1,0 +1,3016 @@
+/* Marketing — editorial v3: dramatic, border-first, mono eyebrow */
+
+/* ─── Page shell ─── */
+.page {
+  position: relative;
+  /* FAZ 1: `dvh` → `svh`. `dvh` scroll sırasında adres çubuğu gizlenirken
+     DEĞİŞİR; sayfa kabuğu bu yüzden yeniden ölçülüp altındaki her şeyi
+     kaydırıyordu. `svh` sabittir → kayma yok. Sadece taban yükseklik;
+     içerik uzunsa `min-height` zaten büyür. */
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  /* overflow-x:hidden sticky'yi kırar (y overflow auto hesaplanır) — clip kullan */
+  overflow-x: clip;
+
+  /* A-FAZ 0.2 (2026-08-02) — O1: mobilde nav ALTA sabitleniyor
+     (`position: fixed; bottom`) ve sayfa içeriğinin son kısmını örtüyordu.
+     Bu token nav'ın kapladığı dikey alanı TEK yerden bildirir; içerik
+     bölümleri kendi alt boşluklarını buradan alır.
+
+     Masaüstünde nav üstte → offset 0 (içerik altta serbest). */
+  --marketing-bottom-nav-offset: 0px;
+}
+
+/* ─── M1 (2026-08-08): BREAKPOINT SAPMALARI — ölçülüp GEREKÇELENDİ ────────
+   `marketing-theme.css` altı standart token tanımlıyor
+   (360·480·768·1024·1280·1536) ve *"bu değerlerin DIŞINA çıkma"* diyor.
+   Ölçümde 10 sapma bulundu. Hepsi standarda ZORLANMADI — çünkü ikisi
+   gerçek işlevsel eşik. Ölçüm (localhost, home):
+
+     600 → 601 : nav ALTTAN ÜSTE geçiyor (navTop 827px → 16px) ve
+                 `navLinkHideMobile` 2 link gizli → görünür oluyor.
+                 768'e taşımak 601-768 arası tabletlerde nav'ı aşağı
+                 indirirdi = DAVRANIŞ DEĞİŞİKLİĞİ. M1 bunu yasaklıyor.
+     899 / 900 : 3 adım bölümü — altında dikey bağlantı çizgisi,
+                 üstünde 3 sütun ızgara. 1024'e taşımak tablet yatayda
+                 3 sütunu bozardı.
+
+   KALDIRILANLAR (davranış değişmedi, ölçüldü):
+     640 → 480 : `featureGrid`'in `grid-template-columns` satırı ÖLÜ koddu
+                 (üstteki max-width:1024 zaten repeat(2) diyordu).
+
+   ⚠ Yeni kural yazarken yine altı token'a uy. Bu üç sapma **istisna**,
+   emsal değil — gerekçesi burada yazılı olduğu için korunuyorlar. */
+@media (max-width: 600px) {
+  .page {
+    /* nav yüksekliği (~52px) + alt boşluk + güvenli alan */
+    --marketing-bottom-nav-offset: calc(52px + var(--space-3) + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+.main {
+  flex: 1;
+  position: relative;
+  z-index: 1;
+  background: linear-gradient(
+    180deg,
+    #000 0%,
+    color-mix(in srgb, var(--landing-bg-sunken) 42%, #000) 14%,
+    color-mix(in srgb, var(--landing-bg-base) 28%, #000) 48%,
+    color-mix(in srgb, var(--landing-bg-sunken) 38%, #000) 82%,
+    #000 100%
+  );
+}
+
+/* Sayfa boyu sinematik ışık şeritleri — kartların arka plandan kopması için
+   sabit, görünür ambient (önceki tur çok sönüktü; siyah zeminde fark edilmiyordu). */
+.main::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      ellipse 55% 42% at 8% 18%,
+      color-mix(in srgb, var(--landing-glow-rose) 22%, transparent),
+      transparent 68%
+    ),
+    radial-gradient(
+      ellipse 48% 38% at 92% 32%,
+      color-mix(in srgb, var(--landing-glow-violet) 20%, transparent),
+      transparent 65%
+    ),
+    radial-gradient(
+      ellipse 60% 35% at 50% 62%,
+      color-mix(in srgb, var(--landing-glow-wine) 14%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 70% 28% at 50% 88%,
+      color-mix(in srgb, var(--landing-glow-silver-bright) 8%, transparent),
+      transparent 72%
+    );
+  opacity: 0.95;
+}
+
+/* ─── Ambient orbs ─── */
+.ambientOrb1,
+.ambientOrb2 {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(120px);
+}
+.ambientOrb1 {
+  width: 800px;
+  height: 800px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--color-accent) 10%, transparent) 0%, transparent 65%);
+  top: -300px;
+  left: -250px;
+}
+.ambientOrb2 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--color-accent) 4%, transparent) 0%, transparent 65%);
+  bottom: 10%;
+  right: -200px;
+}
+
+/* ════════════════════════════════════════════
+   NAV — floating glassmorphism pill
+   Desktop: fixed top, fades into page from top
+   Mobile: bottom bar, fades from bottom
+   ════════════════════════════════════════════ */
+/* Glassmorphism değerleri kanonik spec ile senkron (rosso-design-system.md
+   §5.1, commit 7c86f1b) — Dashboard navbar'ıyla aynı blur/saturate/
+   background/border/shadow formülü, radius/padding/positioning Marketing'e
+   özel kalır. */
+.nav {
+  position: fixed;
+  top: clamp(0.75rem, 2vw, 1.25rem);
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(calc(100% - 2rem), var(--container-xl));
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: 0.55rem clamp(0.75rem, 1.6vw, 1.25rem);
+  border-radius: 9999px;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.08) 0%,
+      rgba(255, 255, 255, 0.02) 45%,
+      rgba(192, 132, 252, 0.04) 100%
+    ),
+    rgba(10, 8, 16, 0.65);
+  backdrop-filter: blur(28px) saturate(190%) contrast(105%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%) contrast(105%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.35),
+    0 16px 40px -10px rgba(0, 0, 0, 0.75),
+    0 0 24px rgba(168, 85, 247, 0.06);
+  transition:
+    border-color 0.24s ease,
+    box-shadow 0.24s ease,
+    background-color 0.24s ease;
+}
+
+.nav:hover {
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow:
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.35),
+    0 20px 48px -10px rgba(0, 0, 0, 0.8),
+    0 0 32px rgba(192, 132, 252, 0.1);
+}
+
+/* Fade halo above nav — hero koyu kapısıyla uyumlu */
+.navFade {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 120px;
+  z-index: 49;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(4, 3, 7, 0.85) 0%,
+    transparent 100%
+  );
+}
+
+@media (max-width: 600px) {
+  .nav {
+    /* Mobile: move to bottom */
+    top: auto;
+    bottom: calc(0.75rem + env(safe-area-inset-bottom));
+    width: calc(100% - 1.5rem);
+    padding: 0.5rem 0.85rem;
+    border-radius: 9999px;
+  }
+
+  .navFade {
+    top: auto;
+    bottom: 0;
+    height: 140px;
+    background: linear-gradient(to top, rgba(4, 3, 7, 0.95) 0%, transparent 100%);
+  }
+}
+
+.brand {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.8125rem;
+  font-weight: 750;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #ffffff;
+  text-decoration: none;
+  transition: opacity 180ms ease, transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.brand:hover {
+  opacity: 0.92;
+}
+
+/* 🔴 DOKUNMA HEDEFİ 44px (2026-08-21 — Lighthouse "Touch targets do not have
+   sufficient size" + 390px ölçümü). */
+.brand::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 44px;
+  transform: translateY(-50%);
+}
+
+.brandMark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid rgba(192, 132, 252, 0.35);
+  border-radius: 8px;
+  background: radial-gradient(
+    circle at 35% 35%,
+    rgba(192, 132, 252, 0.3) 0%,
+    rgba(147, 51, 234, 0.15) 100%
+  );
+  flex-shrink: 0;
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.45),
+    0 0 14px rgba(168, 85, 247, 0.35);
+  overflow: hidden;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s ease;
+}
+
+.brand:hover .brandMark {
+  transform: scale(1.05);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.6),
+    0 0 18px rgba(192, 132, 252, 0.5);
+}
+
+.brandImage {
+  width: 15px;
+  height: 15px;
+  object-fit: contain;
+}
+
+.navLinks {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.navLink {
+  position: relative;
+  padding: 0.42rem 0.85rem;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.65rem;
+  font-weight: 550;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.65);
+  text-decoration: none;
+  border-radius: 9999px;
+  transition:
+    color 160ms ease,
+    background-color 160ms ease;
+  white-space: nowrap;
+}
+
+/* 🔴 DOKUNMA HEDEFİ 44px (2026-08-21) — `.navLink` için. */
+.navLink::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 44px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.navLink:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.navCta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem 1.15rem;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", var(--font-sans), sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #ffffff;
+  text-decoration: none;
+  white-space: nowrap;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.35),
+    0 4px 14px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    transform 160ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 160ms ease;
+}
+
+/* 🔴 DOKUNMA HEDEFİ 44px (2026-08-21) */
+.navCta::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 44px;
+  transform: translateY(-50%);
+}
+
+.navCta:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.38);
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.5),
+    0 6px 18px rgba(0, 0, 0, 0.55),
+    0 0 14px rgba(255, 255, 255, 0.15);
+}
+
+.navCta:active {
+  transform: scale(0.96);
+  box-shadow:
+    inset 0 1px 1px rgba(0, 0, 0, 0.2),
+    0 2px 8px rgba(0, 0, 0, 0.4);
+  transition: transform 60ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.navLinkHideMobile { }
+
+@media (max-width: 600px) {
+  .navLinkHideMobile { display: none; }
+}
+
+/* ════════════════════════════════════════════
+   HERO
+   ════════════════════════════════════════════ */
+
+/* Hero + marquee — tam ekran ikna paneli, sinematik koyu kapı */
+.heroViewport {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+  min-height: 100dvh;
+  overflow-x: clip;
+  background: #06040a;
+}
+
+/* ── Sinematik atmosfer katmanları (video tam viewport olarak devraldı) ── */
+.heroAtmosphere {
+  display: none;
+}
+
+.hero {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: var(--container-xl);
+  margin: 0 auto;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(5rem, 10.5vh, 7.5rem) var(--space-6) clamp(2.5rem, 5vh, 4rem);
+}
+
+.heroContent {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: min(44rem, 92vw);
+}
+
+.heroContent::after {
+  display: none;
+}
+
+/* iOS Frosted Glass Marka Rozeti */
+.heroBrandBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.35rem 0.85rem 0.35rem 0.45rem;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 4px 16px rgba(0, 0, 0, 0.25);
+  margin-bottom: clamp(1rem, 2vh, 1.5rem);
+  width: fit-content;
+}
+
+.heroBrandMarkWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  overflow: hidden;
+}
+
+.heroBrandMark {
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
+}
+
+.heroBrandLabel {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.heroVisual {
+  display: none;
+}
+
+.heroFootDesktop,
+.heroFootMobile {
+  display: block;
+}
+
+@media (max-width: 767px) {
+  .hero {
+    padding: clamp(5.5rem, 12vh, 7rem) var(--space-4) clamp(3.5rem, 6vh, 4.5rem);
+  }
+
+  .heroContent {
+    max-width: 100%;
+  }
+}
+
+/* ── Floating ürün önizleme yığını (dekoratif, aria-hidden) ──
+   Journey / Recap / Kimlik — vitrin mockup'larıyla aynı dil; hero'nun
+   editorial cam yüzeyi ve seyrek amber vurgusuyla uyumlu. */
+.floatCards {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 420px;
+}
+
+/* Kartların arkasından sızan ışık — kapı içinden */
+.floatCards::before {
+  content: '';
+  position: absolute;
+  top: 46%;
+  left: 42%;
+  width: min(420px, 95%);
+  height: min(420px, 95%);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      circle at 35% 38%,
+      color-mix(in srgb, var(--landing-glow-rose) 22%, transparent) 0%,
+      transparent 58%
+    ),
+    radial-gradient(
+      circle at 68% 62%,
+      color-mix(in srgb, var(--landing-glow-violet) 20%, transparent) 0%,
+      transparent 52%
+    ),
+    radial-gradient(
+      circle at 50% 82%,
+      color-mix(in srgb, var(--landing-glow-wine) 12%, transparent) 0%,
+      transparent 48%
+    ),
+    radial-gradient(
+      circle at 50% 50%,
+      color-mix(in srgb, var(--landing-glow-silver-bright) 8%, transparent) 0%,
+      transparent 55%
+    );
+  filter: blur(56px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.floatCard {
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-xl);
+  border: 1px solid color-mix(in srgb, var(--float-tint, var(--landing-glow-silver)) 20%, rgba(255, 255, 255, 0.08));
+  background:
+    radial-gradient(
+      ellipse 120% 78% at 50% -22%,
+      color-mix(in srgb, var(--float-tint, var(--landing-glow-silver)) 14%, transparent),
+      transparent 58%
+    ),
+    linear-gradient(
+      168deg,
+      color-mix(in srgb, var(--color-bg-elevated) 56%, rgba(255, 255, 255, 0.04)) 0%,
+      color-mix(in srgb, var(--color-bg-elevated) 30%, rgba(0, 0, 0, 0.82)) 100%
+    );
+  backdrop-filter: blur(var(--mkt-glass-blur, 28px)) saturate(var(--mkt-glass-saturate, 1.42));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, #000 42%, transparent),
+    0 8px 16px -6px rgba(0, 0, 0, 0.45),
+    0 28px 56px -14px rgba(0, 0, 0, 0.62),
+    0 48px 88px -28px color-mix(in srgb, var(--float-tint, var(--landing-glow-silver)) 24%, transparent),
+    inset 0 1px 0 color-mix(in srgb, #fff 12%, transparent),
+    inset 0 -18px 36px -22px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  --float-tint: var(--landing-glow-silver);
+}
+
+.floatCard::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    128deg,
+    color-mix(in srgb, #fff 16%, transparent) 0%,
+    transparent 40%,
+    transparent 72%,
+    color-mix(in srgb, var(--float-tint, var(--landing-glow-silver)) 6%, transparent) 100%
+  );
+  opacity: 0.88;
+}
+
+.floatCard > * {
+  position: relative;
+  z-index: 1;
+}
+
+.floatCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  opacity: 0.9;
+}
+
+.floatCardBack {
+  top: 4px;
+  right: 28px;
+  width: 248px;
+  transform: rotate(-7deg) scale(0.92);
+  opacity: 0.9;
+}
+
+.floatCardMid {
+  top: 108px;
+  right: 48px;
+  width: 300px;
+  padding: var(--space-3);
+  transform: rotate(2.5deg);
+  opacity: 0.96;
+}
+
+.floatCardFront {
+  top: 248px;
+  right: 0;
+  width: 292px;
+  transform: rotate(-1deg);
+}
+
+/* Float kartlar — hafif ton; vitrin kadar canlı değil, hero'da derinlik */
+.floatCardJourney::before {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--landing-glow-rose) 42%, transparent),
+    color-mix(in srgb, var(--color-text-primary) 10%, transparent)
+  );
+}
+
+.floatCardRecap::before {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--landing-glow-violet) 40%, transparent),
+    color-mix(in srgb, var(--color-text-primary) 10%, transparent)
+  );
+}
+
+.floatCardJourney {
+  --float-tint: var(--landing-glow-rose);
+  border-color: color-mix(in srgb, var(--landing-glow-rose) 22%, transparent);
+}
+
+.floatCardRecap {
+  --float-tint: var(--landing-glow-violet);
+  gap: 0;
+  border-color: color-mix(in srgb, var(--landing-glow-violet) 20%, transparent);
+}
+
+.floatCardJourney .floatCardEyebrow,
+.floatCardRecap .floatCardEyebrow {
+  color: color-mix(in srgb, var(--color-text-secondary) 88%, #fff);
+}
+
+.floatCardJourney .floatCardTitleAccent {
+  color: var(--color-text-primary);
+}
+
+.floatCardArt {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  max-height: 132px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid color-mix(in srgb, var(--float-tint, var(--landing-glow-silver)) 18%, rgba(255, 255, 255, 0.06));
+  box-shadow:
+    inset 0 0 32px color-mix(in srgb, var(--float-tint, var(--landing-glow-silver)) 12%, transparent),
+    0 8px 24px -8px rgba(0, 0, 0, 0.45);
+}
+
+.floatCardArt img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+/* Recap — tam kapak sahnesi */
+.floatCardCoverStage {
+  position: relative;
+  width: 100%;
+  min-height: 168px;
+  border-radius: calc(var(--radius-xl) - 6px);
+  overflow: hidden;
+  /* M7: sabit hex → token (koyu kapak zemini). */
+  background: var(--landing-bg-sunken, var(--landing-bg-deep));
+}
+
+.floatCardCoverImg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.floatCardCoverScrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.42) 0%,
+    rgba(0, 0, 0, 0.08) 38%,
+    rgba(0, 0, 0, 0.72) 100%
+  );
+  pointer-events: none;
+}
+
+.floatCardCoverTop,
+.floatCardCoverBottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+}
+
+.floatCardCoverTop {
+  top: 0;
+}
+
+.floatCardCoverBottom {
+  bottom: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+}
+
+.floatCardPeriod,
+.floatCardCounter {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.floatCardCoverTitle {
+  margin: 0;
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: clamp(1.125rem, 2vw, 1.375rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1.02;
+  color: #fff;
+}
+
+.floatCardCoverStats {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+/* Kimlik — ön kart, wine vurgu */
+.floatCardIdentity::before {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--landing-glow-wine) 44%, transparent),
+    color-mix(in srgb, var(--landing-glow-rose) 18%, transparent)
+  );
+}
+
+.floatCardIdentity {
+  --float-tint: var(--landing-glow-wine);
+  border-color: color-mix(in srgb, var(--landing-glow-wine) 24%, transparent);
+}
+
+.floatCardIdentity .floatCardEyebrow {
+  color: color-mix(in srgb, var(--color-text-secondary) 88%, #fff);
+}
+
+.floatCardIdentityBody {
+  display: grid;
+  grid-template-columns: 92px 1fr;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.floatCardIdentityArt {
+  width: 92px;
+  aspect-ratio: 1;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.24);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 14px 32px -16px rgba(0, 0, 0, 0.55);
+}
+
+.floatCardIdentityArt img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.floatCardIdentityCopy {
+  min-width: 0;
+}
+
+.floatCardIdentityName {
+  margin: 0 0 var(--space-1);
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: 1.25rem;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--color-text-primary);
+}
+
+.floatCardEyebrow {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.floatCardTitle {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.floatCardTitleLine {
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: clamp(1.0625rem, 2vw, 1.25rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+
+.floatCardTitleAccent {
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: clamp(1.125rem, 2.1vw, 1.375rem);
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.floatCardMeta {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+  color: var(--color-text-secondary);
+}
+
+.floatCardTraits {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.3em 0.45em;
+  line-height: 1.1;
+}
+
+.floatCardTrait {
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: clamp(0.9375rem, 1.6vw, 1.125rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.floatCardTrait[data-tone='calm'] {
+  /* M7: `#bae6fd` → palet moru. Ton ayrımı korunuyor, renk artık
+     paletin dışına çıkmıyor (tek palet: Deep Violet). */
+  color: color-mix(in srgb, var(--color-text-primary) 88%, var(--landing-glow-violet));
+}
+
+.floatCardTrait[data-tone='layered'] {
+  /* M7: `#ddd6fe` → palet gülü; 'layered' tonu 'calm'dan ayrışmaya devam eder. */
+  color: color-mix(in srgb, var(--color-text-primary) 82%, var(--landing-glow-rose));
+}
+
+.floatCardTrait[data-tone='night'] {
+  color: var(--color-accent);
+  font-style: italic;
+  font-weight: 900;
+}
+
+.floatCardTraitSep {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.875rem;
+  font-weight: 300;
+  color: color-mix(in srgb, var(--color-text-primary) 24%, transparent);
+  user-select: none;
+}
+
+.floatCardDots {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: auto;
+  padding-top: var(--space-1);
+}
+
+.floatCardDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 10px color-mix(in srgb, currentColor 45%, transparent);
+}
+
+.floatCardDotLabel {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.625rem;
+  letter-spacing: 0.08em;
+  color: var(--color-text-tertiary);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .floatCardBack {
+    animation: heroFloatJourney 7.5s ease-in-out infinite;
+  }
+
+  .floatCardMid {
+    animation: heroFloatRecap 6.4s ease-in-out 0.35s infinite;
+  }
+
+  .floatCardFront {
+    animation: heroFloatIdentity 8s ease-in-out 0.15s infinite;
+  }
+}
+
+@keyframes heroFloatJourney {
+  0%,
+  100% {
+    translate: 0 0;
+    rotate: -7deg;
+  }
+
+  50% {
+    translate: 0 -10px;
+    rotate: -5deg;
+  }
+}
+
+@keyframes heroFloatRecap {
+  0%,
+  100% {
+    translate: 0 0;
+    rotate: 2.5deg;
+  }
+
+  50% {
+    translate: 4px -12px;
+    rotate: 4deg;
+  }
+}
+
+@keyframes heroFloatIdentity {
+  0%,
+  100% {
+    translate: 0 0;
+    rotate: -1deg;
+  }
+
+  50% {
+    translate: -4px -14px;
+    rotate: 0.5deg;
+  }
+}
+
+/* Sinematik tipografi — kart yok, saf editorial */
+.eyebrowWrap {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: clamp(var(--space-5), 2.5vh, var(--space-7));
+}
+
+.eyebrowDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  flex-shrink: 0;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+.eyebrow {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.38em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-accent) 72%, #fff);
+  line-height: 1;
+  text-shadow: 0 0 24px color-mix(in srgb, var(--color-accent) 20%, transparent);
+}
+
+/* A-FAZ 1 (2026-08-02) — H1: "ROSSO sağdan kesiliyor".
+   Ölçülen kök neden: `24vw` × 5 harf ≈ 1.2 × viewport genişliği. 390px'te
+   ~468px'lik bir kelime çıkıyor, taşma kaçınılmazdı. Alt sınır (6.5rem =
+   104px) da dar telefonda tek başına taşırıyordu.
+
+   `18vw` + 5rem alt sınır: 390px'te ~70px/harf → ~340px, kenar boşluğuyla
+   sığar. Masaüstü üst sınırı (15rem) DEĞİŞMEDİ — geniş ekranda aynı
+   dramatik ölçek. */
+.heroTitle {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", var(--font-sans), system-ui, sans-serif;
+  font-size: clamp(3.25rem, 7.5vw, 6rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 0.92;
+  color: #ffffff;
+  margin: 0 0 clamp(1.25rem, 2.4vh, 1.75rem);
+  -webkit-font-smoothing: antialiased;
+  max-width: 100%;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
+/* ── Apple-Grade Minimalist Typographic Title ──
+   Sıkı optik kerning ve asil dikey ışık akışı. */
+.heroAccent {
+  position: relative;
+  display: inline-block;
+  color: #ffffff;
+  background: linear-gradient(
+    180deg,
+    #ffffff 50%,
+    rgba(255, 255, 255, 0.85) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.04em;
+}
+
+.heroAccent::before {
+  display: none;
+}
+
+.heroSubTitle {
+  display: block;
+  color: var(--color-text-secondary);
+  opacity: 0.55;
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  line-height: 0.9;
+}
+
+/* Tek vaat — Apple editorial ritmi (sakin, güven veren, net hiyerarşi) */
+.heroLead {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 0 0 clamp(2rem, 3.8vh, 2.75rem);
+  max-width: min(34ch, 100%);
+}
+
+.heroLeadMuted {
+  display: block;
+  font-family: var(--font-sans), system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: clamp(0.95rem, 1.3vw, 1.125rem);
+  font-weight: 400;
+  line-height: 1.45;
+  letter-spacing: -0.01em;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.heroLeadStatement {
+  display: block;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", var(--font-sans), system-ui, sans-serif;
+  font-size: clamp(1.25rem, 1.9vw, 1.625rem);
+  font-weight: 500;
+  font-style: normal;
+  line-height: 1.35;
+  letter-spacing: -0.02em;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+/* "seni" vurgusu — Saf Rosso Deep Violet tonu */
+.leadEmphasis {
+  font-style: italic;
+  font-weight: 600;
+  color: #c084fc;
+}
+
+.heroFoot {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem 1.25rem;
+  margin-top: 0;
+}
+
+/* Apple-style Frosted Spotify Trust Badge */
+.heroTrust {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.65rem 1.15rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 4px 16px rgba(0, 0, 0, 0.2);
+  cursor: default;
+  user-select: none;
+}
+
+.heroTrustDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow:
+    0 0 8px currentColor,
+    0 0 2px currentColor;
+}
+
+.heroTrustCopy {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.heroTrustPlatform {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.heroTrustSep {
+  color: color-mix(in srgb, var(--color-text-primary) 28%, transparent);
+}
+
+.heroTrustLabel {
+  font-weight: 500;
+  color: var(--color-text-tertiary);
+}
+
+/* ════════════════════════════════════════════
+   BUTTONS — Apple Design (Touch feedback & High Contrast)
+   ════════════════════════════════════════════ */
+.navCta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  padding: 0.45rem 1.25rem;
+  font-family: var(--font-sans), system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  white-space: nowrap;
+  position: relative;
+  cursor: pointer;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: #ffffff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 4px 16px rgba(0, 0, 0, 0.25);
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    transform 100ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.navCta:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-1px);
+}
+
+.navCta:active {
+  transform: scale(0.97);
+  background: rgba(255, 255, 255, 0.08);
+  transition: transform 60ms ease-out;
+}
+
+/* Apple Primary Pill Button — Yüksek Kontrast, Dokunsal Yay Geri Bildirimi */
+.ctaPrimary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.72rem 1.15rem 0.72rem 1.65rem;
+  font-family: var(--font-sans), system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  text-decoration: none;
+  text-transform: none;
+  white-space: nowrap;
+  position: relative;
+  isolation: isolate;
+  cursor: pointer;
+  border-radius: 9999px;
+  background: #ffffff;
+  color: #06040a;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  -webkit-font-smoothing: antialiased;
+  box-shadow:
+    inset 0 1px 0 #ffffff,
+    0 4px 18px rgba(255, 255, 255, 0.16),
+    0 12px 32px rgba(0, 0, 0, 0.45);
+  transition:
+    transform 120ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 180ms ease,
+    background-color 180ms ease;
+}
+
+/* Button-in-Button Trailing Icon Well (high-end-visual-design Section 4.B) */
+.ctaIconWell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.07);
+  margin-left: 0.25rem;
+  transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1), background-color 160ms ease;
+}
+
+.ctaIconWell svg,
+.ctaPrimary svg {
+  color: #06040a;
+  transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ctaPrimary:hover {
+  background: #f4f4f6;
+  transform: translateY(-1.5px);
+  box-shadow:
+    inset 0 1px 0 #ffffff,
+    0 6px 24px rgba(255, 255, 255, 0.24),
+    0 16px 40px rgba(0, 0, 0, 0.55);
+}
+
+.ctaPrimary:hover .ctaIconWell {
+  background: rgba(0, 0, 0, 0.12);
+  transform: translateX(2px);
+}
+
+.ctaPrimary:hover svg {
+  transform: translateX(2px);
+}
+
+/* Apple anında dokunma geri bildirimi (pointer-down feedback) */
+.ctaPrimary:active {
+  transform: scale(0.97);
+  box-shadow:
+    inset 0 1px 0 rgba(0, 0, 0, 0.1),
+    0 4px 12px rgba(0, 0, 0, 0.4);
+  transition: transform 60ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .navCta:hover,
+  .ctaPrimary:hover,
+  .navCta:active,
+  .ctaPrimary:active {
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+.ctaSecondary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0.875rem 1.75rem;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  transition: border-color var(--duration-base) ease,
+              color var(--duration-base) ease,
+              background var(--duration-base) ease,
+              transform var(--duration-slow) var(--ease-default);
+  cursor: pointer;
+  background: transparent;
+  white-space: nowrap;
+}
+
+.ctaSecondary:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  background: var(--color-accent-muted);
+  transform: translateY(-1px);
+}
+
+.ctaSecondary:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* ════════════════════════════════════════════
+   SECTION — shared header (vitrin bridgeHead dili)
+   ════════════════════════════════════════════ */
+.sectionHeader {
+  position: relative;
+  z-index: 1;
+  max-width: var(--container-xl);
+  margin: 0 auto var(--space-12);
+  padding: 0 var(--space-6);
+}
+
+.sectionHeader::before {
+  content: '';
+  display: block;
+  width: clamp(3rem, 7vw, 4.5rem);
+  height: 3px;
+  margin-bottom: var(--space-5);
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--landing-glow-rose) 70%, transparent),
+    var(--color-accent),
+    color-mix(in srgb, var(--landing-glow-violet) 70%, transparent)
+  );
+  opacity: 0.92;
+  box-shadow:
+    0 0 24px color-mix(in srgb, var(--landing-glow-rose) 16%, transparent),
+    0 0 32px color-mix(in srgb, var(--landing-glow-violet) 12%, transparent);
+}
+
+.features .sectionTag {
+  color: color-mix(in srgb, var(--landing-glow-rose) 78%, #fff);
+  text-shadow: 0 0 20px color-mix(in srgb, var(--landing-glow-rose) 20%, transparent);
+}
+
+.howItWorks .sectionTag {
+  color: color-mix(in srgb, var(--landing-glow-violet) 78%, #fff);
+  text-shadow: 0 0 20px color-mix(in srgb, var(--landing-glow-violet) 20%, transparent);
+}
+
+.howItWorks .sectionHeader::before {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--landing-glow-violet) 75%, transparent),
+    var(--color-accent),
+    color-mix(in srgb, var(--landing-glow-wine) 55%, transparent)
+  );
+}
+
+.sectionTag {
+  display: block;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-accent) 78%, #fff);
+  margin-bottom: var(--space-5);
+  text-shadow: 0 0 20px color-mix(in srgb, var(--color-accent) 16%, transparent);
+}
+
+.sectionTitle {
+  font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
+  font-size: clamp(2.25rem, 5vw, 3.25rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1.02;
+  color: var(--color-text-primary);
+  max-width: 18ch;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  text-shadow: 0 0 60px color-mix(in srgb, var(--color-text-primary) 10%, transparent);
+}
+
+.sectionEmphasis {
+  font-style: italic;
+  font-weight: 400;
+}
+
+.sectionLead {
+  margin: var(--space-4) 0 0;
+  max-width: 42ch;
+  font-size: clamp(var(--text-sm), 1.6vw, var(--text-base));
+  line-height: 1.6;
+  font-weight: 300;
+  color: color-mix(in srgb, var(--color-text-secondary) 88%, #fff);
+}
+
+/* ════════════════════════════════════════════
+   FEATURES — sinematik ikna bandı
+   ════════════════════════════════════════════ */
+.features {
+  position: relative;
+  isolation: isolate;
+  z-index: 1;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: clamp(4rem, 8vw, 6rem) 0 clamp(3.5rem, 7vw, 5rem);
+  border-top: 1px solid color-mix(in srgb, var(--color-accent) 10%, rgba(255, 255, 255, 0.03));
+  background:
+    radial-gradient(
+      ellipse 75% 55% at 18% 0%,
+      color-mix(in srgb, var(--landing-glow-rose) 10%, transparent),
+      transparent 68%
+    ),
+    radial-gradient(
+      ellipse 55% 45% at 88% 18%,
+      color-mix(in srgb, var(--landing-glow-violet) 8%, transparent),
+      transparent 62%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--landing-bg-sunken) 88%, transparent) 0%,
+      color-mix(in srgb, var(--landing-bg-base) 86%, transparent) 100%
+    );
+  overflow: hidden;
+}
+
+.features::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(
+      ellipse 85% 70% at 50% 45%,
+      transparent 28%,
+      rgba(0, 0, 0, 0.42) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.32) 0%,
+      transparent 22%,
+      transparent 78%,
+      rgba(0, 0, 0, 0.36) 100%
+    );
+}
+
+.featuresAtmosphere {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.featuresAtmosphereRose,
+.featuresAtmosphereViolet,
+.featuresAtmosphereSpot {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(72px);
+  pointer-events: none;
+}
+
+.featuresAtmosphereRose {
+  width: min(52vw, 520px);
+  height: min(42vw, 420px);
+  top: 8%;
+  left: -8%;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--landing-glow-rose) 30%, transparent),
+    transparent 68%
+  );
+  opacity: 1;
+}
+
+.featuresAtmosphereViolet {
+  width: min(48vw, 480px);
+  height: min(38vw, 380px);
+  top: 42%;
+  right: -10%;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--landing-glow-violet) 26%, transparent),
+    transparent 70%
+  );
+  opacity: 0.95;
+}
+
+.featuresAtmosphereSpot {
+  width: min(70vw, 680px);
+  height: min(28vw, 260px);
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  background: radial-gradient(
+    ellipse,
+    color-mix(in srgb, var(--landing-glow-silver-bright) 10%, transparent),
+    transparent 72%
+  );
+  opacity: 0.75;
+}
+
+.featureGrid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+  gap: var(--space-4);
+  max-width: var(--container-xl);
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+  border: none;
+}
+
+/* 3 eşit kart yasağı (landing-design.md §7) — sütun sayısı eşit kalır
+   (içerik 6 eşit-önemli özellik, boyut hiyerarşisi yapay olurdu), ama
+   orta kart zig-zag ile dikeyde kayar, saf simetri kırılır. */
+@media (min-width: 900px) {
+  .feature:nth-child(2) {
+    margin-top: var(--space-8);
+  }
+}
+
+.featureGroup {
+  position: relative;
+  z-index: 1;
+  max-width: var(--container-xl);
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+}
+
+.featureGroup + .featureGroup {
+  margin-top: var(--space-4);
+}
+
+.feature {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: var(--space-8) var(--space-6);
+  border: 1px solid color-mix(in srgb, var(--feature-tint) 42%, rgba(255, 255, 255, 0.12));
+  border-radius: var(--radius-xl);
+  background:
+    radial-gradient(
+      ellipse 130% 82% at 50% -24%,
+      color-mix(in srgb, var(--feature-tint) 32%, transparent),
+      transparent 58%
+    ),
+    radial-gradient(
+      ellipse 80% 55% at 100% 100%,
+      color-mix(in srgb, var(--feature-tint) 18%, transparent),
+      transparent 52%
+    ),
+    linear-gradient(
+      168deg,
+      color-mix(in srgb, var(--color-bg-elevated) 68%, rgba(255, 255, 255, 0.09)) 0%,
+      color-mix(in srgb, var(--color-bg-elevated) 38%, rgba(0, 0, 0, 0.72)) 100%
+    );
+  backdrop-filter: blur(var(--mkt-glass-blur, 28px)) saturate(var(--mkt-glass-saturate, 1.42));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--feature-tint) 12%, rgba(0, 0, 0, 0.55)),
+    0 4px 8px -4px rgba(0, 0, 0, 0.35),
+    0 22px 44px -12px rgba(0, 0, 0, 0.58),
+    0 0 72px color-mix(in srgb, var(--feature-tint) 22%, transparent),
+    0 42px 76px -28px color-mix(in srgb, var(--feature-tint) 32%, transparent),
+    inset 0 1px 0 color-mix(in srgb, #fff 18%, transparent),
+    inset 0 -18px 40px -24px rgba(0, 0, 0, 0.48);
+  overflow: hidden;
+  cursor: default;
+  --feature-tint: var(--landing-glow-silver);
+  transition:
+    background 220ms ease,
+    transform 220ms ease,
+    box-shadow 220ms ease,
+    border-color 220ms ease;
+}
+
+.feature::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    125deg,
+    color-mix(in srgb, #fff 14%, transparent) 0%,
+    transparent 38%,
+    transparent 100%
+  );
+  opacity: 0.82;
+}
+
+.feature > * {
+  position: relative;
+  z-index: 1;
+}
+
+.feature:nth-child(6n + 1),
+.feature:nth-child(6n + 4) {
+  --feature-tint: var(--landing-glow-rose);
+}
+
+.feature:nth-child(6n + 2),
+.feature:nth-child(6n + 5) {
+  --feature-tint: var(--landing-glow-violet);
+}
+
+.feature:nth-child(6n + 3),
+.feature:nth-child(6n) {
+  --feature-tint: var(--landing-glow-wine);
+}
+
+.feature::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: var(--space-6);
+  right: var(--space-6);
+  height: 2px;
+  z-index: 2;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--feature-tint) 82%, #fff),
+    transparent
+  );
+  opacity: 0.58;
+  box-shadow: 0 0 28px color-mix(in srgb, var(--feature-tint) 35%, transparent);
+  transition: opacity 220ms ease, box-shadow 220ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .feature:hover::before {
+    opacity: 1;
+    box-shadow: 0 0 40px color-mix(in srgb, var(--feature-tint) 48%, transparent);
+  }
+
+  .feature:hover {
+    background:
+      radial-gradient(
+        ellipse 130% 82% at 50% -24%,
+        color-mix(in srgb, var(--feature-tint) 22%, transparent),
+        transparent 58%
+      ),
+      radial-gradient(
+        ellipse 80% 55% at 100% 100%,
+        color-mix(in srgb, var(--feature-tint) 12%, transparent),
+        transparent 52%
+      ),
+      linear-gradient(
+        168deg,
+        color-mix(in srgb, var(--color-bg-elevated) 62%, rgba(255, 255, 255, 0.05)) 0%,
+        color-mix(in srgb, var(--color-bg-elevated) 38%, rgba(0, 0, 0, 0.68)) 100%
+      );
+    transform: translateY(-6px);
+    border-color: color-mix(in srgb, var(--feature-tint) 36%, rgba(255, 255, 255, 0.08));
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--feature-tint) 10%, rgba(0, 0, 0, 0.5)),
+      0 8px 16px -6px rgba(0, 0, 0, 0.42),
+      0 32px 64px -14px rgba(0, 0, 0, 0.62),
+      0 0 72px color-mix(in srgb, var(--feature-tint) 18%, transparent),
+      0 52px 96px -32px color-mix(in srgb, var(--feature-tint) 28%, transparent),
+      inset 0 1px 0 color-mix(in srgb, #fff 14%, transparent),
+      inset 0 -18px 40px -24px rgba(0, 0, 0, 0.42);
+    z-index: 1;
+  }
+
+  .feature:hover .featureIconWrap {
+    border-color: color-mix(in srgb, var(--feature-tint) 42%, transparent);
+    background: color-mix(in srgb, var(--feature-tint) 10%, transparent);
+  }
+
+  .feature:hover .featureTitle {
+    color: color-mix(in srgb, var(--feature-tint) 82%, var(--color-text-primary));
+  }
+
+  .feature:hover .featureTag {
+    border-color: color-mix(in srgb, var(--color-accent) 35%, transparent);
+    color: var(--color-accent);
+  }
+}
+
+.featureTopRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.featureIndex {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  color: color-mix(in srgb, var(--feature-tint) 78%, var(--color-text-tertiary));
+  opacity: 0.92;
+  line-height: 1;
+  padding-top: 0.4rem;
+}
+
+.featureIconWrap {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid color-mix(in srgb, var(--feature-tint) 28%, rgba(255, 255, 255, 0.06));
+  border-radius: var(--radius-md);
+  background:
+    radial-gradient(
+      circle at 30% 22%,
+      color-mix(in srgb, var(--feature-tint) 18%, transparent),
+      color-mix(in srgb, var(--feature-tint) 6%, rgba(0, 0, 0, 0.35)) 68%
+    );
+  box-shadow:
+    0 0 24px color-mix(in srgb, var(--feature-tint) 16%, transparent),
+    inset 0 1px 0 color-mix(in srgb, #fff 12%, transparent);
+  transition: border-color 200ms ease, background 200ms ease, box-shadow 200ms ease;
+}
+
+.featureIcon {
+  color: color-mix(in srgb, var(--feature-tint) 88%, var(--color-accent));
+}
+
+.featureTag {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.6rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--color-text-tertiary);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  padding: 3px 8px;
+  transition: border-color 200ms ease, color 200ms ease;
+}
+
+.featureTitle {
+  font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
+  font-size: clamp(1.0625rem, 1.4vw, 1.25rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-3);
+  -webkit-font-smoothing: antialiased;
+  transition: color 200ms ease;
+}
+
+.featureText {
+  font-size: var(--text-sm);
+  color: color-mix(in srgb, var(--color-text-secondary) 92%, #fff);
+  line-height: 1.75;
+  font-weight: 300;
+  flex: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .feature,
+  .feature::before {
+    transition: none;
+  }
+
+  .feature:hover {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .feature,
+  .floatCard {
+    backdrop-filter: none;
+    background: color-mix(in srgb, var(--color-bg-elevated) 94%, #000);
+  }
+
+  .feature::after,
+  .floatCard::after {
+    opacity: 0.35;
+  }
+
+  .featuresAtmosphereRose,
+  .featuresAtmosphereViolet,
+  .featuresAtmosphereSpot {
+    opacity: 0.4;
+    filter: blur(28px);
+  }
+}
+
+@media (max-width: 1024px) {
+  .featureGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* M1 (2026-08-08): eşik 640 → **480** (`--mkt-bp-sm`).
+   ⚠ `grid-template-columns` BURADAN KALDIRILDI — üstteki `max-width:1024px`
+   bloğu zaten `repeat(2, …)` diyordu; bu satır aynı değeri yeniden yazan
+   ölü koddu (ölçüldü: 481px'te sütun sayısı zaten 2). Kalanlar (gap,
+   padding, blur kaldırma) mobil yoğunluk ayarı — onlar korunuyor. */
+@media (max-width: 480px) {
+  .featureGrid {
+    gap: var(--space-3);
+  }
+
+  .featureGroup + .featureGroup {
+    margin-top: var(--space-4);
+  }
+
+  .feature {
+    padding: var(--space-5);
+    backdrop-filter: none;
+    background: color-mix(in srgb, var(--color-bg-elevated) 72%, rgba(0, 0, 0, 0.55));
+    box-shadow:
+      0 12px 28px rgba(0, 0, 0, 0.32),
+      inset 0 1px 0 color-mix(in srgb, var(--color-text-primary) 6%, transparent);
+  }
+
+  .featureTitle {
+    font-size: 1rem;
+    margin-bottom: var(--space-2);
+  }
+
+  .featureText {
+    font-size: 0.8125rem;
+    line-height: 1.55;
+  }
+
+  .sectionHeader {
+    margin-bottom: var(--space-8);
+    padding: 0 var(--space-4);
+  }
+
+  .sectionTitle {
+    font-size: clamp(1.75rem, 7.5vw, 2.25rem);
+    max-width: none;
+  }
+
+  .sectionLead {
+    font-size: var(--text-sm);
+    max-width: none;
+  }
+
+  .features {
+    padding: clamp(3rem, 8vw, 4rem) 0 clamp(2.5rem, 6vw, 3.5rem);
+  }
+
+  .featureGroup,
+  .featureGrid {
+    padding: 0 var(--space-4);
+  }
+
+  .howItWorks {
+    padding: clamp(3rem, 8vw, 4rem) 0;
+  }
+
+  .howItWorks .sectionHeader {
+    padding: 0 var(--space-4);
+  }
+
+  .steps {
+    padding: 0 var(--space-4);
+    max-width: none;
+  }
+
+  .ctaBandInner {
+    padding: clamp(var(--space-10), 12vw, var(--space-16)) var(--space-4);
+  }
+
+  .ctaBandTitle {
+    font-size: clamp(1.75rem, 7.5vw, 2.5rem);
+  }
+
+  .ctaBandSub {
+    font-size: var(--text-sm);
+  }
+
+  .footerInner {
+    padding: var(--space-6) var(--space-4)
+      calc(var(--space-6) + var(--marketing-bottom-nav-offset, 0px));
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-5);
+  }
+
+  .footerLinks {
+    gap: var(--space-3) var(--space-4);
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .featureGrid {
+    grid-template-columns: 1fr;
+  }
+
+  /*
+   * ⚠ `left`/`right` BURADA YAZILMAZ (2026-09-25 mobil taşma düzeltmesi).
+   * Temel `.nav` kuralı `left: 50%` + `transform: translateX(-50%)` ile
+   * ortalanır, genişliği `max-width: 600px` bloğundaki `width` belirler.
+   * Buraya `left: var(--space-3)` konunca `translateX(-50%)` HÂLÂ uygulanıyor →
+   * çubuk kendi genişliğinin yarısı kadar SOLA kayıp ekran dışında kalıyordu
+   * (logo ve sol kenar kesik, ≤480px telefonlarda). Yalnız padding daralır.
+   */
+  .nav {
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .navLink,
+  .navCta {
+    font-size: 0.5625rem;
+    letter-spacing: 0.14em;
+  }
+}
+
+
+/* ════════════════════════════════════════════
+   HOW IT WORKS — sinematik süreç bandı
+   ════════════════════════════════════════════ */
+.howItWorks {
+  position: relative;
+  isolation: isolate;
+  z-index: 1;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: clamp(4rem, 8vw, 6rem) 0;
+  border-top: 1px solid color-mix(in srgb, var(--color-accent) 10%, rgba(255, 255, 255, 0.03));
+  background:
+    radial-gradient(
+      ellipse 65% 48% at 12% 28%,
+      color-mix(in srgb, var(--landing-glow-rose) 7%, transparent),
+      transparent 66%
+    ),
+    radial-gradient(
+      ellipse 70% 50% at 82% 20%,
+      color-mix(in srgb, var(--landing-glow-violet) 7%, transparent),
+      transparent 68%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--landing-bg-base) 86%, transparent) 0%,
+      color-mix(in srgb, var(--landing-bg-sunken) 90%, transparent) 100%
+    );
+  overflow: hidden;
+}
+
+.howItWorks::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(
+      ellipse 80% 65% at 50% 50%,
+      transparent 30%,
+      rgba(0, 0, 0, 0.36) 100%
+    );
+}
+
+.steps {
+  position: relative;
+  z-index: 1;
+  list-style: none;
+  padding: 0 var(--space-6);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  max-width: calc(var(--container-xl) - var(--space-12));
+}
+
+/* Mobil: dikey timeline. Masaüstü: 3 eşit kart — kurallar aşağıda, base'ten sonra. */
+.step {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-6);
+  padding: var(--space-8) 0;
+  position: relative;
+  --step-tint: var(--landing-glow-silver);
+  cursor: default;
+  transition:
+    background 220ms ease,
+    transform 220ms ease,
+    box-shadow 220ms ease,
+    border-color 220ms ease;
+}
+
+.step:nth-child(1) {
+  --step-tint: var(--landing-glow-rose);
+}
+
+.step:nth-child(2) {
+  --step-tint: var(--landing-glow-violet);
+}
+
+.step:nth-child(3) {
+  --step-tint: var(--landing-glow-wine);
+}
+
+@media (max-width: 899px) {
+  .step::before {
+    content: '';
+    position: absolute;
+    left: 17px;
+    top: calc(var(--space-8) + 36px);
+    bottom: 0;
+    width: 1px;
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--step-tint) 35%, transparent),
+      var(--color-border) 60%,
+      transparent
+    );
+  }
+
+  .step:last-child::before {
+    display: none;
+  }
+
+  .step:first-child {
+    padding-top: 0;
+  }
+
+  .step:first-child::before {
+    top: 36px;
+  }
+}
+
+.stepNumber {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: color-mix(in srgb, var(--step-tint) 88%, #fff);
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--step-tint) 45%, transparent);
+  background: color-mix(in srgb, var(--step-tint) 12%, rgba(0, 0, 0, 0.45));
+  box-shadow:
+    0 0 28px color-mix(in srgb, var(--step-tint) 22%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--color-text-primary) 8%, transparent);
+  position: relative;
+  z-index: 1;
+  transition:
+    border-color 220ms ease,
+    background 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.stepTitle {
+  font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
+  font-size: var(--text-xl);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: color-mix(in srgb, var(--step-tint) 28%, var(--color-text-primary));
+  margin-bottom: var(--space-2);
+  -webkit-font-smoothing: antialiased;
+  transition: color 220ms ease;
+}
+
+.stepDesc {
+  font-size: var(--text-sm);
+  color: color-mix(in srgb, var(--color-text-secondary) 92%, #fff);
+  line-height: 1.7;
+  font-weight: 300;
+}
+
+@media (min-width: 900px) {
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: start;
+    gap: var(--space-5);
+    max-width: var(--container-xl);
+  }
+
+  /* 3 eşit kart yasağı (landing-design.md §7) — sıralı bir süreç (1→2→3)
+     olduğu için boyut hiyerarşisi yanlış sinyal verir; orta adım zig-zag
+     ile dikeyde kayar, saf simetri kırılır (Feature grid ile aynı çözüm). */
+  .step:nth-child(2) {
+    margin-top: var(--space-8);
+  }
+
+  .step {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-5);
+    padding: var(--space-8) var(--space-6);
+    min-height: 100%;
+    border: 1px solid color-mix(in srgb, var(--step-tint) 24%, rgba(255, 255, 255, 0.06));
+    border-radius: var(--radius-xl);
+    background:
+      radial-gradient(
+        ellipse 120% 78% at 50% -20%,
+        color-mix(in srgb, var(--step-tint) 18%, transparent),
+        transparent 62%
+      ),
+      linear-gradient(
+        168deg,
+        color-mix(in srgb, var(--color-bg-elevated) 52%, rgba(255, 255, 255, 0.03)) 0%,
+        color-mix(in srgb, var(--color-bg-elevated) 28%, rgba(0, 0, 0, 0.8)) 100%
+      );
+    backdrop-filter: blur(var(--mkt-glass-blur, 28px)) saturate(var(--mkt-glass-saturate, 1.42));
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, #000 38%, transparent),
+      0 18px 40px -10px rgba(0, 0, 0, 0.55),
+      0 40px 72px -28px color-mix(in srgb, var(--step-tint) 22%, transparent),
+      inset 0 1px 0 color-mix(in srgb, #fff 10%, transparent),
+      inset 0 -16px 36px -22px rgba(0, 0, 0, 0.45);
+    overflow: hidden;
+  }
+
+  .step::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: var(--space-6);
+    right: var(--space-6);
+    height: 2px;
+    border-radius: 2px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in srgb, var(--step-tint) 72%, transparent),
+      transparent
+    );
+    opacity: 0;
+    transition: opacity 220ms ease;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .step:hover .stepNumber {
+    border-color: color-mix(in srgb, var(--step-tint) 52%, transparent);
+    background: color-mix(in srgb, var(--step-tint) 16%, rgba(0, 0, 0, 0.4));
+    box-shadow:
+      0 0 36px color-mix(in srgb, var(--step-tint) 32%, transparent),
+      inset 0 1px 0 color-mix(in srgb, var(--color-text-primary) 10%, transparent);
+  }
+
+  .step:hover .stepTitle {
+    color: color-mix(in srgb, var(--step-tint) 82%, var(--color-text-primary));
+  }
+}
+
+@media (hover: hover) and (pointer: fine) and (min-width: 900px) {
+  .step:hover::after {
+    opacity: 1;
+  }
+
+  .step:hover {
+    background:
+      radial-gradient(
+        ellipse 120% 78% at 50% -20%,
+        color-mix(in srgb, var(--step-tint) 24%, transparent),
+        transparent 62%
+      ),
+      linear-gradient(
+        168deg,
+        color-mix(in srgb, var(--color-bg-elevated) 58%, rgba(255, 255, 255, 0.04)) 0%,
+        color-mix(in srgb, var(--color-bg-elevated) 34%, rgba(0, 0, 0, 0.72)) 100%
+      );
+    transform: translateY(-6px);
+    border-color: color-mix(in srgb, var(--step-tint) 36%, rgba(255, 255, 255, 0.08));
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--step-tint) 10%, rgba(0, 0, 0, 0.5)),
+      0 28px 56px -12px rgba(0, 0, 0, 0.58),
+      0 0 64px color-mix(in srgb, var(--step-tint) 16%, transparent),
+      0 48px 88px -28px color-mix(in srgb, var(--step-tint) 26%, transparent),
+      inset 0 1px 0 color-mix(in srgb, #fff 12%, transparent),
+      inset 0 -16px 36px -22px rgba(0, 0, 0, 0.38);
+    z-index: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .step,
+  .stepNumber,
+  .stepTitle,
+  .step::after {
+    transition: none;
+  }
+
+  .step:hover {
+    transform: none;
+  }
+}
+
+/* ════════════════════════════════════════════
+   CTA BAND — sinematik Apple/iOS kapanışı (Perde burada açılıyor)
+   ════════════════════════════════════════════ */
+.ctaBand {
+  position: relative;
+  z-index: 1;
+  isolation: isolate;
+  overflow: hidden;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  background:
+    radial-gradient(
+      ellipse 65% 45% at 50% 100%,
+      rgba(147, 51, 234, 0.22) 0%,
+      rgba(192, 132, 252, 0.08) 35%,
+      transparent 72%
+    ),
+    radial-gradient(
+      ellipse 25% 65% at 0% 50%,
+      rgba(147, 51, 234, 0.14) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 25% 65% at 100% 50%,
+      rgba(147, 51, 234, 0.14) 0%,
+      transparent 70%
+    ),
+    linear-gradient(180deg, #020104 0%, #000000 100%);
+}
+
+.ctaBand::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.025;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/png;base64,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");
+  background-size: 180px 180px;
+}
+
+.ctaBandGlow {
+  position: absolute;
+  bottom: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(960px, 95vw);
+  height: 480px;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(147, 51, 234, 0.28) 0%,
+    rgba(192, 132, 252, 0.1) 40%,
+    transparent 72%
+  );
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.ctaBandVignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(
+    ellipse 85% 75% at 50% 45%,
+    transparent 10%,
+    rgba(0, 0, 0, 0.65) 100%
+  );
+}
+
+.ctaBandInner {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  max-width: var(--container-xl);
+  margin: 0 auto;
+  padding: clamp(6.5rem, 13vw, 9.5rem) var(--space-6) clamp(5.5rem, 11vw, 8.5rem);
+}
+
+.ctaBandEpilogue {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", var(--font-sans), sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  font-style: italic;
+  letter-spacing: 0.45em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.42);
+  margin: 0 0 var(--space-6);
+  text-shadow: 0 0 20px rgba(192, 132, 252, 0.25);
+}
+
+.ctaBandBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-accent) 82%, #fff);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 32%, transparent);
+  background: color-mix(in srgb, var(--color-bg-elevated) 55%, rgba(0, 0, 0, 0.45));
+  padding: var(--space-1) var(--space-4);
+  margin-bottom: var(--space-8);
+  box-shadow: 0 0 28px color-mix(in srgb, var(--color-accent) 12%, transparent);
+}
+
+.ctaBandTitle {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", var(--font-sans), system-ui, sans-serif;
+  font-size: clamp(2.75rem, 6.8vw, 4.85rem);
+  font-weight: 850;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+  color: #fbfbfe;
+  margin-bottom: var(--space-4);
+  -webkit-font-smoothing: antialiased;
+  text-wrap: balance;
+}
+
+.ctaBandSub {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", var(--font-sans), system-ui, sans-serif;
+  font-size: clamp(0.9375rem, 1.4vw, 1.0625rem);
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.58);
+  margin-bottom: clamp(var(--space-8), 4vw, var(--space-10));
+  max-width: 48ch;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+  white-space: pre-line;
+  text-wrap: balance;
+}
+
+/* Apple iOS Luminous Button Wrap with Ethereal Backlight Halo */
+.ctaButtonWrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  isolation: isolate;
+}
+
+.ctaButtonBacklight {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 155%;
+  height: 250%;
+  border-radius: 9999px;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(255, 255, 255, 0.55) 28%,
+    rgba(216, 180, 254, 0.4) 52%,
+    rgba(168, 85, 247, 0.18) 72%,
+    transparent 88%
+  );
+  filter: blur(24px);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.92;
+  transition:
+    opacity 0.28s ease,
+    transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.28s ease;
+}
+
+.ctaButtonWrap:hover .ctaButtonBacklight {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1.08);
+  filter: blur(28px);
+}
+
+.ctaPrimaryFinale {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  padding: 0.92rem 2.35rem;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", var(--font-sans), system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  text-decoration: none;
+  border-radius: 9999px;
+  background: #ffffff;
+  color: #06040a;
+  border: 1px solid rgba(255, 255, 255, 0.98);
+  box-shadow:
+    inset 0 1px 0 #ffffff,
+    0 0 32px rgba(255, 255, 255, 0.75),
+    0 0 64px rgba(192, 132, 252, 0.5),
+    0 8px 28px rgba(0, 0, 0, 0.65);
+  cursor: pointer;
+  -webkit-font-smoothing: antialiased;
+  transition:
+    transform 140ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 180ms ease,
+    background-color 180ms ease;
+}
+
+.ctaPrimaryFinale:hover {
+  background: #ffffff;
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 #ffffff,
+    0 0 42px rgba(255, 255, 255, 0.9),
+    0 0 84px rgba(192, 132, 252, 0.65),
+    0 12px 36px rgba(0, 0, 0, 0.75);
+}
+
+.ctaPrimaryFinale:active {
+  transform: scale(0.97);
+  transition: transform 60ms cubic-bezier(0, 0, 0.2, 1);
+  box-shadow:
+    inset 0 1px 0 rgba(0, 0, 0, 0.08),
+    0 0 24px rgba(255, 255, 255, 0.6),
+    0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+.ctaPrimaryFinale svg {
+  color: #06040a;
+  transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ctaPrimaryFinale:hover svg {
+  transform: translateX(3px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ctaButtonBacklight,
+  .ctaPrimaryFinale,
+  .ctaPrimaryFinale:hover,
+  .ctaPrimaryFinale:active {
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
+/* ════════════════════════════════════════════
+   FOOTER
+   ════════════════════════════════════════════ */
+.footer {
+  margin-top: auto;
+  border-top: 1px solid var(--color-border);
+}
+
+/* A-FAZ 0.2 (2026-08-02) — O1: mobilde nav `position: fixed` ile alta
+   oturuyor ve sayfanın SON içeriğini (footer) örtüyordu. Alt boşluk nav
+   offset'ini içerir; masaüstünde offset 0 → davranış değişmez. */
+.footerInner {
+  max-width: var(--container-xl);
+  width: 100%;
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-6)
+    calc(var(--space-8) + var(--marketing-bottom-nav-offset, 0px));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.footerLinks {
+  display: flex;
+  gap: var(--space-6);
+}
+
+.footerLink {
+  position: relative;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+  text-decoration: none;
+  transition: color var(--duration-base) ease;
+  cursor: pointer;
+}
+/* 🔴 DOKUNMA HEDEFİ 44px (2026-08-21 — Lighthouse "Touch targets do not have
+   sufficient size" + 390px ölçümü).
+
+   Landing'in EN ÇOK tıklanan öğeleri 15-33px'ti: "Kayıt ol" 33px, footer
+   bağlantıları 15px. Ziyaretçinin ilk temas noktası mobilde ıskalanıyordu.
+
+   Görsel boyut DEĞİŞMEZ (nav ve footer tipografisi tasarım kararı) —
+   genişleyen yalnız isabet alanı. Aynı desen `.periodTab::after` (dashboard)
+   ve `.dot::after` (profil) ile birebir aynı; proje içi tutarlılık.
+
+   ⚠ Footer bağlantıları yan yana: `.footerLinks` `gap`i 44px alanların
+   üst üste binmemesi için yeterli olmalı — ölçüldü, binme yok. */
+.footerLink::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 44px;
+  transform: translateY(-50%);
+}
+
+
+.footerLink:hover { color: var(--color-text-primary); }
+
+.footerNote {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.6rem;
+  font-weight: 400;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+
+/* ════════════════════════════════════════════
+   IDENTITY MARQUEE
+   Persona motorunun gerçek çıktılarından oluşan sonsuz kayan şerit
+   (Cooldock'un "widget şeridi" tekniğinin Rosso'ya özgü hali).
+   ════════════════════════════════════════════ */
+.marqueeWrap {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  flex-shrink: 0;
+  overflow: hidden;
+  overflow-x: clip;
+  border-top: 1px solid color-mix(in srgb, var(--landing-glow-rose) 14%, rgba(255, 255, 255, 0.06));
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 70%, #000);
+  padding: var(--space-4) 0;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--landing-glow-violet) 6%, rgba(0, 0, 0, 0.42)) 0%,
+    color-mix(in srgb, var(--landing-glow-wine) 5%, var(--color-bg-sunken)) 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 8%,
+    black 92%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 8%,
+    black 92%,
+    transparent 100%
+  );
+}
+
+/* A-FAZ 1 — H3: "marquee kenarlardan kesik". Mask %8 yeterliydi masaüstünde
+   (1440px'de ~115px yumuşama) ama 390px'te yalnız ~31px — bir kelime tam
+   solmadan kesiliyordu. Dar ekranda geçiş bandı genişletildi. */
+@media (max-width: 600px) {
+  .marqueeWrap {
+    mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      black 18%,
+      black 82%,
+      transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      black 18%,
+      black 82%,
+      transparent 100%
+    );
+  }
+}
+
+.marqueeTrack {
+  display: flex;
+  width: max-content;
+  animation: marqueeScroll 32s linear infinite;
+}
+
+.marqueeTrack:hover {
+  animation-play-state: paused;
+}
+
+.marqueeTrackPaused {
+  animation-play-state: paused;
+}
+
+@keyframes marqueeScroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* FAZ 2 — reduced-motion: animasyon yerine statik şerit. */
+@media (prefers-reduced-motion: reduce) {
+  .marqueeTrack {
+    animation: none;
+    flex-wrap: wrap;
+    width: 100%;
+    justify-content: center;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-4);
+  }
+
+  .marqueeItem {
+    padding: 0 var(--space-2);
+  }
+}
+
+.marqueeItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-6);
+  padding: 0 var(--space-6);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.marqueeDot {
+  width: 3px;
+  height: 3px;
+  border-radius: var(--radius-full);
+  background: currentColor;
+  opacity: 0.55;
+  flex-shrink: 0;
+}
+
+/* Metin rengi — landing sinematik tonları (vitrin ile aynı aile) */
+.marqueeTonerose {
+  color: color-mix(in srgb, var(--landing-glow-rose) 92%, #fff);
+}
+
+.marqueeToneviolet {
+  color: color-mix(in srgb, var(--landing-glow-violet) 92%, #fff);
+}
+
+.marqueeTonewine {
+  color: color-mix(in srgb, var(--landing-glow-wine) 95%, #fff);
+}
+
+.marqueeTonesilver {
+  color: color-mix(in srgb, var(--landing-glow-silver-bright) 90%, #fff);
+}
+
+/* ════════════════════════════════════════════
+   LIVE DEMO — ürün önizlemesi
+   Cooldock'un autoplay video tekniği. Gerçek ekran kaydı gelene kadar
+   recap kartı önizlemesi placeholder olarak duruyor.
+   ════════════════════════════════════════════ */
+.liveDemo {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: var(--container-xl);
+  margin: 0 auto;
+  padding: clamp(4rem, 8vw, 6rem) var(--space-6);
+  border-top: 1px solid var(--color-border);
+}
+
+.demoFrame {
+  margin-top: var(--space-10);
+  /* FAZ C: stack konteyneri — arka kartların dışarı taşabilmesi için relative +
+     üstte/altta stack payı. */
+  position: relative;
+  padding-top: var(--space-10);
+  padding-bottom: var(--space-6);
+}
+
+/* ── Wrapped WOW stack — 3 kart üst üste (FAZ C, 2026-07-25) ── */
+.recapStackFront {
+  position: relative;
+  z-index: 3;
+  border: 1px solid var(--color-border);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 16px 48px rgba(0, 0, 0, 0.45);
+}
+
+.recapStackBack1,
+.recapStackBack2 {
+  position: absolute;
+  left: 50%;
+  width: min(100%, 460px);
+  gap: var(--space-2);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.3);
+}
+
+.recapStackBack1 {
+  top: var(--space-4);
+  transform: translateX(-50%) rotate(-3deg) scale(0.96);
+  opacity: 0.75;
+  z-index: 2;
+}
+
+.recapStackBack2 {
+  top: 0;
+  transform: translateX(-50%) rotate(3deg) scale(0.92);
+  opacity: 0.55;
+  z-index: 1;
+}
+
+.recapStackEyebrow {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.625rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.recapStackStat {
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-text-primary);
+  line-height: 1;
+}
+
+.demoVideo {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: var(--radius-lg);
+}
+
+/* Recap kart önizlemesi — recap-module.md §2.2'deki 3 katmanlı iskelet:
+   ham veri / çerçeve cümlesi / duygu. */
+.recapCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: clamp(var(--space-8), 5vw, var(--space-12));
+  border-radius: var(--radius-lg);
+  background: linear-gradient(
+    180deg,
+    var(--color-bg-elevated) 0%,
+    var(--color-bg) 100%
+  );
+}
+
+.recapCardTopRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.recapPeriod {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.recapBadge {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 35%, transparent);
+  background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+}
+
+.recapCardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.recapMark {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  color: var(--color-text-tertiary);
+}
+
+.recapPageTag {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.625rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-tertiary);
+}
+
+.recapFusionTitle {
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: var(--color-accent);
+  margin: 0;
+}
+
+.recapVolume {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.recapVolumeRaw {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: var(--text-xl);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-primary);
+}
+
+.recapVolumeFramed {
+  font-size: var(--text-sm);
+  font-weight: 300;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  max-width: 42ch;
+}
+
+.recapTopTrack {
+  font-size: var(--text-sm);
+  font-weight: 300;
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* ════════════════════════════════════════════
+   HERO — Tablet, Mobil & Kısa Ekran Duyarlılığı (Apple Responsive)
+   ════════════════════════════════════════════ */
+
+/* Tablet & Kompakt Masaüstü (601px - 1024px) */
+@media (min-width: 601px) and (max-width: 1024px) {
+  .hero {
+    padding: clamp(5rem, 11vh, 7rem) clamp(1.5rem, 4vw, 2.5rem) clamp(2rem, 4vh, 3rem);
+  }
+
+  .heroContent {
+    max-width: min(38rem, 90vw);
+  }
+
+  .heroTitle {
+    font-size: clamp(3.75rem, 9.5vw, 6.5rem);
+    line-height: 0.84;
+    margin-bottom: 1.25rem;
+  }
+
+  .heroLead {
+    margin-bottom: clamp(1.5rem, 3vh, 2rem);
+  }
+}
+
+/* Kısa Ekranlar / Mobil Yatay (Landscape) & Düşük Yükseklikli Viewport */
+@media (max-height: 640px) {
+  .hero {
+    padding-top: clamp(3.5rem, 8vh, 5rem);
+    padding-bottom: 1rem;
+  }
+
+  .heroTitle {
+    font-size: clamp(2.5rem, 8vh, 4.5rem);
+    margin-bottom: 0.65rem;
+  }
+
+  .heroLead {
+    margin-bottom: 0.85rem;
+    gap: 0.35rem;
+  }
+
+  .heroBrandBadge {
+    margin-bottom: 0.5rem;
+  }
+
+  .heroFoot {
+    gap: 0.5rem 1rem;
+  }
+}
+
+/* Mobil Cihazlar (<= 600px) */
+@media (max-width: 600px) {
+  .heroViewport {
+    min-height: 100svh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .hero {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: clamp(2rem, 6vh, 3.5rem) 1.25rem 1.25rem;
+    flex: 1 1 auto;
+    width: 100%;
+  }
+
+  .heroAtmospherePortal {
+    display: none;
+  }
+
+  .heroContent {
+    max-width: 100%;
+    padding-left: 0;
+    align-items: flex-start;
+  }
+
+  .heroBrandBadge {
+    padding: 0.3rem 0.75rem 0.3rem 0.4rem;
+    font-size: 0.6875rem;
+    margin-bottom: 0.65rem;
+  }
+
+  .heroTitle {
+    font-size: clamp(2.5rem, 11vw, 3.5rem);
+    line-height: 0.94;
+    margin-bottom: 0.85rem;
+  }
+
+  .heroLead {
+    margin-bottom: 1.5rem;
+    gap: 0.25rem;
+    max-width: 100%;
+  }
+
+  .heroLeadMuted {
+    font-size: 0.875rem;
+    line-height: 1.4;
+  }
+
+  .heroLeadStatement {
+    font-size: 1.15rem;
+    line-height: 1.3;
+  }
+
+  .heroFoot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.875rem 1.25rem;
+  }
+
+  .ctaPrimary {
+    padding: 0.8rem 1.65rem;
+    font-size: 0.875rem;
+  }
+
+  .marqueeWrap {
+    /* Mobil alt sabit nav ile çakışmayı önleyen güvenli pay */
+    margin-bottom: calc(4.25rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .sectionTag {
+    letter-spacing: 0.28em;
+  }
+}
+
+/* ════════════════════════════════════════════
+   REDUCED MOTION
+   ════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  .eyebrowDot,
+  .navDotPulse,
+  .brandDot { animation: none; }
+
+  .marqueeTrack { animation: none; }
+
+  .floatCardBack,
+  .floatCardMid,
+  .floatCardFront { animation: none; }
+
+  .ctaPrimary:hover,
+  .ctaSecondary:hover,
+  .navCta:hover,
+  .feature:hover { transform: none; box-shadow: none; }
+}

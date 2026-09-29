@@ -1,0 +1,191 @@
+/* RecapDeck — kart gezinme katmanı (FAZ R1).
+   design.md §5: sol/sağ tap-zone, yan OK BUTONU YOK. Story-bar üstte,
+   tıklanabilir segmentler. Alt şerit sahnenin tabanına oturur. */
+
+/* Tap-zone'lar sahnenin tamamını kaplar ama içerik üstünde durur. */
+.closeBtn {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  z-index: 40;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.42);
+  backdrop-filter: blur(10px);
+  color: rgba(255, 255, 255, 0.88);
+  cursor: pointer;
+  pointer-events: auto;
+  transition: background 180ms ease, border-color 180ms ease, color 180ms ease,
+              transform 100ms ease-out;
+}
+
+.closeBtn:hover,
+.closeBtn:focus-visible {
+  background: rgba(0, 0, 0, 0.62);
+  border-color: rgba(255, 255, 255, 0.42);
+  color: #fff;
+}
+
+.closeBtn:active {
+  transform: scale(0.96);
+  transition-duration: 100ms;
+  transition-timing-function: ease-out;
+}
+
+.closeBtn:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.navZones {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  pointer-events: none;
+}
+
+.zone {
+  flex: 1;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+  /* Görünmez ama erişilebilir — odak halkası görünür kalır. */
+  color: transparent;
+}
+
+.zone:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: -4px;
+}
+
+/* ── Story-bar (üstte, segmentli ilerleme) ── */
+.storyBar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 30;
+  display: flex;
+  gap: 4px;
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  /* Segmentlerin görsel üstünde okunması için ince gradient bant. */
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.55) 0%, transparent 100%);
+}
+
+.segment {
+  flex: 1;
+  height: 3px;
+  padding: 0;
+  border: none;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.28);
+  cursor: pointer;
+  transition: background 220ms ease;
+}
+
+.segmentActive {
+  background: #fff;
+}
+
+.segmentSeen {
+  background: rgba(255, 255, 255, 0.62);
+}
+
+.segment:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
+.segment:active {
+  transform: scaleY(1.35);
+  transition-duration: 100ms;
+}
+
+/* ── Alt şerit — ROSSO künyesi + sayaç (design.md §5) ── */
+.footer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5) var(--space-5);
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.72) 0%, transparent 100%);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
+  pointer-events: none;
+}
+
+.footerLink {
+  pointer-events: auto;
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  /* WCAG dokunma hedefi */
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.footerLink:hover,
+.footerLink:focus-visible {
+  color: #fff;
+}
+
+.footerLink:active {
+  transform: scale(0.97);
+  transition-duration: 100ms;
+}
+
+.footerHint {
+  text-align: right;
+}
+
+.footerExitCue {
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.08em;
+}
+
+@media (max-width: 480px) {
+  .footerExitCue {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .segment {
+    transition: none;
+  }
+
+  .closeBtn {
+    transition: none;
+  }
+
+  .closeBtn:active,
+  .segment:active,
+  .footerLink:active {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .closeBtn {
+    backdrop-filter: none;
+    background: rgba(0, 0, 0, 0.82);
+  }
+}

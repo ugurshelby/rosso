@@ -1,0 +1,178 @@
+/* ═══════════════════════════════════════════════════════════════════
+   TOAST — FAZ GÖRÜNMEYEN-KAHRAMANLAR (2026-08-13)
+
+   Sahip: *"bir sayfa açıldığında direkt gözükmese bile ara ara bir şey
+   yaparken karşımıza çıkan her panel — görünmeyen kahramanlar. Onlar da
+   iOS ve Apple hissinde olmalı, premium hissettirmeli, bir dili olmalı."*
+
+   🔴 Eski hâlin üç kırığı:
+   1. **Mobilde alt navigasyonun ALTINDA kalıyordu.** `bottom: space-6`
+      sabitti; `--bottom-nav-height` (64px) + safe-area hesaba katılmamıştı.
+      Yani telefonda "kaydedildi/hata" mesajları kısmen nav'ın arkasında
+      görünüyordu — bildirimin en temel işlevi (okunmak) yarım kalıyordu.
+   2. **Gölge neredeyse yoktu** (`0 4px 16px rgba(0,0,0,.1)`) — koyu temada
+      %10 opaklıkta siyah gölge görünmez. Toast yüzen bir katman DEĞİL,
+      sayfaya yapışmış bir kutu gibi duruyordu.
+   3. **Sol kenar rengi** dışında tona dair sinyal yoktu; başarı ile hata
+      aynı ağırlıkta okunuyordu.
+
+   iOS yaklaşımı (apple-design §12 + §13):
+   • Yüzen bildirim = TRANSLUCENT MATERYAL. Arkasındaki içerik hissedilir,
+     katman gerçekten "üstte" durur.
+   • Girişte materyal "belirir": blur + ölçek + kayma birlikte
+     (§12 "Materialize, don't just fade").
+   • Tonu ikon taşır, zemin değil — renkli zemin bildirimi alarma çevirir.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.viewport {
+  position: fixed;
+  /* 🔴 Mobilde alt nav + safe-area üstünde durur (bkz. kırık #1).
+     `--bottom-nav-height` tek kaynak (globals.css) — nav yüksekliği
+     değişirse burası kendiliğinden takip eder. */
+  bottom: calc(
+    var(--bottom-nav-height, 0px) + env(safe-area-inset-bottom, 0px) + var(--space-4)
+  );
+  left: var(--space-4);
+  right: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  z-index: 60;
+  pointer-events: none;
+}
+
+/* Masaüstünde alt nav yok → sağ alt köşeye yerleşir (klasik konum). */
+@media (min-width: 768px) {
+  .viewport {
+    bottom: var(--space-6);
+    left: auto;
+    right: var(--space-6);
+    align-items: flex-end;
+    max-width: min(90vw, 400px);
+  }
+}
+
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 420px;
+  padding: var(--space-3) var(--space-4);
+  /* iOS bildirim materyali: yarı saydam + güçlü blur + doygunluk. */
+  background: color-mix(in srgb, var(--elev-3) 88%, transparent);
+  backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--edge-3);
+  border-top-color: color-mix(in srgb, #fff 14%, var(--edge-3));
+  /* Tam yuvarlak uç — iOS bildirim/banner dili. */
+  border-radius: var(--radius-2xl);
+  /* Gerçek yüzen gölge (kırık #2). */
+  box-shadow: var(--shadow-3), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--color-text-primary);
+  /* Materyal "belirir": ölçek + kayma + opaklık birlikte, spring eğrisi. */
+  animation: toast-in 420ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .toast {
+    background: var(--elev-3);
+    backdrop-filter: none;
+  }
+}
+
+/* Ton yalnız İKONDA — zemin nötr kalır. Renkli zemin her bildirimi
+   alarma çevirir; iOS'ta da bildirimin gövdesi nötrdür. */
+.success,
+.error,
+.info {
+  border-left-width: 1px;
+}
+
+.icon {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.successIcon {
+  color: var(--color-success);
+}
+.errorIcon {
+  color: var(--color-error);
+}
+.infoIcon {
+  color: var(--color-info);
+}
+
+.message {
+  line-height: var(--leading-normal);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Toast aksiyonu ("Geri al") — mesajın sağında, metinden ayrışan ama zeminden
+   taşmayan bir düğme. Dokunma hedefi 44px (mobil kuralı); görsel yükseklik
+   negatif margin ile korunur, şerit şişmez. */
+.action {
+  flex-shrink: 0;
+  margin-inline-start: auto;
+  padding: 12px var(--space-3);
+  margin-block: -12px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  min-height: 44px;
+}
+
+.action:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.action:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Masaüstünde sağdan gelir (konumu sağ alt olduğu için yön tutarlı —
+   apple-design §7 "enter and exit along the same path"). */
+@media (min-width: 768px) {
+  @keyframes toast-in {
+    from {
+      opacity: 0;
+      transform: translateX(20px) scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0) scale(1);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    animation: toast-fade 200ms ease;
+  }
+  @keyframes toast-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+}

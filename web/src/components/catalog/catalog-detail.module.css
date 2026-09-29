@@ -1,0 +1,826 @@
+/* ============================================================
+   Catalog Detail Module CSS — Apple Human Interface Guidelines (HIG)
+   Artist, Track & Album Detail Pages
+   Materials: Frosted glass, Specular inner rims, Optical typography,
+   Dynamic ambient light bloom, Inset grouped lists, Physical spring feedback.
+   ============================================================ */
+
+.page {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding-bottom: var(--space-12, 48px);
+  color: var(--color-text-primary, #fff);
+  overflow-x: hidden;
+}
+
+/* ── Ambient Artwork Bloom Backdrop ── */
+.ambientBloom {
+  position: absolute;
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(100vw, 1100px);
+  height: 480px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 50% 30%,
+    color-mix(in srgb, var(--accent, #785af0) 35%, transparent) 0%,
+    color-mix(in srgb, var(--glow, #a855f7) 20%, transparent) 45%,
+    transparent 75%
+  );
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.85;
+}
+
+/* ── Hero Container ── */
+.hero {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-5, 20px);
+  padding: var(--space-6, 24px) var(--space-4, 16px) var(--space-6, 24px);
+  margin-bottom: var(--space-6, 24px);
+}
+
+@media (min-width: 680px) {
+  .hero {
+    flex-direction: row;
+    align-items: flex-end;
+    text-align: left;
+    gap: var(--space-8, 32px);
+    padding: var(--space-8, 32px) var(--space-4, 16px) var(--space-8, 32px);
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero {
+    gap: var(--space-10, 40px);
+    padding: var(--space-10, 40px) 0 var(--space-10, 40px);
+  }
+}
+
+/* ── Cover Artwork Wrapper & Sleeve ── */
+.artContainer {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.heroArt {
+  width: clamp(160px, 46vw, 240px) !important;
+  height: clamp(160px, 46vw, 240px) !important;
+  border-radius: 20px;
+  object-fit: cover;
+  box-shadow:
+    0 24px 60px -12px rgba(0, 0, 0, 0.75),
+    0 4px 16px -2px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.04);
+  transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.heroArt:hover {
+  transform: scale(1.02);
+}
+
+.heroArtRound {
+  border-radius: 50%;
+  box-shadow:
+    0 24px 60px -12px rgba(0, 0, 0, 0.8),
+    0 0 0 1px rgba(255, 255, 255, 0.15),
+    inset 0 2px 4px rgba(255, 255, 255, 0.2);
+}
+
+/* ── Hero Text Hierarchy ── */
+.heroText {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 8px);
+  min-width: 0;
+  width: 100%;
+}
+
+.heroKindBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: center;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-accent, #a78bfa);
+  background: rgba(167, 139, 250, 0.12);
+  border: 1px solid rgba(167, 139, 250, 0.25);
+  padding: 3px 10px;
+  border-radius: 999px;
+  backdrop-filter: blur(12px);
+}
+
+@media (min-width: 680px) {
+  .heroKindBadge {
+    align-self: flex-start;
+  }
+}
+
+.heroTitle {
+  font-family: var(--font-sans), system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro', sans-serif;
+  font-size: clamp(2.1rem, 5vw, 3.5rem);
+  font-weight: 800;
+  font-style: normal;
+  letter-spacing: -0.035em;
+  line-height: 1.06;
+  color: #fff;
+  margin: 4px 0 0;
+  min-width: 0;
+  overflow-wrap: break-word;
+  text-shadow: 0 3px 16px rgba(0, 0, 0, 0.5);
+}
+
+.heroSub {
+  font-size: clamp(0.9rem, 2.5vw, 1.05rem);
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.65);
+  margin: 4px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+@media (min-width: 680px) {
+  .heroSub {
+    justify-content: flex-start;
+  }
+}
+
+.heroSubLink {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 550;
+  transition: color 0.15s ease, text-decoration 0.15s ease;
+  border-bottom: none;
+}
+
+.heroSubLink:hover {
+  color: var(--color-accent, #a78bfa);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ── Actions Bar ── */
+.actions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3, 12px);
+  padding: 0 0 var(--space-6, 24px);
+  flex-wrap: wrap;
+}
+
+@media (min-width: 680px) {
+  .actions {
+    justify-content: flex-start;
+  }
+}
+
+.actionPrimary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 22px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.07) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 8px 24px -4px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(20px) saturate(180%);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    transform 100ms cubic-bezier(0.32, 0.72, 0, 1),
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.actionPrimary:hover {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.12) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    0 12px 28px -4px rgba(0, 0, 0, 0.5);
+}
+
+.actionPrimary:active {
+  transform: scale(0.96);
+}
+
+.genreRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (min-width: 680px) {
+  .genreRow {
+    justify-content: flex-start;
+  }
+}
+
+.genreChip {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.75);
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+}
+
+/* ── Relationship Banner: "Bu Sanatçıyla / Albümle / Şarkıyla Hikâyen" ── */
+.relationshipBanner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: var(--space-5, 20px);
+  margin-bottom: var(--space-6, 24px);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.07) 0%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 16px 36px -12px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(24px) saturate(180%);
+}
+
+@media (min-width: 680px) {
+  .relationshipBanner {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-6, 24px);
+  }
+}
+
+.relationshipHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.relationshipIconPill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.25) 0%, rgba(202, 138, 4, 0.1) 100%);
+  border: 1px solid rgba(234, 179, 8, 0.35);
+  color: #facc15;
+  box-shadow: 0 4px 16px rgba(234, 179, 8, 0.2);
+  flex-shrink: 0;
+}
+
+.relationshipInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.relationshipTitle {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #fff;
+  margin: 0;
+}
+
+.relationshipDescription {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.relationshipArchetypePill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  align-self: flex-start;
+}
+
+@media (min-width: 680px) {
+  .relationshipArchetypePill {
+    align-self: center;
+  }
+}
+
+/* ── Apple Glass Metric Cards Grid ── */
+.statGrid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3, 12px);
+  margin-bottom: var(--space-8, 32px);
+}
+
+@media (min-width: 640px) {
+  .statGrid {
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: var(--space-4, 16px);
+  }
+}
+
+.statCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: var(--space-4, 16px);
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.015) 100%
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 12px 28px -8px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(20px) saturate(180%);
+  min-width: 0;
+  transition: transform 0.2s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.statCard:active {
+  transform: scale(0.97);
+}
+
+.statIconRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-2, 8px);
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.statValue {
+  font-family: var(--font-sans), system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-size: clamp(1.22rem, 2.3vw, 1.72rem);
+  font-weight: 750;
+  font-style: normal;
+  letter-spacing: -0.025em;
+  color: #fff;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.statLabel {
+  font-family: var(--font-mono), var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 6px;
+}
+
+/* ── Section Title ── */
+.sectionTitle {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-sans), system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro', sans-serif;
+  font-size: clamp(1.3rem, 2.8vw, 1.65rem);
+  font-weight: 750;
+  font-style: normal;
+  letter-spacing: -0.025em;
+  line-height: 1.18;
+  color: #fff;
+  margin: var(--space-8, 32px) 0 var(--space-4, 16px);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sectionEyebrow {
+  display: block;
+  font-family: var(--font-mono), var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-accent, #a78bfa);
+}
+
+/* ── Apple Inset Grouped List (Track Rows) ── */
+.insetGroupContainer {
+  position: relative;
+  z-index: 1;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.025);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 16px 36px -12px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(24px) saturate(180%);
+  overflow: hidden;
+  margin-bottom: var(--space-8, 32px);
+}
+
+.trackList {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+}
+
+.trackRow {
+  position: relative;
+  display: grid;
+  grid-template-columns: 28px 44px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3, 12px);
+  min-height: 58px;
+  padding: 8px var(--space-4, 16px);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  transition:
+    background 0.12s ease,
+    transform 0.08s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.trackRow:last-child {
+  border-bottom: none;
+}
+
+.trackRow:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.trackRow:active {
+  transform: scale(0.985);
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.trackRank {
+  font-family: var(--font-mono), var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.38);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.trackThumb {
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 8px;
+  flex-shrink: 0;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+}
+
+.trackMetaCol {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.trackName {
+  font-family: var(--font-sans), system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+  font-size: 14.5px;
+  font-weight: 600;
+  letter-spacing: -0.012em;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.trackSubDetails {
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  font-size: 12.5px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.52);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+}
+
+.trackBadgeTalisman {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono), var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(234, 179, 8, 0.16);
+  border: 1px solid rgba(234, 179, 8, 0.35);
+  color: #facc15;
+  white-space: nowrap;
+}
+
+.trackPlaysCol {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.trackPlays {
+  font-family: var(--font-mono), var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.75);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.trackDuration {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Apple Music Discography Album Grid ── */
+.albumsGrid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4, 16px);
+  margin-bottom: var(--space-8, 32px);
+}
+
+@media (min-width: 680px) {
+  .albumsGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 960px) {
+  .albumsGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.albumCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 12px 24px -8px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(20px) saturate(180%);
+  text-decoration: none;
+  transition:
+    transform 0.25s cubic-bezier(0.32, 0.72, 0, 1),
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.albumCard:hover {
+  transform: translateY(-4px);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.albumCard:active {
+  transform: scale(0.96);
+}
+
+.albumArtWrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.albumArtImage {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+}
+
+.albumCompletionPill {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  font-family: var(--font-mono), var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 10.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: #fff;
+  backdrop-filter: blur(8px);
+}
+
+.albumTitle {
+  font-family: var(--font-sans), system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+  font-size: 14.5px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: #fff;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+}
+
+.albumSubtitle {
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  font-size: 12.5px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.52);
+  margin: 2px 0 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Apple Watch / iOS Style Listening Rhythm Timeline ── */
+.timeline {
+  position: relative;
+  z-index: 1;
+  padding: var(--space-5, 20px);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.015) 100%
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 16px 36px -12px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(24px) saturate(180%);
+  margin-bottom: var(--space-8, 32px);
+  overflow: hidden;
+}
+
+.timelineBars {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 110px;
+  min-width: 0;
+  padding: 10px 0 4px;
+}
+
+.timelineBarWrapper {
+  position: relative;
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+}
+
+.timelineBar {
+  width: 100%;
+  min-width: 3px;
+  min-height: 4px;
+  border-radius: 4px 4px 0 0;
+  background: linear-gradient(180deg, var(--color-accent, #a78bfa) 0%, rgba(120, 90, 240, 0.45) 100%);
+  box-shadow: 0 0 12px rgba(167, 139, 250, 0.25);
+  transition:
+    transform 0.15s ease,
+    background 0.15s ease,
+    box-shadow 0.15s ease;
+  cursor: pointer;
+}
+
+.timelineBar:hover {
+  background: linear-gradient(180deg, #fff 0%, var(--color-accent, #a78bfa) 100%);
+  box-shadow: 0 0 20px rgba(167, 139, 250, 0.7);
+  transform: scaleY(1.04);
+}
+
+.timelineAxis {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.45);
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* ── Back Button ── */
+.backLink {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.6);
+  text-decoration: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  align-self: flex-start;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease,
+    transform 0.08s ease;
+}
+
+.backLink:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.backLink:active {
+  transform: scale(0.96);
+}
+
+/* ── Reduced Motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .actionPrimary,
+  .trackRow,
+  .albumCard,
+  .heroArt,
+  .timelineBar,
+  .backLink {
+    transition: none !important;
+  }
+  .actionPrimary:active,
+  .trackRow:active,
+  .albumCard:active,
+  .backLink:active {
+    transform: none !important;
+  }
+}

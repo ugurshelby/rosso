@@ -1,0 +1,443 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Kart 2 — MANİFESTO. FAZ ART-DIRECTION (2026-08-13) ile YENİDEN KURULDU.
+
+   Sahibin talimatı: "2. Recap ekranını beğenmiyorum … küçük bir
+   varyasyon yerine gerekiyorsa tamamen farklı bir composition ile
+   yeniden düşün."
+
+   🔴 Teşhis — eski kartın problemi süsleme değil KOMPOZİSYONDU:
+   • Her şey tek bir merkez eksende yığılıydı: eyebrow ortada, dev sayı
+     ortada, 6 hücrelik grid ortada, hepsi `align-items: center`.
+     Mükemmel simetri = sıfır gerilim. Göz hiçbir yere ÇEKİLMİYOR çünkü
+     her şey zaten dengede.
+   • 6 istatistik eşit ağırlıkta bir ızgaraydı — "poster" değil "tablo".
+     Hangisinin önemli olduğunu söylemiyordu.
+   • Dev sayı `nowrap` + `24cqw` ile boyut kavgası veriyordu; taşmayı
+     önlemek için üç turda küçültülmüştü. Sorun fontun büyüklüğü değil,
+     ortalanmış tek satıra sıkışmasıydı.
+
+   YENİ KOMPOZİSYON — sol hizalı editorial poster ("dergi kapağı"):
+
+     ┌────────────────────────────────────┐
+     │ ┃ EKİM 2026                        │  dikey kural + eyebrow
+     │ ┃                                  │
+     │ ┃ 12.480                           │  sayı SOLDA, büyük,
+     │ ┃ dakika                           │  altında birim
+     │ ┃                                  │
+     │ ┃ ──────────────                   │  ince kural
+     │ ┃ 842 şarkı · 213 sanatçı          │  birincil çift, satır hâlinde
+     │ ┃                                  │
+     │ ┃ baskın tür      indie            │  kalanlar künye satırları:
+     │ ┃ farklı tür      37               │  etiket solda, değer sağda
+     │ ┃ yeni sanatçı    64               │
+     │ └──────────────────────────────────┘
+
+   Neden bu daha güçlü:
+   • Sol hiza bir OKUMA EKSENİ kurar — göz yukarıdan aşağı tek bir
+     çizgiyi takip eder. Ortalanmış düzende her satır farklı yerden
+     başlar, göz sürekli yeniden hizalanır (yorucu).
+   • Sayı artık kabın tamamına yayılabiliyor → gerçekten büyük olabilir,
+     taşma kavgası biter. Ölçü `cqw` yerine `cqi` + `clamp` ile
+     kabın gerçek genişliğine bağlı.
+   • İstatistikler tek düzeyli ızgara değil ÜÇ katmanlı: hero (dakika),
+     birincil çift (şarkı/sanatçı — tek satır), künye (etiket→değer).
+     Hiyerarşi artık gözle görülür.
+   • Boşluk sağa bilinçli olarak bırakılıyor — "büyük boşlukların
+     bilinçli kullanımı" (Sahibin §4 maddesi). Poster nefes alıyor.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.frame {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  background: var(--bg);
+  container-type: size;
+  overflow: hidden;
+}
+
+/* ── Atmosfer: ışık artık ortadan değil SOL ÜSTTEN geliyor ──
+   Kompozisyon sol hizalı olduğu için ışık da o eksenden gelmeli;
+   ortadan gelen ışık sol hizalı metni "yanlış aydınlatılmış"
+   gösterirdi. İkinci, çok daha zayıf bir ışık sağ altta dengeyi
+   kuruyor ama baskın kaynak tartışmasız solda. */
+.atmosphere {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      ellipse 78% 62% at 8% 4%,
+      color-mix(in srgb, var(--color-text-primary) 13%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 62% 50% at 4% 30%,
+      color-mix(in srgb, var(--accent) 20%, transparent),
+      transparent 62%
+    ),
+    radial-gradient(
+      ellipse 70% 55% at 96% 96%,
+      color-mix(in srgb, var(--accent-hover) 11%, transparent),
+      transparent 58%
+    );
+  pointer-events: none;
+}
+
+/* Işık huzmesi — sol üstten çapraz inen geniş, çok zayıf bir kama.
+   Eski dikey "beam" ortadaydı ve sahnenin simetrisini pekiştiriyordu. */
+.beam {
+  position: absolute;
+  top: -20%;
+  left: -10%;
+  width: min(85cqw, 620px);
+  height: 130%;
+  transform: rotate(14deg);
+  transform-origin: top left;
+  background: linear-gradient(
+    100deg,
+    color-mix(in srgb, var(--color-text-primary) 11%, transparent) 0%,
+    color-mix(in srgb, var(--color-text-primary) 3%, transparent) 34%,
+    transparent 66%
+  );
+  filter: blur(2px);
+  pointer-events: none;
+}
+
+/* Vignette — kenarları toplar, posteri merkeze doğru yoğunlaştırır. */
+.vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 120% 90% at 30% 45%,
+    transparent 40%,
+    rgba(0, 0, 0, 0.5) 100%
+  );
+  pointer-events: none;
+}
+
+/* ── İçerik: SOL hizalı, dikeyde ortalanmış ── */
+.content {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  text-align: left;
+  padding: var(--recap-chrome-top, 40px) clamp(var(--space-5), 7cqw, var(--space-12))
+           var(--recap-chrome-bottom, 56px);
+  min-width: 0;
+}
+
+.poster {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: clamp(var(--space-4), 3.5cqh, var(--space-6));
+  width: min(100%, 34rem);
+  min-width: 0;
+  /* Sol dikey kural — posterin okuma eksenini fiziksel olarak çizer.
+     Üstte accent'ten başlayıp aşağı doğru sönümlenir: kompozisyonun
+     "buradan başla" işareti. */
+  padding-left: clamp(var(--space-4), 3cqw, var(--space-6));
+}
+
+.poster::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 2%;
+  bottom: 2%;
+  width: 2px;
+  border-radius: 2px;
+  background: linear-gradient(
+    180deg,
+    var(--accent) 0%,
+    color-mix(in srgb, var(--accent) 45%, transparent) 28%,
+    color-mix(in srgb, var(--color-text-primary) 12%, transparent) 70%,
+    transparent 100%
+  );
+}
+
+/* ── Eyebrow: artık iki çizgi arasında ortalanmış değil, sola dayalı ── */
+.eyebrow {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: clamp(0.5625rem, 2cqw, 0.6875rem);
+  font-weight: 600;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text-primary) 52%, transparent);
+  white-space: nowrap;
+}
+
+/* ── Hero: sayı + birim ── */
+.heroStack {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Halo artık sayının ARKASINDA ve sola kaymış — sayıyı zeminden
+   koparan yumuşak bir ışık yastığı. */
+.heroHalo {
+  position: absolute;
+  top: 46%;
+  left: 18%;
+  width: min(70cqw, 420px);
+  height: min(38cqw, 200px);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--accent) 22%, transparent) 0%,
+    transparent 68%
+  );
+  filter: blur(34px);
+  pointer-events: none;
+}
+
+.hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: clamp(0.15rem, 1cqh, 0.4rem);
+  width: 100%;
+  min-width: 0;
+}
+
+/* 🔴 Boyut artık kavga değil.
+   Eski değer (`24cqw`, ortalanmış tek satır) üç turda küçültülerek
+   bulunmuştu çünkü sayı ortada sıkışıyordu. Sol hizalı düzende sayı
+   kabın SOLUNDAN başlayıp sağa doğru serbestçe uzayabiliyor; `.poster`
+   zaten `min(100%, 34rem)` ile sınırlı, taşma kaynağında engelleniyor.
+   `nowrap` korunuyor (sayı asla sarmamalı) ama artık kısıt değil. */
+.heroValue {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(2.75rem, 21cqi, 7.5rem);
+  line-height: 0.86;
+  letter-spacing: -0.05em;
+  font-variant-numeric: tabular-nums;
+  background: linear-gradient(
+    170deg,
+    var(--color-text-primary) 0%,
+    color-mix(in srgb, var(--color-text-primary) 72%, transparent) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 10px 36px color-mix(in srgb, var(--accent) 22%, transparent));
+  min-width: 0;
+  max-width: 100%;
+  white-space: nowrap;
+}
+
+.heroUnit {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: clamp(0.625rem, 2.4cqw, 0.8125rem);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text-primary) 46%, transparent);
+  padding-left: 0.15em;
+}
+
+/* ── Ayırıcı kural — hero ile künye arasında ── */
+.rule {
+  width: clamp(3rem, 18cqw, 7rem);
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--accent) 70%, transparent),
+    color-mix(in srgb, var(--color-text-primary) 20%, transparent) 60%,
+    transparent
+  );
+}
+
+/* ── Birincil çift: şarkı + sanatçı, tek satırda ──
+   Eski 6-hücreli ızgaranın ilk iki hücresi. Artık ayrı bir katman:
+   büyük değil ama künyeden belirgin biçimde güçlü. */
+.primaryRow {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: clamp(var(--space-3), 3cqw, var(--space-5));
+  min-width: 0;
+}
+
+.primaryItem {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4em;
+  min-width: 0;
+}
+
+.primaryValue {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(1.05rem, 5cqi, 1.75rem);
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--color-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.primaryLabel {
+  font-family: var(--font-mono);
+  font-size: clamp(0.5rem, 1.9cqw, 0.6875rem);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text-primary) 42%, transparent);
+}
+
+.primarySep {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 60%, transparent);
+  align-self: center;
+  flex-shrink: 0;
+}
+
+/* ── Künye satırları: etiket solda, değer sağda ──
+   "Dergi künyesi" deseni. Aradaki noktalı çizgi gözü etiketten değere
+   taşır — ızgaranın yapamadığı şey. */
+.meta {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(var(--space-2), 1.6cqh, var(--space-3));
+  width: 100%;
+  min-width: 0;
+}
+
+.metaRow {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  width: 100%;
+  min-width: 0;
+}
+
+.metaLabel {
+  font-family: var(--font-mono);
+  font-size: clamp(0.5rem, 1.9cqw, 0.6875rem);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text-primary) 38%, transparent);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.metaDots {
+  flex: 1;
+  height: 1px;
+  min-width: var(--space-4);
+  background-image: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--color-text-primary) 22%, transparent) 0 2px,
+    transparent 2px 6px
+  );
+  background-size: 6px 1px;
+  background-repeat: repeat-x;
+  transform: translateY(-0.2em);
+}
+
+.metaValue {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(0.8125rem, 3.4cqi, 1.05rem);
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: color-mix(in srgb, var(--color-text-primary) 88%, transparent);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Tür adı — küçük harf, biraz daha sönük (sayı değil kelime). */
+.metaValueGenre {
+  text-transform: lowercase;
+  color: color-mix(in srgb, var(--color-text-primary) 80%, transparent);
+}
+
+.heroWing {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: clamp(var(--space-4), 3.5cqh, var(--space-6));
+  width: 100%;
+  min-width: 0;
+}
+
+.metaWing {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: clamp(var(--space-4), 3.5cqh, var(--space-6));
+  width: 100%;
+  min-width: 0;
+}
+
+.statement {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(0.85rem, 2.2cqw, 1.15rem);
+  letter-spacing: -0.01em;
+  color: color-mix(in srgb, var(--color-text-primary) 55%, transparent);
+  margin: 0;
+  display: none;
+}
+
+/* ── Geniş sahne: dengeli iki kanatlı kompozisyon ──
+   Sol tarafta devasa dakika sayacı ve halo ışığı, sağ tarafta
+   ise hacim metrikleri ve künye. Ekranın sağındaki ölü boşluk giderilir. */
+@container (min-width: 900px) {
+  .poster {
+    width: min(100%, 68rem);
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    align-items: center;
+    gap: clamp(3rem, 7cqw, 6.5rem);
+    padding-left: clamp(var(--space-6), 4cqw, var(--space-10));
+  }
+
+  .statement {
+    display: block;
+    margin-top: var(--space-2);
+  }
+
+  .content {
+    padding-inline: clamp(var(--space-8), 7cqw, var(--space-16));
+  }
+
+  .metaWing {
+    gap: var(--space-6);
+  }
+}
+
+/* Çok kısa sahnelerde (yatay telefon) dikey boşlukları sıkıştır —
+   içerik kesilmesin. */
+@container (max-height: 560px) {
+  .poster {
+    gap: var(--space-3);
+  }
+
+  .meta {
+    gap: var(--space-2);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heroValue {
+    transition: none;
+  }
+}

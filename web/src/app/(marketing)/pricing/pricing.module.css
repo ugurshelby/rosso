@@ -1,0 +1,502 @@
+/* ═══════════════════════════════════════════
+   Pricing — sinematik gece + gümüş spot (landing ile aynı dil)
+   ═══════════════════════════════════════════ */
+
+.wrapper {
+  position: relative;
+  isolation: isolate;
+  /* FAZ 1: `100vh` → `100svh`. iOS'ta `vh` adres çubuğu GİZLİYKEN ölçülür;
+     çubuk görünürken sayfa ekrandan taşar ve scroll sırasında zıplar.
+     `svh` (small viewport height) en küçük hâli baz alır — zıplama olmaz.
+     `min-height` olduğu için içerik uzunsa yine büyür. */
+  min-height: 100svh;
+  overflow-x: clip;
+}
+
+/* ─── Hero ─── */
+.hero {
+  position: relative;
+  z-index: 1;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: clamp(7rem, 12vw, 9rem) var(--space-6) var(--space-16);
+  text-align: center;
+}
+
+.title {
+  font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
+  font-size: clamp(2.2rem, 6vw, 4rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-5);
+  text-shadow: 0 0 60px color-mix(in srgb, var(--color-text-primary) 10%, transparent);
+}
+
+.lead {
+  font-size: clamp(var(--text-base), 1.6vw, var(--text-lg));
+  color: color-mix(in srgb, var(--color-text-secondary) 92%, #fff);
+  line-height: 1.65;
+  max-width: 54ch;
+  margin: 0 auto;
+  font-weight: 300;
+}
+
+/* ─── Plan Grid ─── */
+.planGrid {
+  position: relative;
+  z-index: 1;
+  max-width: 900px;
+  margin: 0 auto var(--space-16);
+  padding: 0 var(--space-6);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  align-items: stretch;
+}
+
+/* Tek plan (2026-09-22) — kart ortada, okunur genişlikte. */
+.planGridSingle {
+  grid-template-columns: 1fr;
+  max-width: 480px;
+}
+
+/* ─── Plan Card ─── */
+.planCard {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-xl);
+  border: 1px solid color-mix(in srgb, var(--landing-glow-rose) 16%, transparent);
+  background:
+    radial-gradient(
+      ellipse 90% 55% at 50% 0%,
+      color-mix(in srgb, var(--landing-glow-rose) 8%, transparent),
+      transparent 58%
+    ),
+    color-mix(in srgb, var(--color-bg-elevated) 58%, rgba(0, 0, 0, 0.52));
+  backdrop-filter: blur(16px) saturate(1.08);
+  padding: var(--space-8);
+  transition:
+    border-color 250ms ease,
+    transform 250ms ease,
+    box-shadow 250ms ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    0 20px 48px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 color-mix(in srgb, var(--color-text-primary) 7%, transparent);
+}
+
+.planCard::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: var(--space-6);
+  right: var(--space-6);
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--landing-glow-rose) 55%, transparent),
+    transparent
+  );
+  opacity: 0.85;
+}
+
+.planCard:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--landing-glow-rose) 28%, transparent);
+  box-shadow:
+    0 28px 56px rgba(0, 0, 0, 0.45),
+    0 0 40px color-mix(in srgb, var(--landing-glow-rose) 10%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--color-text-primary) 9%, transparent);
+}
+
+.planCardFeatured {
+  border-color: color-mix(in srgb, var(--landing-glow-violet) 28%, transparent);
+  background:
+    radial-gradient(
+      ellipse 95% 60% at 50% 0%,
+      color-mix(in srgb, var(--landing-glow-violet) 14%, transparent),
+      transparent 58%
+    ),
+    radial-gradient(
+      ellipse 80% 50% at 100% 100%,
+      color-mix(in srgb, var(--landing-glow-wine) 8%, transparent),
+      transparent 55%
+    ),
+    color-mix(in srgb, var(--color-bg-elevated) 58%, rgba(0, 0, 0, 0.52));
+}
+
+.planCardFeatured::after {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--landing-glow-violet) 70%, transparent),
+    color-mix(in srgb, var(--landing-glow-wine) 45%, transparent),
+    transparent
+  );
+}
+
+.planCardFeatured:hover {
+  border-color: color-mix(in srgb, var(--landing-glow-violet) 38%, transparent);
+  box-shadow:
+    0 28px 56px rgba(0, 0, 0, 0.45),
+    0 0 48px color-mix(in srgb, var(--landing-glow-violet) 14%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--color-text-primary) 9%, transparent);
+}
+
+.planHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+
+.planName {
+  font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
+  font-size: var(--text-xl);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.planState {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--landing-glow-rose) 88%, #fff);
+  border: 1px solid color-mix(in srgb, var(--landing-glow-rose) 32%, transparent);
+  background: color-mix(in srgb, var(--landing-glow-rose) 8%, transparent);
+  padding: 3px var(--space-2);
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+}
+
+.planStatePlanned {
+  color: color-mix(in srgb, var(--landing-glow-violet) 90%, #fff);
+  border-color: color-mix(in srgb, var(--landing-glow-violet) 35%, transparent);
+  background: color-mix(in srgb, var(--landing-glow-violet) 10%, transparent);
+}
+
+.planDesc {
+  font-size: var(--text-sm);
+  color: color-mix(in srgb, var(--color-text-secondary) 92%, #fff);
+  line-height: 1.55;
+  margin: 0 0 var(--space-7);
+  font-weight: 300;
+}
+
+.planPrice {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-1);
+  margin-bottom: var(--space-7);
+  padding-bottom: var(--space-7);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-text-primary) 8%, transparent);
+}
+
+.planPriceAmount {
+  font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
+  font-size: 3rem;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  color: var(--color-text-primary);
+  line-height: 1;
+}
+
+.planCardFeatured .planPriceAmount {
+  color: color-mix(in srgb, var(--landing-glow-violet) 22%, var(--color-text-primary));
+}
+
+.planPriceUnit {
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+  font-weight: 500;
+}
+
+.planFeatures {
+  list-style: none;
+  margin: 0 0 auto;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.planFeature {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+  color: color-mix(in srgb, var(--color-text-secondary) 92%, #fff);
+  line-height: 1.45;
+  font-weight: 300;
+}
+
+.planFeatureIcon {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: color-mix(in srgb, var(--landing-glow-rose) 82%, var(--color-accent));
+}
+
+.planCardFeatured .planFeatureIcon {
+  color: color-mix(in srgb, var(--landing-glow-violet) 85%, var(--color-accent));
+}
+
+/* Yalnız layout — görsel stil `mkt-btn-primary` primitifinden (featured) ya
+   da `.planCtaDefault`'tan (ghost varyant, primitifte karşılığı yok) gelir. */
+.planCta {
+  width: 100%;
+  margin-top: var(--space-8);
+}
+
+.planCtaDefault {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 12px var(--space-6);
+  border-radius: var(--radius-md);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background 200ms ease,
+    border-color 200ms ease,
+    transform 200ms ease,
+    box-shadow 200ms ease;
+  background: transparent;
+  color: var(--color-text-primary);
+  border: 1px solid color-mix(in srgb, var(--landing-glow-rose) 28%, transparent);
+}
+
+.planCtaDefault:hover {
+  border-color: color-mix(in srgb, var(--landing-glow-rose) 45%, transparent);
+  background: color-mix(in srgb, var(--landing-glow-rose) 6%, transparent);
+  transform: translateY(-1px);
+}
+
+/* ─── Comparison Section ─── */
+.comparison {
+  position: relative;
+  z-index: 1;
+  max-width: 900px;
+  margin: 0 auto var(--space-20);
+  padding: 0 var(--space-6);
+}
+
+.comparisonHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+
+.comparisonTitle {
+  font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
+  font-size: clamp(1.25rem, 2.5vw, var(--text-xl));
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.comparisonNote {
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+  margin: 0;
+  max-width: 42ch;
+  font-weight: 300;
+  line-height: 1.55;
+}
+
+.comparisonTable {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--color-text-primary) 10%, transparent);
+  background: color-mix(in srgb, var(--color-bg-elevated) 52%, rgba(0, 0, 0, 0.45));
+  backdrop-filter: blur(12px);
+}
+
+.comparisonTable thead th {
+  padding: var(--space-4) var(--space-6);
+  text-align: left;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  background: color-mix(in srgb, var(--color-bg-elevated) 75%, rgba(0, 0, 0, 0.35));
+  border-bottom: 1px solid color-mix(in srgb, var(--color-text-primary) 8%, transparent);
+}
+
+.comparisonTable thead th:not(:first-child) {
+  text-align: center;
+}
+
+.comparisonTable thead th:nth-child(2) {
+  color: color-mix(in srgb, var(--landing-glow-rose) 75%, var(--color-text-secondary));
+}
+
+.comparisonTable thead th:last-child {
+  color: color-mix(in srgb, var(--landing-glow-violet) 85%, #fff);
+  background: color-mix(in srgb, var(--landing-glow-violet) 8%, var(--color-bg-elevated));
+}
+
+.comparisonTable tbody tr {
+  border-bottom: 1px solid color-mix(in srgb, var(--color-text-primary) 6%, transparent);
+  transition: background 150ms ease;
+}
+
+.comparisonTable tbody tr:last-child {
+  border-bottom: none;
+}
+
+.comparisonTable tbody tr:hover {
+  background: color-mix(in srgb, var(--landing-glow-violet) 4%, transparent);
+}
+
+.comparisonTable tbody td {
+  padding: var(--space-4) var(--space-6);
+  font-size: var(--text-sm);
+  color: color-mix(in srgb, var(--color-text-secondary) 92%, #fff);
+  background: transparent;
+  font-weight: 300;
+}
+
+.comparisonTable tbody td:not(:first-child) {
+  text-align: center;
+}
+
+.comparisonTable tbody td:nth-child(2) .checkIcon {
+  color: color-mix(in srgb, var(--landing-glow-rose) 82%, var(--color-accent));
+}
+
+.comparisonTable tbody td:last-child .checkIcon {
+  color: color-mix(in srgb, var(--landing-glow-violet) 88%, var(--color-accent));
+}
+
+.checkIcon {
+  color: var(--color-accent);
+  display: inline-flex;
+}
+
+.dashIcon {
+  color: var(--color-text-tertiary);
+  display: inline-flex;
+}
+
+/* ─── CTA Band — layout eki. Görsel dil `mkt-cta-band` primitifinden gelir
+   (marketing-surfaces.css), yalnız Pricing'e özel alt/üst kenarlık ekleri
+   burada kalır. */
+.ctaBand {
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 60%, #000);
+  margin-bottom: var(--space-16);
+}
+
+/* ─── Footer note ─── */
+.note {
+  position: relative;
+  z-index: 1;
+  max-width: 900px;
+  margin: 0 auto var(--space-20);
+  padding: 0 var(--space-6);
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+  line-height: 1.6;
+  font-weight: 300;
+}
+
+.noteLink {
+  color: color-mix(in srgb, var(--landing-glow-violet) 55%, var(--color-text-secondary));
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 200ms ease;
+}
+
+.noteLink:hover {
+  color: color-mix(in srgb, var(--landing-glow-violet) 78%, #fff);
+}
+
+/* ─── Mobile ─── */
+@media (max-width: 640px) {
+  .hero {
+    padding: clamp(5.5rem, 18vw, 7rem) var(--space-4)
+      calc(var(--space-12) + var(--marketing-bottom-nav-offset, 0px));
+  }
+
+  .title {
+    font-size: clamp(2rem, 8vw, 2.75rem);
+  }
+
+  .lead {
+    font-size: var(--text-base);
+  }
+
+  .planGrid {
+    grid-template-columns: 1fr;
+    padding: 0 var(--space-4);
+  }
+
+  .planCard {
+    padding: var(--space-6);
+  }
+
+  .comparison,
+  .note {
+    padding: 0 var(--space-4);
+  }
+
+  .ctaBandInner {
+    padding: clamp(var(--space-10), 12vw, var(--space-16)) var(--space-4);
+  }
+
+  .ctaBandTitle {
+    font-size: clamp(1.75rem, 7.5vw, 2.5rem);
+  }
+
+  .comparisonScroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 calc(-1 * var(--space-4));
+    padding: 0 var(--space-4);
+    scrollbar-width: thin;
+  }
+
+  .comparisonTable {
+    font-size: var(--text-xs);
+    min-width: 20rem;
+  }
+
+  .comparisonTable thead th,
+  .comparisonTable tbody td {
+    padding: var(--space-3) var(--space-3);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .planCard,
+  .planCta,
+  .ctaBandButton {
+    transition: none;
+  }
+
+  .planCard:hover,
+  .ctaBandButton:hover {
+    transform: none;
+  }
+}

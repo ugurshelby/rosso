@@ -1,0 +1,280 @@
+/* Journey hero — vibe kartı kümesi, tam viewport */
+
+.hero {
+  position: relative;
+  isolation: isolate;
+  height: calc(
+    100dvh - var(--journey-reserved-top, 0px) - var(--journey-reserved-bottom, 0px)
+  );
+  min-height: calc(
+    100dvh - var(--journey-reserved-top, 0px) - var(--journey-reserved-bottom, 0px)
+  );
+  overflow: hidden;
+}
+
+.vibeField {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Kimlik monolit — kart + başlık tek nesne, eşlik kartlarıyla aynı scroll dili */
+.heroStage {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  z-index: 3;
+  width: min(72vw, 340px);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.heroStageMotion {
+  will-change: transform, opacity;
+  transform: translate3d(
+      calc(var(--p, 0) * var(--slot-dx, 0px)),
+      calc(var(--p, 0) * var(--slot-dy, 80px)),
+      0
+    )
+    scale(calc(1 - var(--p, 0) * var(--slot-scale, 0.1)))
+    rotate(var(--slot-rotate, 0deg));
+  opacity: max(0, calc(var(--slot-opacity, 1) - var(--p, 0) * var(--slot-fade, 0.5)));
+}
+
+.heroIdentity {
+  display: flex;
+  flex-direction: column;
+  filter: drop-shadow(0 28px 64px rgba(0, 0, 0, 0.55));
+}
+
+.heroTitlePlaque {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-5) var(--space-5);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  background: rgba(8, 7, 16, 0.82);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 20px 48px rgba(0, 0, 0, 0.6);
+}
+
+.heroIdentityBadge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+}
+
+.heroIdentityEyebrow {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--j-accent, #c084fc);
+}
+
+.heroIdentityName {
+  font-family: var(--font-journey-serif), 'Bodoni Moda', Didot, Georgia, serif;
+  font-style: italic;
+  font-size: clamp(14px, 3.2vw, 17px);
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  letter-spacing: 0.01em;
+}
+
+.heroTitlePlaque::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--j-accent, #8fa89a) 72%, #fff) 50%,
+    transparent 100%
+  );
+  opacity: 0.85;
+}
+
+.heroTitle {
+  margin: 0;
+  font-family: var(--font-journey-sans);
+  font-weight: 900;
+  font-size: clamp(2.15rem, 9vw, 3.85rem);
+  line-height: 0.88;
+  letter-spacing: -0.05em;
+  text-align: center;
+  color: #fff;
+}
+
+.heroScrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--j-accent, #3d5a4a) 20%, transparent) 0%,
+    rgba(0, 0, 0, 0.15) 40%,
+    rgba(0, 0, 0, 0.55) 78%,
+    rgba(0, 0, 0, 0.88) 100%
+  );
+  pointer-events: none;
+}
+
+@media (max-width: 640px) {
+  .heroStage {
+    top: 47%;
+    width: min(78vw, 280px);
+  }
+
+  .heroTitle {
+    font-size: clamp(1.9rem, 11vw, 2.75rem);
+  }
+}
+
+.heroChrome {
+  position: absolute;
+  top: var(--space-5);
+  left: clamp(var(--space-5), 6vw, var(--space-10));
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+.heroExit {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: 0;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.48);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: color 180ms ease, border-color 180ms ease;
+}
+
+.heroExit:hover,
+.heroExit:focus-visible {
+  color: rgba(255, 255, 255, 0.86);
+  border-bottom-color: rgba(255, 255, 255, 0.32);
+}
+
+.heroExit:active {
+  transform: scale(0.97);
+  transition-duration: 100ms;
+  transition-timing-function: ease-out;
+}
+
+.heroExit:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 4px;
+}
+
+.heroExitArrow {
+  font-size: 11px;
+  letter-spacing: 0;
+  line-height: 1;
+  opacity: 0.65;
+}
+
+.heroSpine {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  z-index: 2;
+  width: 2px;
+  height: clamp(48px, 9vh, 80px);
+  transform: translateX(-50%);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.5) 0%,
+    rgba(255, 255, 255, 0.18) 55%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  pointer-events: none;
+}
+
+.scrollCue {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  margin: 0;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.scrollCueLine {
+  display: block;
+  width: 2px;
+  height: 24px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.42), transparent);
+  animation: heroScrollPulse 2.6s ease-in-out infinite;
+}
+
+.scrollCueText {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.28);
+}
+
+@keyframes heroScrollPulse {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scaleY(0.72);
+    transform-origin: top;
+  }
+  50% {
+    opacity: 0.75;
+    transform: scaleY(1);
+    transform-origin: top;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heroExit,
+  .scrollCueLine {
+    transition: none;
+    animation: none;
+  }
+
+  .heroExit:active {
+    transform: none;
+  }
+
+  .heroStageMotion {
+    will-change: auto;
+    transform: none;
+    opacity: 1;
+  }
+
+  .scrollCueLine {
+    opacity: 0.4;
+  }
+}

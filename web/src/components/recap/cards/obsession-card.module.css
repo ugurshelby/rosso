@@ -1,0 +1,211 @@
+/* Kart 10 — Saplandığın şarkı. Kapak hero; istatistikler alt bant. */
+
+.frame {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  background: var(--bg);
+  container-type: size;
+  overflow: hidden;
+}
+
+.glow {
+  position: absolute;
+  inset: auto -10% -20% -10%;
+  height: 70%;
+  background: radial-gradient(
+    ellipse at 50% 100%,
+    color-mix(in srgb, var(--accent) 18%, transparent),
+    transparent 68%
+  );
+  pointer-events: none;
+}
+
+/* Kapak görseli arka plana da yayılır — Sahip: "görsel arka plana
+   yayılsın, rengi ekranın geri kalanına yansısın." Tek katman: bulanık
+   kapak + karartma + tepe vinyeti AYNI `background` bildiriminde
+   (design.md §9 — "kirli leke" riskinden kaçınmak için ayrı ayrı
+   stack edilmez). Önplandaki net kapak (`.coverWrap`) bundan ayrı kalır. */
+.ambient {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  filter: blur(48px) saturate(1.15) brightness(0.55);
+  transform: scale(1.15);
+  opacity: 0.55;
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    transparent 0%,
+    color-mix(in srgb, black 70%, transparent) 22%,
+    black 55%,
+    color-mix(in srgb, black 70%, transparent) 85%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    180deg,
+    transparent 0%,
+    color-mix(in srgb, black 70%, transparent) 22%,
+    black 55%,
+    color-mix(in srgb, black 70%, transparent) 85%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.content {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  min-width: 0;
+  padding: var(--recap-chrome-top, 40px) var(--space-5)
+    calc(var(--recap-chrome-bottom, 56px) + var(--space-2));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(var(--space-4), 4.5cqh, var(--space-7));
+  text-align: center;
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(var(--space-2), 2.5cqh, var(--space-4));
+  width: min(100%, 24rem);
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: clamp(0.5rem, 1.5cqw, 0.7rem);
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text-primary) 50%, transparent);
+}
+
+.coverWrap {
+  width: min(72cqw, 16rem);
+  aspect-ratio: 1 / 1;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--color-text-primary) 10%, transparent);
+  box-shadow:
+    0 24px 64px color-mix(in srgb, var(--bg) 40%, transparent),
+    0 0 48px color-mix(in srgb, var(--accent) 16%, transparent);
+  background: color-mix(in srgb, var(--surface) 90%, transparent);
+}
+
+.cover {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.coverFallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: color-mix(in srgb, var(--color-text-primary) 35%, transparent);
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--surface) 95%, transparent),
+    color-mix(in srgb, var(--bg) 90%, transparent)
+  );
+}
+
+.identity {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+  width: 100%;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(1.25rem, 5.5cqw, 2rem);
+  line-height: 1.08;
+  color: var(--color-text-primary);
+  margin: 0;
+  overflow-wrap: break-word;
+}
+
+.artist {
+  font-family: var(--font-mono);
+  font-size: clamp(0.65rem, 2cqw, 0.9rem);
+  letter-spacing: 0.06em;
+  color: color-mix(in srgb, var(--color-text-primary) 55%, transparent);
+  margin: 0;
+  overflow-wrap: break-word;
+}
+
+.statsBand {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(var(--space-2), 2cqw, var(--space-3));
+  width: min(100%, 24rem);
+  padding: clamp(var(--space-3), 2.5cqh, var(--space-4));
+  border-radius: var(--radius-lg);
+  border: 1px solid color-mix(in srgb, var(--color-text-primary) 8%, transparent);
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--color-text-primary) 5%, transparent),
+    color-mix(in srgb, var(--bg) 92%, transparent)
+  );
+}
+
+/* 2026-08-14 (Ş-19): "TEMMUZ 2025" iki satıra bölününce o hücre uzuyor,
+   yanındaki etiketlerin taban hizası bozuluyordu. `space-between` + `height:100%`
+   ile değerler üstte, etiketler HER hücrede tabanda hizalanır — hücre kaç satır
+   olursa olsun şerit düzgün okunur. */
+.statCell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+  gap: 0.15rem;
+  min-width: 0;
+  padding: var(--space-2);
+}
+
+.statValue {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(1.1rem, 4cqw, 1.5rem);
+  line-height: 1;
+  color: var(--color-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.statValueSm {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(0.75rem, 2.8cqw, 1rem);
+  line-height: 1.1;
+  color: var(--color-text-primary);
+  text-align: center;
+  overflow-wrap: break-word;
+}
+
+.statLabel {
+  font-family: var(--font-mono);
+  font-size: clamp(0.45rem, 1.3cqw, 0.6rem);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text-primary) 42%, transparent);
+  text-align: center;
+}
+
+@media (min-width: 900px) {
+  .statsBand {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}

@@ -1,0 +1,227 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.lockNote {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-sunken);
+}
+
+.banner {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  line-height: 1.4;
+}
+
+.bannerSuccess {
+  background: color-mix(in srgb, var(--color-success) 12%, transparent);
+  color: var(--color-success);
+  border: 1px solid color-mix(in srgb, var(--color-success) 30%, transparent);
+}
+
+.bannerError {
+  background: color-mix(in srgb, var(--color-error) 12%, transparent);
+  color: var(--color-error);
+  border: 1px solid color-mix(in srgb, var(--color-error) 30%, transparent);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-5);
+  /* Işık üstten gelir (dashboard-design.md §3.2) */
+  background: linear-gradient(
+    155deg,
+    color-mix(in srgb, #fff 4%, var(--surface)),
+    var(--surface) 46%
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 12px 28px -18px rgba(0, 0, 0, 0.9);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  transition: border-color 300ms ease, background 300ms ease, box-shadow 300ms ease;
+}
+
+/* Spotify / platform connected — green glass (grid ile aynı reçete) */
+.cardConnected {
+  --platform-color: var(--color-spotify, #1DB954);
+  border-color: color-mix(in srgb, var(--platform-color) 35%, transparent);
+  background:
+    radial-gradient(
+      ellipse 90% 70% at 0% 0%,
+      color-mix(in srgb, var(--platform-color) 22%, transparent),
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 60% 50% at 100% 100%,
+      color-mix(in srgb, var(--platform-color) 8%, transparent),
+      transparent 50%
+    ),
+    color-mix(in srgb, var(--platform-color) 6%, var(--color-bg-elevated));
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  backdrop-filter: blur(16px) saturate(1.2);
+}
+
+.cardConnected:hover {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 25px -5px color-mix(in srgb, var(--platform-color) 35%, transparent);
+}
+
+.cardConnected .dot {
+  box-shadow: 0 0 10px color-mix(in srgb, var(--platform-color) 45%, transparent);
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .cardConnected {
+    background: color-mix(in srgb, var(--platform-color) 8%, var(--elev-2));
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .cardConnected {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: color-mix(in srgb, var(--platform-color) 8%, var(--elev-2));
+  }
+}
+
+.removeBtn {
+  background: transparent !important;
+  color: #FF453A !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+.removeBtn:hover {
+  background: rgba(255, 69, 58, 0.1) !important;
+  border-color: rgba(255, 69, 58, 0.25) !important;
+  box-shadow: 0 0 16px rgba(255, 69, 58, 0.2);
+}
+
+.cardBroken {
+  border-color: color-mix(in srgb, var(--color-error) 40%, var(--color-border));
+  background: color-mix(in srgb, var(--color-error) 4%, var(--color-bg-elevated));
+}
+
+.cardRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+  flex: 1;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dotBroken {
+  background: var(--color-error);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-error) 20%, transparent);
+}
+
+.dotIdle {
+  background: var(--color-text-muted, var(--color-text-tertiary));
+}
+
+.meta {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.name {
+  font-weight: var(--font-semibold);
+  font-size: var(--text-base);
+  color: var(--color-text-primary);
+}
+
+.status {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.confirm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-strong, var(--color-border));
+  background: var(--color-bg-sunken);
+}
+
+.confirmTitle {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+}
+
+.confirmBody {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.confirmActions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .banner,
+  .confirm {
+    transition: none;
+  }
+}

@@ -1,0 +1,88 @@
+/* ── Dinleme notu — Katman B'nin editoryal yüzü ──────────────────────────────
+ * Yüzey: global `.surface-2` (dashboard-design §3.2-b — luminance + gölge +
+ * üst ışık çizgisi). Burada yalnız yerleşim ve tipografi var; renkler token.
+ * Yuvarlaklık: dış kart --radius-2xl, iç çip --radius-full (§3.2-c madde 10).
+ * ───────────────────────────────────────────────────────────────────────── */
+
+.section {
+  width: 100%;
+  padding: var(--space-4) 0 var(--space-6);
+}
+
+.card {
+  border-radius: 8px;
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  backdrop-filter: blur(20px) saturate(140%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 8px 24px -4px rgba(0, 0, 0, 0.4);
+}
+
+/* Göz atma etiketi — SF Pro Text caption */
+.eyebrow {
+  margin: 0;
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.quote {
+  margin: 0;
+  padding: 0;
+}
+
+/* Büyük gövde metni: tracking hafif negatif, satır aralığı okuma için rahat
+   (apple-design §15 — boyuta özgü tracking/leading). */
+.quote p {
+  margin: 0;
+  max-width: 60ch;
+  font-size: clamp(1.0625rem, 1rem + 0.35vw, 1.25rem);
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  color: rgba(255, 255, 255, 0.92);
+  text-wrap: pretty;
+}
+
+/* Çipler sarar — 980px full pill */
+.textures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.texture {
+  padding: 4px 12px;
+  border-radius: 980px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.75rem;
+  line-height: 1.33;
+  letter-spacing: -0.01em;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+@media (max-width: 640px) {
+  .card {
+    padding: var(--space-5);
+  }
+}
+
+/* Yüksek kontrast tercihinde çip sınırı belirginleşir. */
+@media (prefers-contrast: more) {
+  .texture {
+    border-color: var(--color-border-strong);
+    color: var(--color-text-primary);
+  }
+}

@@ -1,0 +1,123 @@
+/* Kanonik Apple segmented control — bkz. segmented-control.tsx başlık notu.
+   `--material-*` token'ları: chrome/kontrol yüzeyi, içerik paneli DEĞİL. */
+
+.strip {
+  display: inline-flex;
+  gap: 2px;
+  background: var(--material-bg-base);
+  -webkit-backdrop-filter: var(--material-blur);
+  backdrop-filter: var(--material-blur);
+  border: var(--material-border);
+  border-radius: var(--radius-full);
+  padding: 3px;
+  width: fit-content;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .strip {
+    background: var(--color-bg-elevated);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .strip {
+    backdrop-filter: none;
+    background: var(--elev-2);
+  }
+}
+
+.strip[data-pending] {
+  animation: segmentedPulse 1s ease-in-out infinite;
+}
+@keyframes segmentedPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.tab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: var(--space-2) var(--space-4);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  letter-spacing: var(--tracking-caption, 0.02em);
+  color: var(--color-text-tertiary);
+  background: none;
+  border: none;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: color var(--duration-base) var(--ease-spring-snappy, ease);
+  white-space: nowrap;
+}
+
+/* Dokunma hedefi 44px — görsel boyut aynı kalır (bkz. period-selector'daki
+   aynı gerekçe: ölçülmüş 2026-08-19 dersi, proje geneline taşındı). */
+.tab::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 44px;
+  transform: translateY(-50%);
+}
+
+.tab:hover {
+  color: var(--color-text-primary);
+}
+
+.tabActive {
+  color: var(--color-text-primary);
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.label {
+  display: inline-block;
+}
+
+/* İkon-only kompakt mod — sort/grid gibi dar gruplar için padding daralır. */
+.stripCompact .tab {
+  padding: var(--space-2) var(--space-3);
+}
+
+/* Kayan pill — framer-motion layoutId ile yönetilir. */
+/* Seçili segment accent-tinted — nötr gri pill hangi seçenekte olduğumuzu
+   zayıf anlatıyordu (Sahip, 2026-09-17: renk vurgusu her yerde). */
+.indicator {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--color-accent) 16%, var(--material-bg-card-hover));
+  border: 1px solid color-mix(in srgb, var(--color-accent) 32%, transparent);
+  box-shadow: var(--shadow-card), inset 0 1px 0 rgba(255, 255, 255, 0.10);
+  z-index: 0;
+}
+
+@media (max-width: 640px) {
+  .tab {
+    padding: var(--space-2) var(--space-3);
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .strip[data-full-width] {
+    width: 100%;
+  }
+  .strip[data-full-width] .tab {
+    flex: 1;
+    text-align: center;
+  }
+}

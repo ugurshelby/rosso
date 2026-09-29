@@ -1,0 +1,119 @@
+.sceneSection {
+  position: relative;
+  min-height: 100dvh;
+  min-height: 100svh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  scroll-snap-align: start;
+  scroll-snap-stop: normal;
+  padding: clamp(var(--space-4), 4vw, var(--space-8));
+  box-sizing: border-box;
+  background:
+    radial-gradient(circle at var(--y-focus-x, 50%) 30%, color-mix(in srgb, var(--y-glow, #6366f1) 16%, transparent) 0%, transparent 65%),
+    linear-gradient(180deg, var(--y-from, #1e1b4b) 0%, rgba(5, 5, 8, 0.96) 55%, var(--y-to, #08040C) 100%);
+  contain: content;
+}
+
+.calmContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(var(--space-4), 3.5vh, var(--space-7));
+  max-width: 640px;
+  width: 100%;
+  text-align: center;
+  margin: 0 auto;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+}
+
+.yearNum {
+  font-family: var(--font-journey, 'Bodoni Moda', Georgia, serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(2.4rem, 6vw, 3.8rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: color-mix(in srgb, var(--y-accent, #ec4899) 30%, #ffffff);
+  margin: 0;
+}
+
+.breakBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  background: rgba(239, 68, 68, 0.16);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #fca5a5;
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.artworkWrap {
+  --artwork-size: clamp(200px, 32vmin, 380px);
+  --artwork-radius: 10px;
+  width: var(--artwork-size);
+  aspect-ratio: 1 / 1;
+  margin: 0 auto;
+  box-shadow: 0 20px 48px -14px rgba(0, 0, 0, 0.8), 0 0 30px -8px color-mix(in srgb, var(--y-glow, #6366f1) 20%, transparent);
+}
+
+.metaWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.trackTitle {
+  font-family: var(--font-geist-sans, sans-serif);
+  font-size: 15px;
+  font-weight: 500;
+  color: #ffffff;
+  margin: 0;
+}
+
+.trackArtist {
+  font-family: var(--font-geist-sans, sans-serif);
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+}
+
+.mansetBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin-top: var(--space-2);
+}
+
+.mansetDeger {
+  font-family: var(--font-social, 'Barlow Semi Condensed', sans-serif);
+  font-weight: 900;
+  font-size: clamp(2rem, 5vw, 3rem);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  color: var(--y-accent, #ec4899);
+}
+
+.mansetEtiket {
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+}

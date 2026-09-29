@@ -1,0 +1,132 @@
+/* ── Hero Ambient Image (Sinematik Çevre & Atmosfer Katmanı) ──
+   Vintage Macintosh ve kır çiçekleri sahnesi tüm hero viewport'una
+   kesintisiz, organik bir çevre olarak yayılır.
+   Yapay bölünmüş ekran (split-screen) veya kutu hissi tamamen kaldırılmıştır. ── */
+
+.imageStageWrap {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  background: #06040a;
+}
+
+.imageStage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.imageContainer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.heroImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Masaüstünde Macintosh sağ-ortada (%78) konumlanır;
+     sol taraf ise doğal koyu alacakaranlık gökyüzü ve dağ silüetiyle tipografiye ferah alan açar. */
+  object-position: 78% 46%;
+  filter: contrast(1.02) brightness(0.92);
+  transform: translateZ(0);
+}
+
+/* ── Kesintisiz Atmosferik Scrim & Radyal Karartma (Seamless Ambient Mask) ──
+   Tipografinin nefes aldığı sol bölgede kadife yumuşaklığında radyal gölge havuzu,
+   sağa doğru ise gün batımı ışığının ve kır çiçeklerinin parlamasına izin verir. */
+.vignetteOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    /* Tipografi okuma havuzu (sol alanda derinleşir, sağdaki bilgisayar ve çiçeklere doğru yumuşakça erir) */
+    radial-gradient(
+      ellipse 65% 85% at 18% 48%,
+      rgba(6, 4, 10, 0.92) 0%,
+      rgba(6, 4, 10, 0.74) 38%,
+      rgba(6, 4, 10, 0.22) 72%,
+      transparent 100%
+    ),
+    /* Üst kenar (navbar arkasında yumuşak koyulaşma) */
+    linear-gradient(
+      180deg,
+      rgba(6, 4, 10, 0.88) 0%,
+      rgba(6, 4, 10, 0.35) 12%,
+      transparent 26%
+    ),
+    /* Alt kenar (Marquee'ye kesintisiz geçiş sağlayan zemin karartması) */
+    linear-gradient(
+      0deg,
+      #06040a 0%,
+      rgba(6, 4, 10, 0.85) 10%,
+      rgba(6, 4, 10, 0.3) 24%,
+      transparent 45%
+    ),
+    /* Sağ kenar vinyeti */
+    linear-gradient(
+      270deg,
+      rgba(6, 4, 10, 0.5) 0%,
+      transparent 12%
+    );
+}
+
+/* Tablet ve Geniş Mobil Düzeni (Dikey / Portre Ekranlar) */
+@media (max-width: 1080px) {
+  .heroImage {
+    /* Tablette bilgisayarın sağdan kesilmesini engelleyen odaklama */
+    object-position: 80% 50%;
+  }
+
+  .vignetteOverlay {
+    background:
+      radial-gradient(
+        ellipse 80% 90% at 20% 50%,
+        rgba(6, 4, 10, 0.94) 0%,
+        rgba(6, 4, 10, 0.78) 48%,
+        rgba(6, 4, 10, 0.3) 82%,
+        transparent 100%
+      ),
+      linear-gradient(
+        180deg,
+        rgba(6, 4, 10, 0.92) 0%,
+        rgba(6, 4, 10, 0.4) 14%,
+        transparent 28%
+      ),
+      linear-gradient(
+        0deg,
+        #06040a 0%,
+        rgba(6, 4, 10, 0.9) 14%,
+        rgba(6, 4, 10, 0.4) 30%,
+        transparent 50%
+      );
+  }
+}
+
+/* Telefon Düzeni (Dar Dikey Ekranlar <= 640px) */
+@media (max-width: 640px) {
+  .heroImage {
+    /* Mobilde Macintosh'u kadrajın içine ve orta-alt bölgeye alarak kesilmeyi önler */
+    object-position: 74% 68%;
+    filter: contrast(1.02) brightness(0.82);
+  }
+
+  .vignetteOverlay {
+    background:
+      linear-gradient(
+        180deg,
+        rgba(6, 4, 10, 0.96) 0%,
+        rgba(6, 4, 10, 0.85) 32%,
+        rgba(6, 4, 10, 0.42) 58%,
+        rgba(6, 4, 10, 0.86) 84%,
+        #06040a 100%
+      );
+  }
+}

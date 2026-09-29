@@ -1,0 +1,204 @@
+/* ═══════════════════════════════════════════════════════════════════
+   MODAL — FAZ GÖRÜNMEYEN-KAHRAMANLAR (2026-08-13)
+
+   iOS'ta modal iki farklı şeydir ve bu ayrım deneyimin kalbidir:
+   • Telefonda → **sheet**: ekranın ALTINDAN gelir, üst köşeleri yuvarlak,
+     alt köşeleri ekrana yapışık, üstünde bir "grabber" çizgisi durur.
+     Başparmağın yakınında açılır.
+   • Masaüstünde → ortada beliren kart.
+
+   Eskiden her iki bağlamda da ortada beliren, `translateY(8px)` ile
+   gelen bir kutuydu. Mobilde bu, ekranın ortasında asılı kalan ve
+   nereden geldiği belli olmayan bir panel demekti (apple-design §7:
+   "if something disappears one way, we expect it to emerge from where
+   it came" — kaynağı belirsiz panel mekânsal tutarlılığı bozar).
+
+   Materyal (§12): scrim + blur ile arka plan GERİ İTİLİR; modal görev
+   odaklı olduğu için dimming scrim doğru seçim (paralel panel olsaydı
+   scrim olmazdı).
+   ═══════════════════════════════════════════════════════════════════ */
+
+.dialog {
+  /* `::before` grabber'ın konumlanabilmesi için (mobil sheet). */
+  position: relative;
+  margin: auto;
+  width: min(92vw, 480px);
+  max-height: min(88dvh, 720px);
+  padding: 0;
+  border: 1px solid var(--edge-3);
+  border-top-color: color-mix(in srgb, #fff 14%, var(--edge-3));
+  /* iOS sheet köşe ölçeği. */
+  border-radius: 28px;
+  /* Yükselen yüzey → rampanın en üst basamağı. */
+  background: linear-gradient(
+    155deg,
+    color-mix(in srgb, #fff 5%, var(--elev-3)),
+    var(--elev-3) 55%
+  );
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-3), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.dialog::backdrop {
+  /* Sinematik scrim: arka plan hem karartılır hem bulanıklaştırılır →
+     odak modale iner, zemin "geri gider" (§12 "dim to focus"). */
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(20px) saturate(1.1);
+}
+
+/* ── Mobil: alttan gelen sheet ── */
+@media (max-width: 640px) {
+  .dialog {
+    margin: auto auto 0;
+    width: 100%;
+    max-width: none;
+    max-height: 90dvh;
+    /* Alt köşeler ekrana yapışır — sheet ekrandan "çıkmıştır". */
+    border-radius: 22px 22px 0 0;
+    border-bottom: none;
+  }
+
+  .inner {
+    /* Ev düğmesi çizgisi / safe-area altına içerik girmez. */
+    padding-bottom: calc(var(--space-6) + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Grabber — iOS sheet'in tutamağı. Sürüklenebilir olduğunu ima eder;
+     bizde sürükleme yok ama panelin "alttan gelen bir yüzey" olduğunu
+     tek bakışta anlatır (bu bir yönelim işareti, yalan bir söz değil:
+     panel gerçekten alttan geliyor). */
+  .dialog::before {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 36px;
+    height: 5px;
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--color-text-primary) 22%, transparent);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .header {
+    padding-top: var(--space-2);
+  }
+}
+
+/* ── Açılış: materyal belirir (§12 "materialize, don't just fade") ── */
+.dialog[open] {
+  animation: modal-in 380ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.dialog[open]::backdrop {
+  animation: backdrop-in 320ms ease-out;
+}
+
+/* Masaüstü: ortada, hafif ölçekle belirir. */
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Mobil: gerçekten AŞAĞIDAN yükselir (mekânsal tutarlılık, §7). */
+@media (max-width: 640px) {
+  @keyframes modal-in {
+    from {
+      opacity: 0;
+      transform: translateY(100%);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+@keyframes backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.inner {
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  /* Uzun içerikli modallerde gövde kendi içinde kayar — sheet'in
+     kendisi taşmaz (mobilde tüm sayfayı kaydırmak yanlış olurdu). */
+  overflow-y: auto;
+  max-height: inherit;
+  overscroll-behavior: contain;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.headerDismissOnly {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.closeBtn {
+  border-radius: 980px !important;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: background 150ms ease, transform 150ms ease;
+}
+
+.closeBtn:active {
+  transform: scale(0.95);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.title {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  /* Büyük başlıkta tracking negatife kayar (apple-design §15). */
+  letter-spacing: -0.01em;
+  min-width: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dialog[open] {
+    animation: modal-fade 200ms ease;
+  }
+  .dialog[open]::backdrop {
+    animation: none;
+  }
+  @keyframes modal-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .dialog::backdrop {
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: none;
+  }
+}

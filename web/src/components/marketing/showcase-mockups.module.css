@@ -1,0 +1,3237 @@
+/* Ürün mockup'ları — landing scrolly vitrin (CSS-only mini UI). */
+
+.mockRoot {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: clamp(12px, 2vw, 20px);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(8, 10, 12, 0.88);
+  box-shadow:
+    0 32px 80px -24px rgba(0, 0, 0, 0.65),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+}
+
+.mockChrome {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.28);
+}
+
+.mockDots {
+  display: flex;
+  gap: 6px;
+}
+
+.mockDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.mockDotActive {
+  background: var(--mock-accent, var(--color-accent));
+  box-shadow: 0 0 10px color-mix(in srgb, var(--mock-accent, var(--color-accent)) 60%, transparent);
+}
+
+.mockLabel {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.mockBody {
+  position: relative;
+  height: calc(100% - 44px);
+  min-height: 0;
+  overflow: hidden;
+  container-type: size;
+  container-name: mock;
+}
+
+.mockBody > * {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ── 1:1 vibe kart çerçevesi (crop yok) ─────────────────────────────────── */
+
+.artFrame {
+  position: relative;
+  aspect-ratio: 1;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.artFrame img {
+  object-fit: contain !important;
+}
+
+/* Profil fotoğrafı — yuvarlak, cover (A-FAZ 0.1). */
+.mockAvatar {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.mockAvatar img {
+  object-fit: cover !important;
+}
+
+/* ── Recap ───────────────────────────────────────────────────────────────── */
+
+.recapStage {
+  position: relative;
+  height: 100%;
+}
+
+.recapCover {
+  position: absolute;
+  inset: 0;
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+
+.recapScrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.15) 0%,
+    rgba(0, 0, 0, 0.35) 45%,
+    rgba(0, 0, 0, 0.88) 100%
+  );
+}
+
+.recapTop {
+  position: absolute;
+  top: var(--space-4);
+  left: var(--space-4);
+  right: var(--space-4);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 2;
+}
+
+.recapPeriod {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.625rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.recapCounter {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.625rem;
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.recapBottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  padding: clamp(12px, 4cqh, 24px);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(6px, 1.5cqh, 12px);
+}
+
+.recapTitle {
+  margin: 0;
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: clamp(1.125rem, 6cqh, 2.25rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1.02;
+  color: #fff;
+  max-width: 14ch;
+}
+
+.recapStat {
+  padding: clamp(3px, 0.8cqh, 6px) clamp(6px, 1.5cqw, 10px);
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.08);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(0.5rem, 1.6cqh, 0.5625rem);
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.recapStats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(4px, 1cqh, 8px);
+}
+
+.journeyShowcase {
+  height: 100%;
+  overflow: hidden;
+  padding: clamp(6px, 1.4cqh, 12px) clamp(8px, 2cqw, 14px);
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  gap: clamp(4px, 1cqh, 8px);
+  box-sizing: border-box;
+  container-type: size;
+  container-name: journey;
+}
+
+.journeyRail {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1px;
+  padding: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.journeyRailYear {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: clamp(2px, 0.6cqh, 5px) clamp(2px, 0.4cqw, 6px);
+  border-radius: 999px;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(0.4375rem, 1.6cqh, 0.5625rem);
+  letter-spacing: 0.02em;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.42);
+  white-space: nowrap;
+}
+
+.journeyRailYearOn {
+  background: color-mix(in srgb, var(--mock-accent, #9d7aff) 22%, rgba(255, 255, 255, 0.08));
+  color: #fff;
+  font-weight: 700;
+}
+
+.journeyRailYearBreak {
+  color: color-mix(in srgb, var(--mock-accent, #9d7aff) 80%, #fff);
+}
+
+.journeyRailMark {
+  margin-left: 2px;
+  /* M3 (2026-08-09): sabit amber → `--mock-accent`. Dosyadaki 93 kullanım
+     zaten `var(--mock-accent, …)` deseniyleydi; bu satır kaçmıştı. */
+  color: var(--mock-accent, currentColor);
+}
+
+.journeyHeadRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: clamp(6px, 1.5cqw, 12px);
+  align-items: end;
+  min-height: 0;
+  flex-shrink: 0;
+}
+
+.journeyOrigin {
+  display: grid;
+  grid-template-columns: clamp(24px, 7cqw, 32px) 1fr;
+  gap: clamp(4px, 1cqw, 8px);
+  align-items: center;
+  padding: clamp(3px, 0.8cqh, 6px) clamp(6px, 1.5cqw, 10px);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  min-width: 0;
+}
+
+.journeyOriginCover {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 5px;
+  object-fit: cover;
+}
+
+.journeyOriginText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.journeyOriginLabel {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(0.4375rem, 1.4cqh, 0.5rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.journeyOriginTrack {
+  font-size: clamp(0.5625rem, 1.8cqh, 0.6875rem);
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.88);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.journeyYearHead {
+  text-align: right;
+  min-width: 0;
+}
+
+.journeyYearNum {
+  display: block;
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: clamp(1.75rem, 9cqh, 3rem);
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  line-height: 0.9;
+  color: #fff;
+}
+
+.journeyYearChapter {
+  margin: clamp(2px, 0.5cqh, 4px) 0 0;
+  padding-top: clamp(2px, 0.5cqh, 4px);
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-style: italic;
+  font-size: clamp(0.625rem, 2.4cqh, 0.875rem);
+  color: color-mix(in srgb, var(--mock-accent, #9d7aff) 35%, rgba(255, 255, 255, 0.85));
+  position: relative;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.journeyYearChapter::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: clamp(24px, 8cqw, 36px);
+  height: 2px;
+  background: var(--mock-accent, #9d7aff);
+}
+
+.journeyBento {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.82fr) minmax(0, 0.82fr);
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(4px, 1cqh, 8px);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.journeyCell {
+  --cell-accent: var(--mock-accent, #9d7aff);
+  container-type: size;
+  container-name: jcell;
+  padding: clamp(8px, 3.5cqmin, 16px);
+  border-radius: 10px;
+  background: linear-gradient(
+    155deg,
+    color-mix(in srgb, var(--cell-accent) 8%, rgba(255, 255, 255, 0.07)) 0%,
+    rgba(255, 255, 255, 0.03) 55%,
+    rgba(0, 0, 0, 0.12) 100%
+  );
+  border: 1px solid color-mix(in srgb, var(--cell-accent) 18%, rgba(255, 255, 255, 0.1));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 8px 24px -16px rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(4px, 2cqh, 10px);
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.journeyCellGenre {
+  grid-column: 1;
+  grid-row: 1 / 3;
+}
+
+.journeyCellDiscovery {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.journeyCellVolume {
+  grid-column: 3;
+  grid-row: 1;
+}
+
+.journeyCellPodium {
+  grid-column: 2 / 4;
+  grid-row: 2;
+}
+
+.journeyCellLabel {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(0.5rem, 3.2cqh, 0.625rem);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+  flex-shrink: 0;
+}
+
+.journeyCellLabel::after {
+  content: '';
+  display: block;
+  width: clamp(18px, 22cqw, 32px);
+  height: 2px;
+  margin-top: clamp(3px, 1.2cqh, 6px);
+  background: var(--cell-accent);
+  opacity: 0.9;
+  border-radius: 1px;
+}
+
+.journeyGenreHead {
+  flex-shrink: 0;
+}
+
+.journeyGenreHero {
+  margin: 0;
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: clamp(1.125rem, 14cqh, 2.25rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  color: #fff;
+  line-height: 1;
+  text-shadow: 0 0 28px color-mix(in srgb, var(--cell-accent) 35%, transparent);
+}
+
+.journeyGenreSub {
+  margin: clamp(2px, 1cqh, 6px) 0 0;
+  font-size: clamp(0.5625rem, 3.5cqh, 0.75rem);
+  color: color-mix(in srgb, var(--cell-accent) 45%, rgba(255, 255, 255, 0.55));
+}
+
+.journeyBars {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  flex: 1;
+  min-height: 0;
+  gap: clamp(2px, 1.5cqh, 8px);
+}
+
+/* A-FAZ 5 (2026-08-02) — J1 "tür bar overlap".
+   Ölçülen kök neden: yüzde sütunu sabit `2rem` (32px) idi. "%100" dört
+   karakter; mono rakamda ~34px eder ve sütundan taşıp bar'ın üstüne biner.
+   `min-content` sütunu içeriğe göre büyür — taşma yapısal olarak imkânsız.
+   İsim sütununun alt sınırı da 3rem'den 2.5rem'e indi ki dar kapta bar'a
+   pay kalsın. */
+.journeyBarRow {
+  display: grid;
+  grid-template-columns: minmax(2.5rem, 26cqw) minmax(0, 1fr) min-content;
+  gap: clamp(4px, 2cqw, 8px);
+  align-items: center;
+  font-size: clamp(0.5625rem, 3.2cqh, 0.6875rem);
+  color: rgba(255, 255, 255, 0.78);
+  flex: 1;
+  min-height: 0;
+}
+
+.journeyBarRow:first-child .journeyBarName {
+  color: #fff;
+  font-weight: 700;
+}
+
+.journeyBarName {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.journeyBarPct {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  /* J1: 0.45 opaklık "hayalet metin" şikayetinin kaynağıydı — okunacak bir
+     sayı, dekor değil. */
+  color: rgba(255, 255, 255, 0.68);
+  font-size: clamp(0.5rem, 2.8cqh, 0.625rem);
+  white-space: nowrap;
+}
+
+.journeyBarTrack {
+  height: clamp(4px, 2.8cqh, 9px);
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.journeyBarFill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--cell-accent),
+    color-mix(in srgb, var(--cell-accent) 65%, white)
+  );
+  box-shadow: 0 0 12px color-mix(in srgb, var(--cell-accent) 40%, transparent);
+}
+
+.journeyStatCore {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  padding: clamp(2px, 1cqh, 8px) 0;
+}
+
+.journeyBigNum {
+  margin: 0;
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: clamp(1.5rem, 20cqh, 3rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  color: #fff;
+  line-height: 0.95;
+  text-align: center;
+}
+
+.journeyCellDiscovery .journeyBigNum {
+  color: color-mix(in srgb, var(--cell-accent) 75%, #fff);
+  text-shadow: 0 0 32px color-mix(in srgb, var(--cell-accent) 45%, transparent);
+}
+
+.journeyBigUnit {
+  display: block;
+  margin-top: clamp(2px, 1cqh, 4px);
+  font-size: clamp(0.5625rem, 3.5cqh, 0.75rem);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.52);
+}
+
+.journeySignalStats {
+  list-style: none;
+  margin: 0;
+  padding: clamp(6px, 2.5cqh, 12px) 0 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(4px, 2cqw, 10px);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.journeySignalStats li {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1px, 0.8cqh, 3px);
+  min-width: 0;
+}
+
+.journeySignalNum {
+  font-size: clamp(0.6875rem, 4.5cqh, 0.9375rem);
+  font-weight: 800;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+.journeySignalLabel {
+  font-size: clamp(0.4375rem, 2.8cqh, 0.5625rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.journeyPodium {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr 1fr;
+  gap: clamp(4px, 2.5cqw, 12px);
+  align-items: end;
+  flex: 1;
+  min-height: 0;
+  padding-top: clamp(2px, 1.5cqh, 8px);
+}
+
+.journeyPodiumSlot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: clamp(2px, 1.2cqh, 6px);
+  min-width: 0;
+  height: 100%;
+  text-align: center;
+}
+
+.journeyPodiumArt {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+}
+
+.journeyPodiumCenter .journeyPodiumArt::before {
+  content: '';
+  position: absolute;
+  width: 80%;
+  height: 70%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--cell-accent) 35%, transparent) 0%,
+    transparent 70%
+  );
+  filter: blur(8px);
+  z-index: 0;
+}
+
+.journeyPodiumCover {
+  position: relative;
+  z-index: 1;
+  border-radius: clamp(6px, 1.5cqmin, 10px);
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 10px 28px -8px rgba(0, 0, 0, 0.55);
+}
+
+.journeyPodiumCenter .journeyPodiumCover {
+  width: clamp(56px, 42cqh, 104px);
+  height: clamp(56px, 42cqh, 104px);
+  border-color: color-mix(in srgb, var(--cell-accent) 45%, rgba(255, 255, 255, 0.2));
+  box-shadow:
+    0 12px 32px -8px rgba(0, 0, 0, 0.6),
+    0 0 24px color-mix(in srgb, var(--cell-accent) 25%, transparent);
+}
+
+.journeyPodiumSide .journeyPodiumCover {
+  width: clamp(44px, 32cqh, 80px);
+  height: clamp(44px, 32cqh, 80px);
+}
+
+.journeyPodiumRank {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(0.5rem, 3cqh, 0.625rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--cell-accent);
+}
+
+.journeyPodiumTitle {
+  font-size: clamp(0.5625rem, 3.5cqh, 0.8125rem);
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  line-height: 1.2;
+}
+
+.journeyPodiumArtist {
+  font-size: clamp(0.5rem, 2.8cqh, 0.6875rem);
+  color: rgba(255, 255, 255, 0.48);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.journeyCellPodium .journeyPodiumMeta {
+  flex-shrink: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1px, 0.6cqh, 3px);
+}
+
+@container journey (max-height: 300px) {
+  .journeyOrigin {
+    display: none;
+  }
+
+  .journeyBarRow:nth-child(n + 5) {
+    display: none;
+  }
+}
+
+@container journey (max-width: 380px) {
+  .journeyBento {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1.1fr) minmax(0, 0.8fr) minmax(0, 0.8fr);
+  }
+
+  .journeyCellGenre {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+
+  .journeyCellDiscovery {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .journeyCellVolume {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .journeyCellPodium {
+    grid-column: 1 / -1;
+    grid-row: 3;
+  }
+}
+
+.vibeStage {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  container-type: size;
+  container-name: vibe;
+  padding: clamp(4px, 1.5cqh, 10px);
+  box-sizing: border-box;
+}
+
+.vibeGlow {
+  position: absolute;
+  width: 78%;
+  height: 72%;
+  top: 44%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--mock-accent, #c084fc) 32%, transparent) 0%,
+    transparent 70%
+  );
+  filter: blur(28px);
+  opacity: 0.9;
+  pointer-events: none;
+  transition:
+    opacity 0.4s ease,
+    transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.vibeFan {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vibeCard {
+  position: absolute;
+  aspect-ratio: 1;
+  border-radius: clamp(10px, 2cqmin, 18px);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 24px 56px -20px rgba(0, 0, 0, 0.65);
+  background: rgba(0, 0, 0, 0.35);
+  will-change: transform;
+  cursor: pointer;
+  padding: 0;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform 0.38s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.32s ease,
+    box-shadow 0.38s ease,
+    border-color 0.32s ease,
+    filter 0.32s ease;
+}
+
+.vibeCard .artFrame {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: unset;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.vibeCard .artFrame img {
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.vibeCardA {
+  width: clamp(108px, 52cqmin, 300px);
+  transform: rotate(-11deg) translateX(-44%) translateY(-1%);
+  z-index: 1;
+  opacity: 0.94;
+}
+
+.vibeCardB {
+  width: clamp(128px, 66cqmin, 380px);
+  transform: rotate(1deg) translateY(-3%);
+  z-index: 3;
+  border-color: color-mix(in srgb, var(--mock-accent, #c084fc) 35%, rgba(255, 255, 255, 0.2));
+  box-shadow:
+    0 28px 64px -18px rgba(0, 0, 0, 0.7),
+    0 0 48px color-mix(in srgb, var(--mock-accent, #c084fc) 24%, transparent);
+}
+
+.vibeCardC {
+  width: clamp(108px, 52cqmin, 300px);
+  transform: rotate(11deg) translateX(44%) translateY(-1%);
+  z-index: 2;
+  opacity: 0.94;
+}
+
+/* ── Vibe yelpazesi: tıklama = hover ──────────────────────────────────────
+   2026-08-14 kullanıcı testi (Ş-1): kartlar `<button>` ama `onClick`leri yok;
+   tıklayan kullanıcı hiçbir tepki alamıyordu. Sahibin kararı: yelpaze
+   düzeni bilinçli, **istenen davranış tıklandığında hover gibi öne çıkması**.
+
+   Çözüm JS'siz: aşağıdaki kurallarda `:focus-visible` yerine `:focus` var.
+   `:focus-visible` yalnız klavye gezinmesinde tetiklenir; `:focus` fare ve
+   DOKUNMA ile de tetiklenir — dokunmatikte hover olmadığı için asıl ihtiyaç
+   orada. (Bileşen server component; `useState` eklemek 900 satırlık bu dosyayı
+   client'a çevirir ve landing yükünü artırırdı.)
+
+   ⚠ Öne çıkma efektleri `@media (hover: hover)` içindeydi — dokunmatik cihazlar
+   bu bloğu HİÇ okumaz. Bu yüzden `:focus` kuralları bloğun DIŞINA alındı. */
+.vibeCardA:focus,
+.vibeCardB:focus,
+.vibeCardC:focus {
+  outline: none; /* görsel geri bildirim aşağıdaki transform + glow ile veriliyor */
+  z-index: 5;
+  opacity: 1;
+  border-color: color-mix(in srgb, var(--mock-accent, #c084fc) 50%, rgba(255, 255, 255, 0.3));
+  box-shadow:
+    0 32px 72px -16px rgba(0, 0, 0, 0.75),
+    0 0 56px color-mix(in srgb, var(--mock-accent, #c084fc) 34%, transparent);
+}
+
+.vibeCardA:focus {
+  transform: rotate(-8deg) translateX(-44%) translateY(-10%) scale(1.045);
+}
+
+.vibeCardB:focus {
+  transform: rotate(0deg) translateY(-12%) scale(1.05);
+}
+
+.vibeCardC:focus {
+  transform: rotate(8deg) translateX(44%) translateY(-10%) scale(1.045);
+}
+
+.vibeCard:focus .artFrame img {
+  transform: scale(1.06);
+}
+
+.vibeCardA.vibeCardActive {
+  transform: rotate(-8deg) translateX(-44%) translateY(-10%) scale(1.045);
+  z-index: 5;
+  opacity: 1;
+  border-color: color-mix(in srgb, var(--mock-accent, #c084fc) 50%, rgba(255, 255, 255, 0.3));
+  box-shadow:
+    0 32px 72px -16px rgba(0, 0, 0, 0.75),
+    0 0 56px color-mix(in srgb, var(--mock-accent, #c084fc) 34%, transparent);
+}
+
+.vibeCardB.vibeCardActive {
+  transform: rotate(0deg) translateY(-12%) scale(1.05);
+  z-index: 5;
+  opacity: 1;
+  border-color: color-mix(in srgb, var(--mock-accent, #c084fc) 55%, rgba(255, 255, 255, 0.32));
+  box-shadow:
+    0 36px 80px -14px rgba(0, 0, 0, 0.78),
+    0 0 64px color-mix(in srgb, var(--mock-accent, #c084fc) 38%, transparent);
+}
+
+.vibeCardC.vibeCardActive {
+  transform: rotate(8deg) translateX(44%) translateY(-10%) scale(1.045);
+  z-index: 5;
+  opacity: 1;
+  border-color: color-mix(in srgb, var(--mock-accent, #c084fc) 50%, rgba(255, 255, 255, 0.3));
+  box-shadow:
+    0 32px 72px -16px rgba(0, 0, 0, 0.75),
+    0 0 56px color-mix(in srgb, var(--mock-accent, #c084fc) 34%, transparent);
+}
+
+.vibeCard.vibeCardActive .artFrame img {
+  transform: scale(1.06);
+}
+
+/* Klavye kullanıcısı için görünür halka (fare/dokunmada gereksiz gürültü). */
+.vibeCard:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
+@media (hover: hover) {
+  .vibeFan:hover .vibeCard:not(:hover):not(:focus) {
+    opacity: 0.62;
+    filter: brightness(0.82) saturate(0.88);
+  }
+
+  .vibeCardA:hover,
+  .vibeCardA:focus-visible {
+    transform: rotate(-8deg) translateX(-44%) translateY(-10%) scale(1.045);
+    z-index: 5;
+    opacity: 1;
+    border-color: color-mix(in srgb, var(--mock-accent, #c084fc) 42%, rgba(255, 255, 255, 0.28));
+    box-shadow:
+      0 32px 72px -16px rgba(0, 0, 0, 0.75),
+      0 0 56px color-mix(in srgb, var(--mock-accent, #c084fc) 32%, transparent);
+  }
+
+  .vibeCardB:hover,
+  .vibeCardB:focus-visible {
+    transform: rotate(0deg) translateY(-12%) scale(1.05);
+    z-index: 5;
+    border-color: color-mix(in srgb, var(--mock-accent, #c084fc) 55%, rgba(255, 255, 255, 0.32));
+    box-shadow:
+      0 36px 80px -14px rgba(0, 0, 0, 0.78),
+      0 0 64px color-mix(in srgb, var(--mock-accent, #c084fc) 38%, transparent);
+  }
+
+  .vibeCardC:hover,
+  .vibeCardC:focus-visible {
+    transform: rotate(8deg) translateX(44%) translateY(-10%) scale(1.045);
+    z-index: 5;
+    opacity: 1;
+    border-color: color-mix(in srgb, var(--mock-accent, #c084fc) 42%, rgba(255, 255, 255, 0.28));
+    box-shadow:
+      0 32px 72px -16px rgba(0, 0, 0, 0.75),
+      0 0 56px color-mix(in srgb, var(--mock-accent, #c084fc) 32%, transparent);
+  }
+
+  .vibeCard:hover .artFrame img,
+  .vibeCard:focus-visible .artFrame img {
+    transform: scale(1.06);
+  }
+
+  .vibeFan:hover .vibeGlow {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.08);
+  }
+}
+
+.vibeCard:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--mock-accent, #c084fc) 70%, #fff);
+  outline-offset: 3px;
+}
+
+.vibeCaption {
+  position: absolute;
+  z-index: 6;
+  bottom: clamp(6px, 2.5cqh, 18px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: clamp(6px, 1.8cqh, 12px) clamp(14px, 3.5cqw, 22px);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.52);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  pointer-events: none;
+  transition:
+    border-color 0.32s ease,
+    box-shadow 0.32s ease,
+    background 0.32s ease;
+}
+
+.vibeCaptionSet {
+  position: relative;
+  display: block;
+  min-width: clamp(120px, 28cqw, 180px);
+  min-height: clamp(28px, 10cqh, 40px);
+}
+
+.vibeCaptionLine {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(2px, 0.8cqh, 6px);
+  width: max-content;
+  max-width: 100%;
+  opacity: 0;
+  transform: translateX(-50%) translateY(6px);
+  transition:
+    opacity 0.28s ease,
+    transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.vibeCaptionLineActive {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+@media (hover: hover) {
+  .vibeFan:hover .vibeCaption {
+    border-color: color-mix(in srgb, var(--mock-accent, #c084fc) 28%, rgba(255, 255, 255, 0.16));
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+  }
+
+  .vibeFan:hover .vibeCaptionLine {
+    opacity: 0;
+    transform: translateX(-50%) translateY(6px);
+  }
+
+  .vibeCardA:hover ~ .vibeCaption .vibeCaptionLineA,
+  .vibeCardA:focus-visible ~ .vibeCaption .vibeCaptionLineA {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .vibeCardB:hover ~ .vibeCaption .vibeCaptionLineB,
+  .vibeCardB:focus-visible ~ .vibeCaption .vibeCaptionLineB {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .vibeCardC:hover ~ .vibeCaption .vibeCaptionLineC,
+  .vibeCardC:focus-visible ~ .vibeCaption .vibeCaptionLineC {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* Tıklama/dokunma ile odaklanan kartın alt yazısı öne gelir — hover'daki
+   davranışın dokunmatik karşılığı (bkz. yukarıdaki `:focus` notu, Ş-1).
+   Kart odaklıyken DİĞER satırlar geri çekilir ki iki yazı üst üste binmesin. */
+.vibeCardA:focus ~ .vibeCaption .vibeCaptionLine,
+.vibeCardB:focus ~ .vibeCaption .vibeCaptionLine,
+.vibeCardC:focus ~ .vibeCaption .vibeCaptionLine {
+  opacity: 0;
+  transform: translateX(-50%) translateY(6px);
+}
+
+.vibeCardA:focus ~ .vibeCaption .vibeCaptionLineA,
+.vibeCardB:focus ~ .vibeCaption .vibeCaptionLineB,
+.vibeCardC:focus ~ .vibeCaption .vibeCaptionLineC {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.vibeLabel {
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: clamp(0.6875rem, 3.2cqh, 0.875rem);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.92);
+  white-space: nowrap;
+}
+
+.vibeSub {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(0.5rem, 2.2cqh, 0.625rem);
+  letter-spacing: 0.1em;
+  color: color-mix(in srgb, var(--mock-accent, #c084fc) 55%, rgba(255, 255, 255, 0.55));
+  white-space: nowrap;
+}
+
+/* ── Taste ───────────────────────────────────────────────────────────────── */
+
+.tasteShowcase {
+  height: 100%;
+  overflow: hidden;
+  padding: clamp(6px, 1.4cqh, 12px) clamp(8px, 2cqw, 14px);
+  display: grid;
+  /* A-FAZ 3: hero bandı / tür şeridi / iki panel */
+  grid-template-rows: auto auto minmax(0, 1fr);
+  gap: clamp(6px, 1.5cqh, 10px);
+  box-sizing: border-box;
+  container-type: size;
+  container-name: taste;
+}
+
+.tasteHeroBand {
+  position: relative;
+  padding: clamp(8px, 2.2cqh, 16px) clamp(10px, 2.5cqw, 16px);
+  border-radius: clamp(8px, 1.5cqmin, 12px);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--mock-accent, #e8a04a) 10%, rgba(255, 255, 255, 0.05)),
+    rgba(0, 0, 0, 0.22)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.tasteHeroGlow {
+  position: absolute;
+  inset: -20% -10% auto;
+  height: 80%;
+  background: radial-gradient(
+    ellipse 70% 100% at 20% 0%,
+    color-mix(in srgb, var(--mock-accent, #e8a04a) 28%, transparent),
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+.tasteHeroEyebrow {
+  position: relative;
+  display: block;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(0.4375rem, 1.8cqh, 0.5625rem);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--mock-accent, #e8a04a) 70%, rgba(255, 255, 255, 0.5));
+  margin-bottom: clamp(2px, 0.8cqh, 6px);
+}
+
+.tasteIdentity {
+  position: relative;
+  margin: 0;
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: clamp(1.125rem, 6.5cqh, 2rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  color: #fff;
+  line-height: 1.02;
+  text-shadow: 0 0 24px color-mix(in srgb, var(--mock-accent, #e8a04a) 30%, transparent);
+}
+
+.tasteHeroSubtitle {
+  position: relative;
+  margin: clamp(3px, 1cqh, 6px) 0 0;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(0.5rem, 2.2cqh, 0.6875rem);
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.tasteBlurb {
+  position: relative;
+  margin: clamp(4px, 1.2cqh, 8px) 0 0;
+  font-size: clamp(0.5625rem, 2.6cqh, 0.8125rem);
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.68);
+  max-width: 42ch;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.tasteDualGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(6px, 1.5cqmin, 10px);
+  min-height: 0;
+}
+
+.tastePanel {
+  display: grid;
+  /* A-FAZ 3: ortadaki vibe `tasteArtSlot` kaldırıldı → başlık + liste. */
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: clamp(4px, 1.2cqh, 8px);
+  padding: clamp(8px, 2cqh, 14px);
+  border-radius: clamp(8px, 1.5cqmin, 12px);
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.28));
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  min-height: 0;
+  overflow: hidden;
+  container-type: size;
+}
+
+.tastePanelNow {
+  --panel-accent: color-mix(in srgb, var(--mock-accent, #e8a04a) 85%, #fff);
+}
+
+.tastePanelCore {
+  /* M3: `#fbbf24` **amber** — landing denetiminde açıkça yasaklı renk
+     (`landing-responsive-audit.md`: "#f59e0b amber yasak"). Karışımın
+     ikinci ucu accent'in açık tonuna çevrildi; ton dengesi korunuyor. */
+  --panel-accent: color-mix(in srgb, var(--mock-accent, currentColor) 55%, #fff);
+}
+
+.tastePanelHead {
+  flex-shrink: 0;
+}
+
+.tastePanelLabel {
+  display: block;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(0.4375rem, 2cqh, 0.5625rem);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--panel-accent, var(--mock-accent, #e8a04a));
+}
+
+.tastePanelLabel::after {
+  content: '';
+  display: block;
+  width: clamp(16px, 20cqw, 28px);
+  height: 2px;
+  margin-top: clamp(3px, 1cqh, 5px);
+  background: var(--panel-accent, var(--mock-accent, #e8a04a));
+  opacity: 0.85;
+  border-radius: 1px;
+}
+
+.tastePanelHint {
+  margin: clamp(2px, 0.8cqh, 5px) 0 0;
+  font-size: clamp(0.5rem, 2.2cqh, 0.6875rem);
+  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.48);
+}
+
+/* ── A-FAZ 3 (2026-08-02): Tür DNA şeridi ──
+   Panellerdeki iki büyük vibe kartının yerine geldi (E4). Ürünün imzası
+   olan tür renkleri `getGenreColor`dan; mockup ayrı palet icat etmez. */
+.tasteGenreStrip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(3px, 1cqmin, 6px);
+  min-width: 0;
+}
+
+.tasteGenreChip {
+  display: inline-flex;
+  align-items: center;
+  gap: clamp(3px, 0.8cqmin, 5px);
+  padding: clamp(2px, 0.8cqh, 4px) clamp(5px, 1.4cqw, 9px);
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--genre-color) 32%, transparent);
+  background: color-mix(in srgb, var(--genre-color) 12%, rgba(255, 255, 255, 0.03));
+  font-size: clamp(0.4375rem, 2cqh, 0.5625rem);
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.88);
+  white-space: nowrap;
+}
+
+.tasteGenreDot {
+  width: clamp(4px, 1.2cqmin, 6px);
+  height: clamp(4px, 1.2cqmin, 6px);
+  border-radius: 50%;
+  background: var(--genre-color);
+  flex-shrink: 0;
+}
+
+.tasteGenrePct {
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in srgb, var(--genre-color) 62%, #fff);
+  font-weight: 700;
+}
+
+/* Çok dar kapta şerit ilk üç türe iner — sarma yerine kısaltma. */
+@container taste (max-height: 260px) {
+  .tasteGenreChip:nth-child(n + 4) {
+    display: none;
+  }
+}
+
+.tasteTrackList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2px, 0.8cqh, 5px);
+  flex-shrink: 0;
+}
+
+.tasteTrackRow {
+  display: grid;
+  grid-template-columns: clamp(1.25rem, 8cqw, 1.75rem) clamp(22px, 14cqmin, 36px) 1fr;
+  align-items: center;
+  gap: clamp(4px, 2cqw, 8px);
+  padding: clamp(3px, 1cqh, 6px) clamp(4px, 1.5cqw, 8px);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  min-width: 0;
+}
+
+.tasteTrackRank {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(0.5rem, 2.4cqh, 0.625rem);
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, 0.38);
+  text-align: right;
+}
+
+.tasteTrackCover {
+  position: relative;
+  width: clamp(22px, 14cqmin, 36px);
+  aspect-ratio: 1;
+  border-radius: 4px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.tasteTrackMeta {
+  min-width: 0;
+}
+
+.tasteStripTrack {
+  font-size: clamp(0.5625rem, 2.8cqh, 0.8125rem);
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tasteStripArtist {
+  font-size: clamp(0.5rem, 2.2cqh, 0.6875rem);
+  color: rgba(255, 255, 255, 0.52);
+  margin: 1px 0 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@container taste (max-height: 320px) {
+  .tasteBlurb {
+    -webkit-line-clamp: 1;
+  }
+
+  .tasteTrackList li:last-child {
+    display: none;
+  }
+}
+
+@container taste (max-width: 360px) {
+  .tasteDualGrid {
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ── Discover ────────────────────────────────────────────────────────────── */
+
+.discoverShowcase {
+  height: 100%;
+  overflow: hidden;
+  padding: clamp(6px, 1.4cqh, 12px) clamp(8px, 2cqw, 14px);
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1.25fr) minmax(0, 0.75fr);
+  gap: clamp(6px, 1.5cqh, 10px);
+  box-sizing: border-box;
+  container-type: size;
+  container-name: discover;
+}
+
+.discoverHead {
+  flex-shrink: 0;
+}
+
+.discoverHeadRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: clamp(8px, 2.5cqw, 14px);
+}
+
+.discoverSlotBadge {
+  flex-shrink: 0;
+  padding: clamp(3px, 1cqh, 6px) clamp(8px, 2.5cqw, 12px);
+  border-radius: 999px;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(0.4375rem, 1.9cqh, 0.5625rem);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: color-mix(in srgb, var(--mock-accent, #e8a04a) 85%, #fff);
+  background: color-mix(in srgb, var(--mock-accent, #e8a04a) 12%, rgba(0, 0, 0, 0.35));
+  border: 1px solid color-mix(in srgb, var(--mock-accent, #e8a04a) 28%, transparent);
+}
+
+.discoverHeadLabel {
+  display: block;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(0.4375rem, 1.8cqh, 0.5625rem);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--mock-accent, #e8a04a) 75%, rgba(255, 255, 255, 0.5));
+}
+
+.discoverHeadLabel::after {
+  content: '';
+  display: block;
+  width: clamp(16px, 18cqw, 28px);
+  height: 2px;
+  margin-top: clamp(3px, 1cqh, 5px);
+  background: var(--mock-accent, #e8a04a);
+  opacity: 0.9;
+  border-radius: 1px;
+}
+
+.discoverHeadTitle {
+  margin: clamp(3px, 1cqh, 6px) 0 0;
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: clamp(0.75rem, 3.8cqh, 1.125rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #fff;
+  line-height: 1.1;
+}
+
+.discoverFilterRow {
+  display: flex;
+  gap: clamp(4px, 1.5cqw, 8px);
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex-shrink: 0;
+}
+
+.discoverFilterChip {
+  flex-shrink: 0;
+  padding: clamp(3px, 1cqh, 5px) clamp(8px, 2.5cqw, 12px);
+  border-radius: 999px;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(0.4375rem, 1.8cqh, 0.5625rem);
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.discoverFilterChipOn {
+  color: color-mix(in srgb, var(--mock-accent, #e8a04a) 85%, #fff);
+  background: color-mix(in srgb, var(--mock-accent, #e8a04a) 14%, rgba(0, 0, 0, 0.35));
+  border-color: color-mix(in srgb, var(--mock-accent, #e8a04a) 32%, transparent);
+}
+
+.discoverHeroCard {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(6px, 1.5cqh, 10px);
+  min-height: 0;
+  padding: clamp(8px, 2cqh, 14px);
+  border-radius: clamp(8px, 1.5cqmin, 12px);
+  background: linear-gradient(
+    155deg,
+    color-mix(in srgb, var(--mock-accent, #e8a04a) 12%, rgba(255, 255, 255, 0.06)),
+    rgba(0, 0, 0, 0.32)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  position: relative;
+}
+
+.discoverHeroGlow {
+  position: absolute;
+  inset: auto 10% 20% 10%;
+  height: 40%;
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in srgb, var(--mock-accent, #e8a04a) 22%, transparent),
+    transparent 70%
+  );
+  pointer-events: none;
+  filter: blur(12px);
+}
+
+.discoverHeroCard::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--mock-accent, #e8a04a),
+    transparent
+  );
+  opacity: 0.65;
+}
+
+.discoverHeroRow {
+  display: flex;
+  align-items: flex-start;
+  gap: clamp(8px, 2.5cqw, 12px);
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+}
+
+.discoverHeroAvatar {
+  width: clamp(40px, 14cqmin, 56px);
+  height: clamp(40px, 14cqmin, 56px);
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--mock-accent, #e8a04a) 50%, transparent);
+}
+
+.discoverAffinityPill {
+  flex-shrink: 0;
+  align-self: flex-start;
+  padding: clamp(3px, 1cqh, 6px) clamp(8px, 2.5cqw, 12px);
+  border-radius: 999px;
+  font-size: clamp(0.4375rem, 1.9cqh, 0.5625rem);
+  font-weight: 700;
+  color: color-mix(in srgb, var(--mock-accent, #e8a04a) 80%, #fff);
+  background: color-mix(in srgb, var(--mock-accent, #e8a04a) 14%, rgba(0, 0, 0, 0.35));
+  border: 1px solid color-mix(in srgb, var(--mock-accent, #e8a04a) 30%, transparent);
+  white-space: nowrap;
+}
+
+.discoverLanePills {
+  display: flex;
+  gap: clamp(4px, 1.5cqw, 8px);
+  position: relative;
+  z-index: 1;
+}
+
+.discoverLanePill {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: clamp(4px, 1.2cqh, 8px) clamp(4px, 1.5cqw, 8px);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.discoverLanePillOn {
+  background: color-mix(in srgb, var(--mock-accent, #e8a04a) 14%, rgba(255, 255, 255, 0.06));
+  border-color: color-mix(in srgb, var(--mock-accent, #e8a04a) 35%, transparent);
+}
+
+.discoverLanePillValue {
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: clamp(0.6875rem, 3.2cqh, 1rem);
+  font-weight: 800;
+  color: #fff;
+  line-height: 1;
+}
+
+.discoverLanePillOn .discoverLanePillValue {
+  color: color-mix(in srgb, var(--mock-accent, #e8a04a) 85%, #fff);
+}
+
+.discoverLanePillLabel {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(0.375rem, 1.5cqh, 0.5rem);
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.45);
+  text-align: center;
+}
+
+.discoverHeroArt {
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+}
+
+.discoverAffinityRing {
+  --affinity-pct: 87%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: min(100%, 82cqmin);
+  height: min(100%, 82cqmin);
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 50%;
+  padding: clamp(3px, 1cqmin, 5px);
+  background: conic-gradient(
+    var(--mock-accent, #e8a04a) calc(var(--affinity-pct) * 1),
+    rgba(255, 255, 255, 0.08) 0
+  );
+  box-shadow: 0 0 32px color-mix(in srgb, var(--mock-accent, #e8a04a) 25%, transparent);
+}
+
+.discoverAffinityRing .discoverHeroArtFrame {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.45);
+  border: 2px solid rgba(0, 0, 0, 0.35);
+}
+
+.discoverHeroBody {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(4px, 1.2cqh, 8px);
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+}
+
+.discoverHeroTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: clamp(6px, 2cqw, 12px);
+}
+
+.discoverHeroIdentity {
+  min-width: 0;
+}
+
+.discoverHeroName {
+  margin: 0;
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: clamp(0.875rem, 5cqh, 1.375rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  color: #fff;
+  line-height: 1;
+}
+
+.discoverHeroHandle {
+  margin: clamp(2px, 0.8cqh, 4px) 0 0;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(0.5rem, 2.2cqh, 0.6875rem);
+  color: rgba(255, 255, 255, 0.48);
+}
+
+.discoverHeroHint {
+  margin: clamp(3px, 1cqh, 6px) 0 0;
+  font-size: clamp(0.5rem, 2.2cqh, 0.6875rem);
+  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.58);
+}
+
+.discoverHeroAffinity {
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.discoverAffinityNum {
+  display: block;
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: clamp(1.25rem, 10cqh, 2.5rem);
+  font-weight: 900;
+  line-height: 1;
+  color: var(--mock-accent, #e8a04a);
+  text-shadow: 0 0 28px color-mix(in srgb, var(--mock-accent, #e8a04a) 35%, transparent);
+}
+
+.discoverAffinityUnit {
+  display: block;
+  margin-top: 2px;
+  font-size: clamp(0.4375rem, 2cqh, 0.5625rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.discoverLanes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(4px, 1.5cqw, 8px);
+  padding: clamp(4px, 1.2cqh, 8px);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.discoverLane {
+  text-align: center;
+  min-width: 0;
+}
+
+.discoverLaneValue {
+  display: block;
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: clamp(0.75rem, 4.5cqh, 1.125rem);
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1;
+}
+
+.discoverLaneOn .discoverLaneValue {
+  color: var(--mock-accent, #e8a04a);
+}
+
+.discoverLaneBar {
+  display: block;
+  height: clamp(2px, 0.8cqh, 4px);
+  margin: clamp(2px, 0.6cqh, 4px) auto 0;
+  width: 88%;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.discoverLaneFill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--mock-accent, #e8a04a) 70%, rgba(255, 255, 255, 0.2));
+}
+
+.discoverLaneOn .discoverLaneFill {
+  background: var(--mock-accent, #e8a04a);
+}
+
+.discoverLaneLabel {
+  display: block;
+  margin-top: clamp(2px, 0.6cqh, 4px);
+  font-size: clamp(0.4375rem, 1.8cqh, 0.5625rem);
+  color: rgba(255, 255, 255, 0.42);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.discoverSharedCounts {
+  margin: 0;
+  font-size: clamp(0.5rem, 2cqh, 0.625rem);
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.discoverRareChips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(3px, 1cqh, 6px);
+}
+
+.discoverRareChip {
+  display: inline-flex;
+  align-items: center;
+  gap: clamp(4px, 1.2cqw, 6px);
+  padding: clamp(2px, 0.6cqh, 4px) clamp(6px, 2cqw, 10px) clamp(2px, 0.6cqh, 4px)
+    clamp(3px, 1cqw, 5px);
+  border-radius: 999px;
+  font-size: clamp(0.4375rem, 1.9cqh, 0.5625rem);
+  color: rgba(255, 255, 255, 0.78);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  white-space: nowrap;
+}
+
+.discoverRareCover {
+  position: relative;
+  width: clamp(14px, 5cqmin, 20px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.discoverActions {
+  display: flex;
+  gap: clamp(6px, 2cqw, 10px);
+  margin-top: auto;
+  padding-top: clamp(2px, 0.8cqh, 4px);
+}
+
+.discoverActionPass,
+.discoverActionMeet {
+  flex: 1;
+  text-align: center;
+  padding: clamp(5px, 1.4cqh, 8px) clamp(8px, 2.5cqw, 12px);
+  border-radius: 999px;
+  font-size: clamp(0.5rem, 2.2cqh, 0.6875rem);
+  font-weight: 700;
+}
+
+.discoverActionPass {
+  color: rgba(255, 255, 255, 0.62);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.discoverActionMeet {
+  color: #0a0806;
+  background: var(--mock-accent, #e8a04a);
+  box-shadow: 0 8px 20px -8px color-mix(in srgb, var(--mock-accent, #e8a04a) 55%, transparent);
+}
+
+.discoverCompactGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(6px, 1.5cqmin, 10px);
+  min-height: 0;
+}
+
+.discoverCompactCard {
+  display: grid;
+  grid-template-columns: clamp(28px, 16cqmin, 44px) 1fr auto;
+  gap: clamp(4px, 1.5cqw, 8px);
+  align-items: center;
+  padding: clamp(6px, 1.5cqh, 10px);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.discoverCompactAvatar {
+  width: clamp(28px, 16cqmin, 44px);
+  height: clamp(28px, 16cqmin, 44px);
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.discoverCompactArt {
+  width: clamp(28px, 16cqmin, 44px);
+  height: clamp(28px, 16cqmin, 44px);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.discoverCompactMeta {
+  min-width: 0;
+}
+
+.discoverCompactName {
+  margin: 0;
+  font-size: clamp(0.5625rem, 2.6cqh, 0.8125rem);
+  font-weight: 700;
+  color: #fff;
+}
+
+.discoverCompactHint {
+  margin: 2px 0 0;
+  font-size: clamp(0.4375rem, 1.9cqh, 0.5625rem);
+  color: rgba(255, 255, 255, 0.48);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.discoverCompactLane {
+  display: inline-block;
+  margin-top: clamp(2px, 0.6cqh, 4px);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(0.375rem, 1.5cqh, 0.5rem);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--mock-accent, #e8a04a) 65%, rgba(255, 255, 255, 0.45));
+}
+
+.discoverCompactScore {
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: clamp(0.75rem, 4cqh, 1rem);
+  font-weight: 900;
+  color: var(--mock-accent, #e8a04a);
+  flex-shrink: 0;
+}
+
+@container discover (max-width: 400px) {
+  .discoverCompactGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@container discover (max-width: 340px) {
+  .discoverCompactGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@container discover (max-height: 300px) {
+  .discoverHeroHint,
+  .discoverSharedCounts,
+  .discoverRareChips,
+  .discoverActions {
+    display: none;
+  }
+}
+
+/* ── Messages ────────────────────────────────────────────────────────────── */
+
+.messagesShowcase {
+  height: 100%;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  container-type: size;
+  container-name: messages;
+}
+
+.messagesChatHead {
+  display: flex;
+  align-items: center;
+  gap: clamp(6px, 2cqw, 12px);
+  padding: clamp(8px, 2cqh, 14px) clamp(10px, 2.5cqw, 16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--mock-accent, #b794f6) 8%, rgba(255, 255, 255, 0.04)),
+    transparent
+  );
+  flex-shrink: 0;
+}
+
+.messagesHeadAvatar {
+  width: clamp(32px, 12cqmin, 48px);
+  height: clamp(32px, 12cqmin, 48px);
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 2px solid color-mix(in srgb, var(--mock-accent, #b794f6) 45%, transparent);
+}
+
+.messagesHeadMeta {
+  min-width: 0;
+  flex: 1;
+}
+
+.messagesHeadName {
+  margin: 0;
+  font-size: clamp(0.6875rem, 3cqh, 0.9375rem);
+  font-weight: 800;
+  color: #fff;
+}
+
+.messagesHeadHandle {
+  margin: 2px 0 0;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(0.4375rem, 1.8cqh, 0.5625rem);
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.messagesMutualCovers {
+  list-style: none;
+  margin: clamp(4px, 1.2cqh, 6px) 0 0;
+  padding: 0;
+  display: flex;
+}
+
+.messagesMutualCover {
+  position: relative;
+  width: clamp(14px, 5cqmin, 18px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1.5px solid rgba(0, 0, 0, 0.45);
+  margin-left: clamp(-5px, -1.5cqw, -4px);
+}
+
+.messagesMutualCover:first-child {
+  margin-left: 0;
+}
+
+.messagesHeadAffinity {
+  flex-shrink: 0;
+  padding: clamp(3px, 1cqh, 6px) clamp(8px, 2.5cqw, 12px);
+  border-radius: 999px;
+  font-size: clamp(0.4375rem, 1.9cqh, 0.5625rem);
+  font-weight: 700;
+  color: color-mix(in srgb, var(--mock-accent, #b794f6) 80%, #fff);
+  background: color-mix(in srgb, var(--mock-accent, #b794f6) 14%, rgba(0, 0, 0, 0.35));
+  border: 1px solid color-mix(in srgb, var(--mock-accent, #b794f6) 30%, transparent);
+  white-space: nowrap;
+}
+
+.msgLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.28fr);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.msgSidebar {
+  padding: clamp(6px, 1.8cqh, 12px);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(4px, 1cqh, 8px);
+  background: rgba(0, 0, 0, 0.22);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.msgThread {
+  display: grid;
+  grid-template-columns: clamp(26px, 10cqmin, 36px) 1fr auto;
+  gap: clamp(4px, 1.5cqw, 8px);
+  align-items: center;
+  padding: clamp(5px, 1.2cqh, 8px);
+  border-radius: 8px;
+  min-width: 0;
+}
+
+.msgThreadActive {
+  background: color-mix(in srgb, var(--mock-accent, #b794f6) 12%, rgba(255, 255, 255, 0.06));
+  border: 1px solid color-mix(in srgb, var(--mock-accent, #b794f6) 22%, transparent);
+}
+
+.msgThreadAvatar,
+.msgThreadAvatarFrame {
+  width: clamp(26px, 10cqmin, 36px);
+  height: clamp(26px, 10cqmin, 36px);
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.msgThreadCopy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.msgThreadTop {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: clamp(4px, 1.5cqw, 8px);
+}
+
+.msgThreadTime {
+  flex-shrink: 0;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(0.375rem, 1.5cqh, 0.5rem);
+  color: rgba(255, 255, 255, 0.32);
+}
+
+.msgThreadUnread {
+  min-width: clamp(14px, 5cqmin, 18px);
+  height: clamp(14px, 5cqmin, 18px);
+  padding: 0 4px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(0.375rem, 1.5cqh, 0.5rem);
+  font-weight: 800;
+  color: #061018;
+  background: var(--mock-accent, #b794f6);
+}
+
+.msgThreadName {
+  font-size: clamp(0.5625rem, 2.4cqh, 0.75rem);
+  font-weight: 700;
+  color: #fff;
+}
+
+.msgThreadPreview {
+  font-size: clamp(0.4375rem, 1.9cqh, 0.5625rem);
+  color: rgba(255, 255, 255, 0.42);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.msgPane {
+  padding: clamp(8px, 2.2cqh, 16px);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(8px, 2cqh, 14px);
+  justify-content: flex-end;
+  min-height: 0;
+  overflow: hidden;
+  flex: 1;
+}
+
+.msgChat {
+  min-height: 0;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  overflow: hidden;
+}
+
+.messagesDayDivider {
+  align-self: center;
+  padding: clamp(2px, 0.6cqh, 4px) clamp(8px, 2.5cqw, 12px);
+  border-radius: 999px;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(0.375rem, 1.5cqh, 0.5rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.42);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.msgBubbleWrap {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2px, 0.6cqh, 4px);
+  max-width: 94%;
+}
+
+.msgBubbleWrapThem {
+  align-self: flex-start;
+}
+
+.msgBubbleWrapMe {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+
+.msgTime {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(0.375rem, 1.5cqh, 0.5rem);
+  color: rgba(255, 255, 255, 0.32);
+}
+
+.msgBubble {
+  max-width: 94%;
+  padding: clamp(8px, 2cqh, 14px);
+  border-radius: 12px 12px 12px 4px;
+  font-size: clamp(0.5625rem, 2.6cqh, 0.8125rem);
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.msgBubbleThem {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.msgBubbleMe {
+  background: color-mix(in srgb, var(--mock-accent, #b794f6) 20%, rgba(255, 255, 255, 0.06));
+  border: 1px solid color-mix(in srgb, var(--mock-accent, #b794f6) 32%, transparent);
+  border-radius: 12px 12px 4px 12px;
+}
+
+.msgTrackChip,
+.msgPlaylistChip {
+  display: flex;
+  align-items: center;
+  gap: clamp(6px, 2cqw, 10px);
+  margin-top: clamp(6px, 1.5cqh, 10px);
+  padding: clamp(4px, 1.2cqh, 8px) clamp(6px, 2cqw, 10px);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.38);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  max-width: 100%;
+}
+
+.msgTrackCover {
+  position: relative;
+  width: clamp(28px, 12cqmin, 40px);
+  aspect-ratio: 1;
+  border-radius: 6px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.msgTrackCopy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.msgTrackTitle {
+  font-size: clamp(0.5rem, 2.2cqh, 0.6875rem);
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.msgTrackArtist {
+  font-size: clamp(0.4375rem, 1.9cqh, 0.5625rem);
+  color: rgba(255, 255, 255, 0.5);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.msgTyping {
+  align-self: flex-start;
+  display: inline-flex;
+  gap: 4px;
+  padding: clamp(6px, 1.5cqh, 10px) clamp(10px, 2.5cqw, 14px);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.msgTyping span {
+  width: clamp(4px, 1.2cqmin, 6px);
+  height: clamp(4px, 1.2cqmin, 6px);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.42);
+  animation: msgTypingPulse 1.2s ease-in-out infinite;
+}
+
+.msgTyping span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.msgTyping span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes msgTypingPulse {
+  0%,
+  80%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+
+  40% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+}
+
+.msgComposer {
+  display: flex;
+  align-items: center;
+  gap: clamp(6px, 2cqw, 10px);
+  padding: clamp(6px, 1.5cqh, 10px) clamp(8px, 2.2cqw, 14px);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.28);
+}
+
+.msgComposerField {
+  flex: 1;
+  min-width: 0;
+  padding: clamp(5px, 1.4cqh, 8px) clamp(8px, 2.5cqw, 12px);
+  border-radius: 999px;
+  font-size: clamp(0.5rem, 2.2cqh, 0.6875rem);
+  color: rgba(255, 255, 255, 0.38);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.msgComposerSend {
+  flex-shrink: 0;
+  width: clamp(22px, 8cqmin, 30px);
+  height: clamp(22px, 8cqmin, 30px);
+  border-radius: 50%;
+  background: var(--mock-accent, #b794f6);
+  box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--mock-accent, #b794f6) 55%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .msgTyping span {
+    animation: none;
+    opacity: 0.6;
+  }
+}
+
+@container messages (max-width: 380px) {
+  .msgSidebar {
+    display: none;
+  }
+
+  .msgLayout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@container messages (max-height: 280px) {
+  .msgThreadPreview,
+  .msgComposer,
+  .msgTyping,
+  .messagesMutualCovers {
+    display: none;
+  }
+
+  .msgSidebar .msgThread:nth-child(n + 3) {
+    display: none;
+  }
+}
+
+/* ── Profile ─────────────────────────────────────────────────────────────── */
+
+.profileShowcase {
+  height: 100%;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  container-type: size;
+  container-name: profile;
+}
+
+.profileHeroBand {
+  display: grid;
+  grid-template-columns: clamp(40px, 14cqmin, 64px) 1fr auto;
+  gap: clamp(8px, 2.5cqw, 14px);
+  align-items: center;
+  padding: clamp(8px, 2.2cqh, 16px) clamp(10px, 2.5cqw, 16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--mock-accent, #f472b6) 10%, rgba(255, 255, 255, 0.04)),
+    transparent
+  );
+  flex-shrink: 0;
+}
+
+.profileActions {
+  display: flex;
+  flex-direction: row;
+  gap: clamp(4px, 1.5cqw, 8px);
+  flex-shrink: 0;
+}
+
+.profileActionGhost,
+.profileActionPrimary {
+  padding: clamp(4px, 1.2cqh, 7px) clamp(8px, 2.5cqw, 12px);
+  border-radius: 999px;
+  font-size: clamp(0.4375rem, 1.9cqh, 0.5625rem);
+  font-weight: 700;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.profileActionGhost {
+  color: rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.profileActionPrimary {
+  color: #120810;
+  background: var(--mock-accent, #f472b6);
+}
+
+.profileAvatar,
+.profileAvatarFrame {
+  width: clamp(40px, 14cqmin, 64px);
+  height: clamp(40px, 14cqmin, 64px);
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid color-mix(in srgb, var(--mock-accent, #f472b6) 50%, transparent);
+}
+
+.profileHeroMeta {
+  min-width: 0;
+}
+
+.profileName {
+  margin: 0;
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: clamp(0.8125rem, 4.2cqh, 1.25rem);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: #fff;
+  line-height: 1.05;
+}
+
+.profileHandle {
+  margin: clamp(2px, 0.8cqh, 4px) 0 0;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(0.4375rem, 1.9cqh, 0.5625rem);
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.profileVibeTag {
+  display: inline-block;
+  margin-top: clamp(4px, 1.2cqh, 8px);
+  padding: clamp(2px, 0.6cqh, 4px) clamp(6px, 2cqw, 10px);
+  border-radius: 999px;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(0.4375rem, 1.8cqh, 0.5625rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--mock-accent, #f472b6) 85%, #fff);
+  background: color-mix(in srgb, var(--mock-accent, #f472b6) 14%, rgba(0, 0, 0, 0.35));
+  border: 1px solid color-mix(in srgb, var(--mock-accent, #f472b6) 28%, transparent);
+}
+
+.profileMain {
+  min-height: 0;
+  padding: clamp(6px, 1.5cqh, 12px) clamp(8px, 2cqw, 14px);
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  gap: clamp(6px, 1.5cqmin, 10px);
+  box-sizing: border-box;
+}
+
+.profileVibePanel {
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  gap: clamp(4px, 1.2cqh, 8px);
+  padding: clamp(8px, 2cqh, 14px);
+  border-radius: clamp(8px, 1.5cqmin, 12px);
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--mock-accent, #f472b6) 12%, rgba(255, 255, 255, 0.05)),
+    rgba(0, 0, 0, 0.3)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  overflow: hidden;
+}
+
+.profileVibeEyebrow {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(0.4375rem, 1.8cqh, 0.5625rem);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.48);
+}
+
+.profileVibeArtSlot {
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.profileVibeGlow {
+  position: absolute;
+  inset: 10% 15%;
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in srgb, var(--mock-accent, #f472b6) 24%, transparent),
+    transparent 70%
+  );
+  filter: blur(14px);
+  pointer-events: none;
+}
+
+.profileVibeHeroArt {
+  width: min(100%, 76cqmin);
+  height: min(100%, 76cqmin);
+  max-width: 100%;
+  max-height: 100%;
+  filter: drop-shadow(0 18px 36px rgba(0, 0, 0, 0.5));
+}
+
+.profileVibeName {
+  margin: 0;
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: clamp(0.75rem, 4cqh, 1.125rem);
+  font-weight: 900;
+  color: #fff;
+  line-height: 1.05;
+}
+
+.profileVibeBlurb {
+  margin: 0;
+  font-size: clamp(0.5rem, 2.2cqh, 0.6875rem);
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.58);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.profileAside {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(6px, 1.5cqh, 10px);
+  overflow: hidden;
+}
+
+.profileStatRow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(4px, 1.2cqw, 8px);
+  flex-shrink: 0;
+}
+
+.profileStatCell {
+  padding: clamp(5px, 1.4cqh, 8px);
+  border-radius: 8px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.profileStatValue {
+  display: block;
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: clamp(0.6875rem, 3.8cqh, 1rem);
+  font-weight: 800;
+  color: #fff;
+  line-height: 1;
+}
+
+.profileStatLabel {
+  display: block;
+  margin-top: clamp(2px, 0.6cqh, 4px);
+  font-size: clamp(0.4375rem, 1.7cqh, 0.5625rem);
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.profileTopArtist,
+.profileGenres {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(4px, 1cqh, 6px);
+  flex-shrink: 0;
+}
+
+.profileTopArtistRow {
+  display: grid;
+  grid-template-columns: clamp(32px, 14cqmin, 48px) 1fr;
+  gap: clamp(6px, 2cqw, 10px);
+  align-items: center;
+  padding: clamp(5px, 1.4cqh, 8px);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.profileTopArtistCover {
+  position: relative;
+  width: clamp(32px, 14cqmin, 48px);
+  aspect-ratio: 1;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.profileTopArtistCopy {
+  min-width: 0;
+}
+
+.profileTopArtistName {
+  margin: 0;
+  font-size: clamp(0.5625rem, 2.6cqh, 0.8125rem);
+  font-weight: 700;
+  color: #fff;
+}
+
+.profileTopArtistMeta {
+  margin: 2px 0 0;
+  font-size: clamp(0.4375rem, 1.8cqh, 0.5625rem);
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.profileGenreList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(3px, 0.8cqh, 5px);
+}
+
+.profileGenreRow {
+  display: grid;
+  grid-template-columns: clamp(3.2rem, 18cqw, 4.5rem) 1fr;
+  gap: clamp(6px, 2cqw, 10px);
+  align-items: center;
+}
+
+.profileGenreLabel {
+  font-size: clamp(0.4375rem, 1.8cqh, 0.5625rem);
+  color: rgba(255, 255, 255, 0.55);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profileGenreBar {
+  height: clamp(3px, 1cqh, 5px);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.profileGenreFill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--mock-accent, #f472b6) 75%, rgba(255, 255, 255, 0.2));
+}
+
+/* ⚠ 2026-07-31: `flex-shrink` tanımsızdı (varsayılan 1) ama içerik
+   min-content'in altına inemediği için bölümler ÜST ÜSTE BİNİYORDU
+   (Sahibin ekran görüntüsü: "Son dinlediklerin" başlığı "Öne çıkan liste"
+   kartının üzerine taşmıştı). `overflow: hidden` taşmayı kırpar, `flex-shrink`
+   sıralaması hangi bölümün önce küçüleceğini belirler. */
+.profilePinned,
+.profileRecent {
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(4px, 1cqh, 6px);
+}
+
+/* Dar alanda önce "son dinlediklerin" listesi kısalsın; öne çıkan liste
+   kartı korunur (profilin imza bölümü). */
+.profileRecent {
+  flex: 1 1 auto;
+}
+
+.profilePinned {
+  flex: 0 0 auto;
+}
+
+.profileFeaturedLabel,
+.profileRecentLabel {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(0.4375rem, 1.8cqh, 0.5625rem);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.profilePinnedCard {
+  display: grid;
+  grid-template-columns: clamp(40px, 18cqmin, 64px) 1fr;
+  gap: clamp(6px, 2cqw, 10px);
+  align-items: center;
+  padding: clamp(6px, 1.5cqh, 10px);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  min-width: 0;
+}
+
+.profilePlaylistCover {
+  position: relative;
+  width: clamp(40px, 18cqmin, 64px);
+  aspect-ratio: 1;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.profilePinnedCopy {
+  min-width: 0;
+}
+
+.profilePlaylistTitle {
+  font-size: clamp(0.5625rem, 2.8cqh, 0.8125rem);
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profilePlaylistMeta {
+  font-size: clamp(0.4375rem, 1.9cqh, 0.5625rem);
+  color: rgba(255, 255, 255, 0.5);
+  margin: 2px 0 0;
+}
+
+.profilePlaylistSchedule {
+  display: inline-block;
+  margin-top: clamp(3px, 0.8cqh, 5px);
+  font-size: clamp(0.4375rem, 1.7cqh, 0.5625rem);
+  color: color-mix(in srgb, var(--mock-accent, #f472b6) 70%, rgba(255, 255, 255, 0.55));
+}
+
+.profileRecentList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(3px, 0.8cqh, 5px);
+}
+
+.profileRecentRow {
+  display: grid;
+  grid-template-columns: clamp(24px, 11cqmin, 34px) 1fr;
+  gap: clamp(6px, 2cqw, 10px);
+  align-items: center;
+  padding: clamp(4px, 1.2cqh, 7px) clamp(6px, 2cqw, 10px);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  min-width: 0;
+}
+
+.profileRecentCover {
+  position: relative;
+  width: clamp(24px, 11cqmin, 34px);
+  aspect-ratio: 1;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.profileRecentCopy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.profileRecentTitle {
+  font-size: clamp(0.5rem, 2.2cqh, 0.6875rem);
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profileRecentArtist {
+  font-size: clamp(0.4375rem, 1.8cqh, 0.5625rem);
+  color: rgba(255, 255, 255, 0.45);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+@container profile (max-width: 360px) {
+  .profileMain {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  }
+}
+
+@container profile (max-height: 300px) {
+  .profileRecent,
+  .profileVibeBlurb,
+  .profileGenres,
+  .profileTopArtist {
+    display: none;
+  }
+
+  .profileActions {
+    display: none;
+  }
+}
+
+/* ── Playlists ───────────────────────────────────────────────────────────── */
+
+.playlistsShowcase {
+  height: 100%;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: clamp(4px, 1.2cqh, 8px);
+  padding: clamp(6px, 1.4cqh, 12px) clamp(8px, 2cqw, 14px);
+  box-sizing: border-box;
+  container-type: size;
+  container-name: playlists;
+}
+
+.playlistsToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(6px, 2cqw, 12px);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.playlistsToolbarFilters {
+  display: inline-flex;
+  gap: clamp(4px, 1.2cqw, 6px);
+  flex-shrink: 0;
+}
+
+.playlistsFilterChip {
+  padding: clamp(3px, 1cqh, 5px) clamp(6px, 2cqw, 10px);
+  border-radius: 999px;
+  font-size: clamp(0.4375rem, 1.8cqh, 0.5625rem);
+  color: rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.playlistsFilterChipOn {
+  color: color-mix(in srgb, var(--mock-accent, #d4845a) 85%, #fff);
+  background: color-mix(in srgb, var(--mock-accent, #d4845a) 12%, rgba(0, 0, 0, 0.35));
+  border-color: color-mix(in srgb, var(--mock-accent, #d4845a) 30%, transparent);
+}
+
+.playlistsToolbarSearch {
+  flex: 1;
+  min-width: 0;
+  padding: clamp(5px, 1.4cqh, 8px) clamp(8px, 2.5cqw, 12px);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  font-size: clamp(0.5rem, 2.2cqh, 0.6875rem);
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.playlistsToolbarMeta {
+  flex-shrink: 0;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(0.4375rem, 1.7cqh, 0.5625rem);
+  color: rgba(255, 255, 255, 0.38);
+  white-space: nowrap;
+}
+
+.playlistsWorkspace {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 0.44fr) minmax(0, 0.56fr);
+  gap: clamp(6px, 1.5cqmin, 10px);
+  overflow: hidden;
+}
+
+.playlistsLibrary {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(4px, 1.2cqh, 8px);
+  padding: clamp(6px, 1.5cqh, 10px);
+  border-radius: clamp(8px, 1.5cqmin, 12px);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  overflow: hidden;
+}
+
+.playlistsLibraryLabel {
+  flex-shrink: 0;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(0.4375rem, 1.8cqh, 0.5625rem);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--mock-accent, #d4845a) 70%, rgba(255, 255, 255, 0.5));
+}
+
+/* ⚠ 2026-07-31: `flex: 1` idi → grid alanı doldurmaya zorlanıyor, taşıma
+   kuyruğu (`margin-top: auto`) kartların ÜSTÜNE biniyordu (Sahibin ekran
+   görüntüsü: "Sabah ritüeli" ile "Taşıma kuyruğu" çakışmış).
+   `flex: 0 1 auto` + `overflow: hidden`: grid içeriği kadar yer kaplar,
+   dar alanda büyümek yerine kırpılır. */
+/* A-FAZ 5 (2026-08-02) — L2 "grid çakışması":
+   Kart yüksekliği içerikten geliyordu (1:1 kapak + 2 satır metin), ızgara
+   ise `overflow: hidden` içinde sabit yükseklikli bir kutuya sıkışıyordu.
+   Dar kapta ikinci satır kırpılıyor, kesik kartlar "çakışma" gibi
+   görünüyordu.
+
+   `grid-template-rows: repeat(2, minmax(0, 1fr))` iki satırı kabın
+   yüksekliğini EŞİT bölüşmeye zorlar; kart içeriği taşamaz (aşağıda
+   kapak `min-height: 0` alır). Kırpma yerine ölçekleme. */
+.playlistsGrid {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: clamp(5px, 1.5cqmin, 10px);
+  align-content: stretch;
+}
+
+.playlistLibCard {
+  min-width: 0;
+  /* Satır yüksekliğini aşmaz — L2 kırpma zincirinin ikinci halkası. */
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(3px, 1cqh, 6px);
+  padding: clamp(4px, 1.2cqh, 7px);
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid transparent;
+}
+
+.playlistLibCardActive {
+  background: color-mix(in srgb, var(--mock-accent, #d4845a) 10%, rgba(255, 255, 255, 0.04));
+  border-color: color-mix(in srgb, var(--mock-accent, #d4845a) 35%, rgba(255, 255, 255, 0.12));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--mock-accent, #d4845a) 15%, transparent);
+}
+
+/* Kapak kartın kalan alanını doldurur. `aspect-ratio: 1` SABİTTİ: satır
+   daraldığında kapak küçülmüyor, kartı taşırıyordu (L2). Artık esnek —
+   1:1 hedeftir, dar satırda yükseklik kazanır (`min-height: 0` ile). */
+.playlistLibCover {
+  position: relative;
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  aspect-ratio: 1;
+  border-radius: 6px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 10px 24px -12px rgba(0, 0, 0, 0.55);
+}
+
+.playlistLibPlatform {
+  position: absolute;
+  right: clamp(4px, 1.2cqw, 6px);
+  bottom: clamp(4px, 1.2cqw, 6px);
+  width: clamp(8px, 2.8cqmin, 12px);
+  height: clamp(8px, 2.8cqmin, 12px);
+  border-radius: 50%;
+  background: #1db954;
+  border: 1.5px solid rgba(0, 0, 0, 0.45);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+
+.playlistLibName {
+  margin: 0;
+  font-size: clamp(0.5rem, 2.4cqh, 0.75rem);
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.playlistLibMeta {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: clamp(4px, 1.5cqw, 6px);
+  font-size: clamp(0.4375rem, 1.8cqh, 0.5625rem);
+  color: rgba(255, 255, 255, 0.45);
+  min-width: 0;
+}
+
+.playlistRossoBadge {
+  flex-shrink: 0;
+  padding: 1px clamp(4px, 1.5cqw, 6px);
+  border-radius: 999px;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(0.375rem, 1.5cqh, 0.5rem);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--mock-accent, #d4845a) 90%, #fff);
+  background: color-mix(in srgb, var(--mock-accent, #d4845a) 16%, rgba(0, 0, 0, 0.4));
+  border: 1px solid color-mix(in srgb, var(--mock-accent, #d4845a) 30%, transparent);
+}
+
+.playlistsDetail {
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: clamp(4px, 1.2cqh, 8px);
+  padding: clamp(6px, 1.5cqh, 10px);
+  border-radius: clamp(8px, 1.5cqmin, 12px);
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--mock-accent, #d4845a) 10%, rgba(255, 255, 255, 0.05)),
+    rgba(0, 0, 0, 0.32)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  overflow: hidden;
+}
+
+.playlistDetailHero {
+  display: grid;
+  grid-template-columns: clamp(52px, 20cqmin, 80px) 1fr;
+  gap: clamp(6px, 2cqw, 10px);
+  align-items: end;
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+.playlistDetailCover {
+  position: relative;
+  width: clamp(52px, 20cqmin, 80px);
+  aspect-ratio: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 14px 32px -14px rgba(0, 0, 0, 0.6);
+}
+
+.playlistDetailPlay {
+  position: absolute;
+  right: clamp(4px, 1.2cqw, 6px);
+  bottom: clamp(4px, 1.2cqw, 6px);
+  width: clamp(16px, 6cqmin, 22px);
+  height: clamp(16px, 6cqmin, 22px);
+  border-radius: 50%;
+  background: var(--mock-accent, #d4845a);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+.playlistDetailPlay::after {
+  content: '';
+  position: absolute;
+  left: 58%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  border-style: solid;
+  border-width: 4px 0 4px 7px;
+  border-color: transparent transparent transparent #0e0a08;
+}
+
+.playlistDetailHeroCopy {
+  min-width: 0;
+}
+
+.playlistDetailType {
+  display: block;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(0.4375rem, 1.7cqh, 0.5625rem);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.playlistDetailTitle {
+  margin: clamp(2px, 0.6cqh, 4px) 0 0;
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: clamp(0.75rem, 4.8cqh, 1.25rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  color: #fff;
+  line-height: 1.02;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.playlistDetailDesc {
+  margin: clamp(3px, 0.8cqh, 5px) 0 0;
+  font-size: clamp(0.4375rem, 1.9cqh, 0.625rem);
+  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.55);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.playlistDetailMeta {
+  margin: clamp(3px, 0.8cqh, 5px) 0 0;
+  font-size: clamp(0.4375rem, 1.8cqh, 0.5625rem);
+  color: rgba(255, 255, 255, 0.42);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.playlistTrackTable {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2px, 0.8cqh, 4px);
+  overflow: hidden;
+}
+
+.playlistTrackRow {
+  display: grid;
+  grid-template-columns: clamp(1rem, 6cqw, 1.25rem) clamp(22px, 11cqmin, 32px) 1fr auto;
+  align-items: center;
+  gap: clamp(4px, 1.5cqw, 8px);
+  padding: clamp(3px, 1cqh, 6px) clamp(4px, 1.2cqw, 8px);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  min-width: 0;
+}
+
+.playlistTrackRowPlaying {
+  background: color-mix(in srgb, var(--mock-accent, #d4845a) 12%, rgba(0, 0, 0, 0.28));
+  border-color: color-mix(in srgb, var(--mock-accent, #d4845a) 28%, rgba(255, 255, 255, 0.08));
+}
+
+.playlistTrackNow {
+  display: block;
+  width: clamp(6px, 2.5cqmin, 8px);
+  height: clamp(6px, 2.5cqmin, 8px);
+  margin: 0 auto;
+  border-radius: 2px;
+  background: var(--mock-accent, #d4845a);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--mock-accent, #d4845a) 55%, transparent);
+  animation: playlistNowPulse 1.4s ease-in-out infinite;
+}
+
+@keyframes playlistNowPulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .playlistTrackNow {
+    animation: none;
+    opacity: 0.85;
+  }
+}
+
+.playlistTrackRank {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(0.4375rem, 2cqh, 0.5625rem);
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, 0.35);
+  text-align: right;
+}
+
+.playlistTrackThumb {
+  position: relative;
+  width: clamp(22px, 11cqmin, 32px);
+  aspect-ratio: 1;
+  border-radius: 4px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.playlistTrackInfo {
+  min-width: 0;
+}
+
+.playlistTrackTitle {
+  margin: 0;
+  font-size: clamp(0.5rem, 2.4cqh, 0.75rem);
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.playlistTrackArtist {
+  margin: 1px 0 0;
+  font-size: clamp(0.4375rem, 1.8cqh, 0.5625rem);
+  color: rgba(255, 255, 255, 0.45);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.playlistTrackDuration {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(0.4375rem, 1.8cqh, 0.5625rem);
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, 0.38);
+  flex-shrink: 0;
+}
+
+@container playlists (max-width: 400px) {
+  .playlistsWorkspace {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 0.42fr) minmax(0, 0.58fr);
+  }
+}
+
+@container playlists (max-height: 300px) {
+  .playlistDetailDesc,
+  .playlistsToolbarMeta,
+  .playlistsToolbarFilters {
+    display: none;
+  }
+
+  .playlistTrackTable .playlistTrackRow:nth-child(n + 4) {
+    display: none;
+  }
+
+  .playlistsGrid .playlistLibCard:nth-child(n + 3) {
+    display: none;
+  }
+}
+
+/* ── Tüm mockup'lar — mock gövde ölçeğine göre yedek kurallar ───────────── */
+
+@container mock (max-height: 260px) {
+  .discoverHeroHint,
+  .discoverSharedCounts,
+  .discoverRareChips,
+  .discoverActions,
+  .profileRecent,
+  .profileVibeBlurb,
+  .profileGenres,
+  .profileTopArtist,
+  .profileActions,
+  .tasteBlurb,
+  .playlistDetailDesc,
+  .playlistsToolbarMeta,
+  .playlistsToolbarFilters,
+  .msgComposer,
+  .msgTyping,
+  .messagesMutualCovers {
+    display: none;
+  }
+
+  .discoverCompactGrid .discoverCompactCard:last-child {
+    display: none;
+  }
+
+  .playlistTrackTable .playlistTrackRow:nth-child(n + 3) {
+    display: none;
+  }
+}
+
+@container mock (max-width: 300px) {
+  .vibeCardA,
+  .vibeCardC {
+    opacity: 0.78;
+    width: clamp(88px, 42cqmin, 200px);
+  }
+
+  .vibeCardB {
+    width: clamp(100px, 54cqmin, 240px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vibeCard,
+  .vibeCard .artFrame,
+  .vibeCard .artFrame img,
+  .vibeGlow,
+  .vibeCaption,
+  .vibeCaptionLine {
+    transition: none;
+  }
+
+  .vibeFan:hover .vibeCard:not(:hover):not(:focus-visible) {
+    opacity: 0.78;
+    filter: none;
+  }
+
+  .vibeCard:hover,
+  .vibeCard:focus-visible {
+    transform: none;
+  }
+
+  .vibeCardA:hover,
+  .vibeCardA:focus-visible {
+    transform: rotate(-11deg) translateX(-44%) translateY(-1%);
+  }
+
+  .vibeCardB:hover,
+  .vibeCardB:focus-visible {
+    transform: rotate(1deg) translateY(-3%);
+  }
+
+  .vibeCardC:hover,
+  .vibeCardC:focus-visible {
+    transform: rotate(11deg) translateX(44%) translateY(-1%);
+  }
+
+  .vibeCard:hover .artFrame img,
+  .vibeCard:focus-visible .artFrame img {
+    transform: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .msgLayout {
+    grid-template-columns: 1fr;
+  }
+}

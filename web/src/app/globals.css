@@ -1,0 +1,798 @@
+@import "tailwindcss";
+@import "../styles/interaction-capability.css";
+
+/*
+  Rosso Design Token Sistemi — TEK PALET: Deep Violet.
+  Otorite: docs/design/katmanlar/dashboard-design.md §3
+
+  2026-08-01: 4 seçilebilir palet (Green Butter / Amber Dark / Monokrom /
+  Roland & Clay) ve palet seçici KALDIRILDI. Tek palet, tek dil.
+  Marketing/landing/auth katmanı bundan BAĞIMSIZ — marketing-theme.css.
+
+  Nötr griler kasıtlı olarak saf değil, morun içine hafifçe kaydırılmış.
+  #09090B / #18181B gibi nötr karşılıklarıyla DEĞİŞTİRME.
+*/
+
+/* ═══════════════════════════════════════════════════════════════
+   DEEP VIOLET — tek palet
+   OKLCH kaynak modeli: docs/design/rosso-kimligi/renk-token-mimari.md
+   Denetim: npm run audit:colors
+   ═══════════════════════════════════════════════════════════════ */
+:root {
+  /* ─── Primitive eksen (OKLCH — yeni ton türetirken bu hue/chroma kullan) ───
+     accent hue ≈ 286.2° · nötr hue ≈ 292° (mor sıcaklığı)
+     Örnek: --accent ≈ oklch(59.9% 0.230 286.2)
+             --bg     ≈ oklch(14.5% 0.015 291.1)  */
+  --primitive-hue-accent: 286.2;
+  --primitive-hue-neutral: 292;
+
+  /* ─── Prompt adları (kanonik) — OKLCH çıktı, HEX ile görsel parity korunur ─── */
+  --bg:            oklch(14.5% 0.015 291.1);
+  --surface:       oklch(19.9% 0.022 292.6);
+  --surface-hi:    oklch(23.8% 0.031 292.5);   /* hover */
+  --border:        oklch(28.1% 0.031 295.1);
+
+  --text:          oklch(96.7% 0.001 286.4);
+  --muted:         oklch(71.7% 0.031 296.5);
+  /* ⚠ ÖLÇÜLDÜ (2026-08-01): referans paketin #6E6980'i surface üzerinde
+     3,46:1 — AA (4,5) altında. Bugün yalnız gerçekten üçüncül yerlerde
+     (placeholder, tire, meta) kullanılıyor, ama bir gün küçük bir metne
+     düşerse sessizce okunmaz olurdu. Hue korunarak AA'nın üstüne çekildi.
+
+     🔴 YENİDEN ÖLÇÜLDÜ (2026-08-13, FAZ ART-DIRECTION): yüzey rampası
+     zeminleri AÇTI, dolayısıyla eski değer (63,4%) yeni en-açık zeminde
+     (`--elev-3`) 3,88:1'e düştü — yine AA altı. Kuralın kendisi bunu
+     öngörüyordu: "eşik EN AÇIK zemine göre seçilir." Zemin değişince
+     eşik yeniden hesaplandı.
+        L=67,4% → elev-3: 4,53 ✓ · elev-2: 5,32 ✓ · elev-0: 6,63 ✓
+     Hue ve chroma korundu; hiyerarşi bozulmuyor, hâlâ belirgin sönük. */
+  --faint:         oklch(67.4% 0.049 293.3);
+
+  --accent:        oklch(59.9% 0.230 286.2);
+  --accent-hover:  oklch(69.1% 0.176 290.4);
+  /* ⚠ ÖLÇÜLDÜ (2026-08-01, WCAG luminance): referans paket `--on-accent`i
+     #FFFFFF veriyordu ama beyaz metin accent üstünde 4.35:1 — AA (4,5) ALTINDA,
+     hover renginde (#9D84FF) ise 2.93:1'e düşüyor: net ihlal. #7C5CFF orta
+     parlaklıkta bir mor; beyaz da siyah da rahat geçmiyor. Koyu metin her iki
+     durumda güvenli: accent'te 4.56:1, hover'da 6.78:1. Göz kararı bunu
+     görmezdi — buton metni hover'da okunmaz hâle geliyordu. */
+  --on-accent:     oklch(14.5% 0.015 291.1);
+  --glow:          oklch(58.2% 0.237 277.5 / 0.25);
+
+  /* ─── Liquid Glass (dashboard-design.md §Liquid Glass) ───
+     Kanonik: rosso-kimligi/rosso-design-system.md §2 + stiller/glassmorphism.md.
+     Yarı-şeffaf dolgu + backdrop-blur(12-20px) + ince iç kenarlık kompozisyonu. */
+  --glass-fill:    rgba(255, 255, 255, 0.04);
+  --glass-border:  rgba(255, 255, 255, 0.08);
+
+  /* dashboard-redesign.md §2 — Apple materials & typography */
+  --tracking-display:  -0.025em;
+  --tracking-headline: -0.015em;
+  --tracking-body:     0em;
+  --tracking-caption:  0.01em;
+
+  --material-bg-base:        rgba(18, 16, 28, 0.72);
+  --material-bg-card:        rgba(28, 24, 42, 0.6);
+  --material-bg-card-hover:  rgba(38, 32, 58, 0.75);
+  --material-border:         1px solid rgba(255, 255, 255, 0.08);
+  --material-border-highlight: 1px solid rgba(255, 255, 255, 0.16);
+  --material-blur:           blur(24px) saturate(180%);
+
+  --shadow-card:    0 8px 24px -4px rgba(0, 0, 0, 0.4);
+  --shadow-popover: 0 16px 32px -8px rgba(0, 0, 0, 0.6);
+
+  --ease-spring-snappy: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --press-scale: 0.975;
+
+  /* ═══════════════════════════════════════════════════════════════
+     YÜZEY RAMPASI — "siyah üstüne siyah" probleminin kök çözümü
+     (FAZ ART-DIRECTION, 2026-08-13, Sahibin doğrudan talimatı:
+     "kart ile arka plan yeterince ayrışmıyor … çözüm daha fazla mor
+     kullanmak DEĞİL").
+
+     🔴 Problem ÖLÇÜLDÜ, göz kararı değil: eski sistemde yalnız iki
+     basamak vardı ve aralarındaki fark yok denecek kadar azdı —
+        --bg      oklch(14.5% …)
+        --surface oklch(19.9% …)   → yalnız 5,4 L puanı
+     Kart zeminine ayrıca `color-mix(surface 70%, transparent)`
+     uygulanınca gerçek fark ~3 L puanına düşüyordu. Kartı zeminden
+     ayıran tek şey 1px border kalıyordu: "yüzey" değil "çizgi".
+
+     Çözüm: DÖRT basamaklı, eşit aralıklı bir yükseklik rampası.
+     Her basamak ~4,5–5 L puanı yukarı çıkar; hue ve chroma korunur
+     (nötrler morun içinde kalır — §3 "saf gri kullanma" hâlâ geçerli).
+     Yukarı çıktıkça chroma da hafifçe artar: fiziksel olarak doğru,
+     yükselen yüzey daha çok ışık alır.
+
+        elev-0  zemin (sayfanın kendisi)          14,5%
+        elev-1  taban yüzey — liste, satır, chip  20,5%
+        elev-2  kart — asıl "yüzey" basamağı      25,5%
+        elev-3  yükselen — modal, popover, hero   30,5%
+
+     ⚠ `--surface` DEĞİŞTİRİLMEDİ: 200+ kullanım yeri ona bağlı,
+     blast radius çok geniş. Yeni kod bu rampayı kullanır; eski
+     yüzeyler kademeli taşınır. */
+  --elev-0:        oklch(14.5% 0.015 291.1);
+  --elev-1:        oklch(20.5% 0.023 292.5);
+  --elev-2:        oklch(25.5% 0.032 292.8);
+  --elev-3:        oklch(30.5% 0.040 293.2);
+
+  /* Kenarlıklar da rampalanır — yükselen yüzeyin kenarı daha parlak.
+     Kenarlık artık yüzeyi TANIMLAMAZ (bunu luminance farkı yapar),
+     yalnız kenarı keskinleştirir. */
+  --edge-1:        oklch(28.1% 0.031 295.1);
+  --edge-2:        oklch(33.5% 0.038 295.0);
+  --edge-3:        oklch(39.0% 0.045 295.0);
+
+  /* Gölge rampası — yükseklik yalnız renkle değil GÖLGEYLE de anlatılır.
+     Yükseldikçe gölge büyür ve yumuşar (ışık kaynağı sabit, üstte). */
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 4px 12px -4px rgba(0, 0, 0, 0.55), 0 12px 28px -18px rgba(0, 0, 0, 0.9);
+  --shadow-3: 0 8px 24px -6px rgba(0, 0, 0, 0.6), 0 24px 56px -28px rgba(0, 0, 0, 0.95);
+
+  /* ─── Mood hero kartı (Listeler — tek bilinçli renk sapması, §4.1) ───
+     ⚠ ÖLÜ TOKEN (ölçüldü 2026-08-20, refine tur 2): bu üçü HİÇBİR yerde
+     `var()` ile okunmuyor. `playlist-hero.module.css` `.heroCardMood`
+     aynı işi ham hex ile yapıyor (#f59e0b / #ec4899 / #fcd34d).
+
+     SİLİNMEDİ ve hex'e ÇEVRİLMEDİ: değerler birebir eşdeğer değil
+     (oklch(32% 0.065 35) ≠ #f59e0b), yani token'a bağlamak kartın
+     görünümünü DEĞİŞTİRİR. Hangisinin doğru olduğu bir renk kararı —
+     Sahibin onayı olmadan görsel değiştirmem. Karar verilince ikisinden
+     biri seçilip diğeri silinmeli. */
+  --mood-hero-bg:     oklch(22% 0.035 305);
+  --mood-hero-border: oklch(32% 0.065 35);
+  --mood-hero-icon:   oklch(88% 0.14 95);
+
+  /* ─── Veri yoğunluğu rampası — grafik, ısı haritası, bar ─── */
+  --v1: oklch(58.2% 0.237 277.5 / 0.85);
+  --v2: oklch(58.2% 0.237 277.5 / 0.62);
+  --v3: oklch(58.2% 0.237 277.5 / 0.42);
+  --v4: oklch(58.2% 0.237 277.5 / 0.26);
+  --v5: oklch(58.2% 0.237 277.5 / 0.14);
+
+  /* ─── Veri görselleştirme kategori renkleri ───
+     YALNIZ bar/yüzde/tür etiketinde. Kart zeminine, butona veya
+     navigasyona TAŞINMAZ (dashboard-design.md §3.4). */
+  --cat-hiphop:      #8B5CF6;
+  --cat-pop:         #F59E0B;
+  --cat-alternatif:  #10B981;
+  --cat-rock:        #3B82F6;
+  --cat-elektronik:  #EC4899;
+  --cat-rnb:         #84CC16;
+
+  /* ─── Mevcut kod adları → Deep Violet eşlemesi ───
+     224 kullanım yeri bu adlarla yazılmış; adlar korunuyor, değerler tek
+     palete bağlandı. Yeni kodda yukarıdaki kanonik adları kullan. */
+  --color-accent:          var(--accent);
+  --color-accent-hover:    var(--accent-hover);
+  --color-accent-subtle:   rgba(124, 92, 255, 0.18);
+  --color-accent-muted:    rgba(124, 92, 255, 0.10);
+  --color-accent-fg:       var(--on-accent);
+  --color-accent-gold:     #6E86FF;   /* ikincil ışık — mavi tarafa kaymış */
+
+  --color-bg:              var(--bg);
+  /* 🔴 FAZ ART-DIRECTION (2026-08-13) — TEK SATIRLIK KÖK ÇÖZÜM.
+     `--color-bg-elevated` projede 157 yerde, 71 dosyada kullanılıyor ve
+     hepsi "bu bir yüzey" demek istiyordu; ama `--surface`e bağlıydı ve
+     zeminden yalnız 5,4 L puanı ayrılıyordu. Alias'ı rampanın gerçek kart
+     basamağına (`--elev-2`) bağlamak, 71 dosyayı tek tek düzenlemeden
+     tüm dashboard yüzeylerini zeminden ayırır.
+
+     ⚠ Marketing katmanı ETKİLENMEZ: `marketing-theme.css` bu alias'ı
+     kendi scope'unda (`.marketing-theme`, `body.marketing-route-active`)
+     `--landing-bg-elevated` ile override ediyor — kontrol edildi.
+
+     `--surface` kanonik adı DEĞİŞMEDİ; onu doğrudan kullanan kod eski
+     davranışını korur. Değişen yalnız bu köprü alias. */
+  --color-bg-elevated:     var(--elev-2);
+  --color-bg-sunken:       oklch(10% 0.012 285);
+  --color-border:          var(--edge-2);
+  --color-border-strong:   var(--edge-3);
+
+  --color-surface:         var(--elev-2);
+  --color-surface-hover:   var(--elev-3);
+  --color-surface-raised:  var(--elev-3);
+
+  --color-bg-base:         var(--bg);
+  --color-hover:           rgba(255, 255, 255, 0.05);
+
+  --color-text-primary:    var(--text);
+  --color-text-secondary:  var(--muted);
+  --color-text-tertiary:   var(--faint);
+  --color-text-muted:      var(--faint);
+  --color-text-inverse:    var(--bg);
+
+  --color-nav-bg:          oklch(13% 0.018 285);
+  --color-nav-border:      oklch(22% 0.025 285);
+
+  /* ─── Semantik ─── */
+  --color-success:         oklch(69.6% 0.17 162);
+  --color-warning:         oklch(75.2% 0.15 75);
+  --color-error:           oklch(63.7% 0.21 25);
+  --color-error-hover:     oklch(68% 0.19 25); /* accent-hover gibi L↑ — on-error ile AA */
+  /* ⚠ ÖLÇÜLDÜ (2026-08-10): açık metin error zemininde 3,42:1 — AA altı.
+     Dolu hata yüzeylerinde koyu metin (accent ile aynı zemin rengi). */
+  --on-error:              oklch(14.5% 0.015 291.1);
+  --color-error-on:        var(--on-error);
+  --color-info:            oklch(62.3% 0.19 255);
+
+  /* ─── Platform (marka renkleri — dokunulmaz) ─── */
+  --color-spotify:         #1DB954;
+  --color-apple:           #FC3C44;
+  --color-yt-music:        #FF0000;
+
+  --background: var(--bg);
+  --foreground: var(--text);
+}
+
+
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  /* Tipografi token'ları — otorite: docs/design/typography/typography.md
+     sans      → Geist (tüm UI)
+     mono      → Geist Mono (yalnız teknik: tarih, sayı, sayaç, metadata)
+     display   → Archivo Black (Story Recap + marketing display)
+     analytics → Bebas Neue (müzik analitik büyük sayılar/başlıklar)
+     social    → Barlow Semi Condensed (keşfet, mesajlar, profil, topluluk) */
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-display);
+  --font-analytics: var(--font-analytics);
+  --font-social: var(--font-social);
+  --font-journey-serif: var(--font-journey-serif);
+}
+
+:root {
+  /* Journey ikilisi: Bodoni Moda Italic (ince serif) + Barlow SemiCondensed 900
+     (kalın sans). Kalın sans sosyal aileden gelir — ayrı dosya yüklenmez. */
+  --font-journey-sans: var(--font-social);
+}
+
+/* ─── Type Scale ─── */
+:root {
+  --text-xs:    0.75rem;
+  --text-sm:    0.875rem;
+  --text-base:  1rem;
+  --text-lg:    1.125rem;
+  --text-xl:    1.25rem;
+  --text-2xl:   1.5rem;
+  --text-3xl:   1.875rem;
+  --text-4xl:   2.25rem;
+  --text-5xl:   3rem;
+  /* Hero ölçeği — ölçek 3rem'de bitiyordu, "sakin dev" başlık için yetmiyordu
+     (FAZ UI-4, Sahibin kararı). Yalnızca EKLENDİ; mevcut basamaklar
+     değişmedi → hiçbir sayfa etkilenmez. */
+  --text-6xl:   4.5rem;   /* 72px — desktop hero */
+
+  --font-normal:   400;
+  --font-medium:   500;
+  --font-semibold: 600;
+  --font-bold:     700;
+
+  --leading-tight:   1.25;
+  --leading-normal:  1.5;
+  --leading-relaxed: 1.625;
+
+  --tracking-tight:  -0.025em;
+  --tracking-normal: 0;
+  --tracking-wide:   0.05em;
+
+  /* ─── Spacing — 4px grid ─── */
+  --space-1:   0.25rem;
+  --space-2:   0.5rem;
+  --space-3:   0.75rem;
+  --space-4:   1rem;
+  --space-5:   1.25rem;
+  --space-6:   1.5rem;
+  --space-7:   1.75rem;
+  --space-8:   2rem;
+  --space-9:   2.25rem;
+  --space-10:  2.5rem;
+  --space-12:  3rem;
+  --space-16:  4rem;
+  --space-20:  5rem;
+
+  /* ─── Mobil alt navigasyon yüksekliği (<768px) ───
+     nav.module.css .bottomNav'ın gerçek yüksekliği: padding(space-2×2=16px)
+     + item min-height(44px) = 60px, güvenlik payıyla 64px. safe-area AYRI
+     eklenir (env() burada sabitlenemez). Sabit-konumlu bottom nav'ın üstüne
+     içerik/composer koyan her sayfa bu token'ı kullanır — nav yüksekliği
+     değişirse tek yerden güncellenir (2026-07-17, chat composer bug'ı). */
+  --bottom-nav-height: 64px;
+
+  /* ─── Border radius ─── */
+  --radius-sm:   0.375rem;
+  --radius-md:   0.5rem;
+  --radius-base: var(--radius-md);
+  --radius-lg:   0.75rem;
+  --radius-xl:   1rem;
+  --radius-2xl:  1.5rem;
+  --radius-full: 9999px;
+
+  /* ─── Container ─── */
+  --container-sm:  640px;
+  --container-md:  768px;
+  --container-lg:  1024px;
+  --container-xl:  1280px;
+  --container-max: 1440px;
+
+  /* ─── Motion ─── */
+  --duration-fast:   100ms;
+  --duration-base:   150ms;
+  --duration-slow:   250ms;
+  --duration-slower: 350ms;
+
+  --ease-default: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in:      cubic-bezier(0.4, 0, 1, 1);
+  --ease-out:     cubic-bezier(0, 0, 0.2, 1);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   IŞIK TEK YÖNLÜDÜR — kart yüzeyi (dashboard-design.md §3.2)
+   Her yöne yayılan `box-shadow: 0 0 Xpx accent` YASAK. Işık üstten gelir.
+   Yardımcı sınıflar: yeni kartlar bunları kullanır, mevcut modüller
+   aynı reçeteyi kendi .module.css'inde tekrarlar.
+   ═══════════════════════════════════════════════════════════════ */
+/* FAZ ART-DIRECTION (2026-08-13): `--surface` yerine `--elev-2`.
+   `.surface-lit` projedeki en yaygın kart sınıfı — rampaya bağlanması
+   tek hamlede tüm kartları zeminden ayırır. Reçetenin YAPISI (155°
+   üstten ışık + inset üst çizgi + alt gölge) korunmuştur; değişen
+   yalnız basamağın luminance'ı. */
+.surface-lit {
+  background: linear-gradient(
+    155deg,
+    color-mix(in srgb, #fff 3.5%, var(--elev-2)),
+    var(--elev-2) 52%
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    var(--shadow-2);
+  border: 1px solid var(--edge-2);
+  border-top-color: color-mix(in srgb, #fff 10%, var(--edge-2));
+  transition:
+    background var(--duration-slow) var(--ease-default),
+    border-color var(--duration-slow) var(--ease-default),
+    box-shadow var(--duration-slow) var(--ease-default);
+}
+
+.surface-lit:hover {
+  background: linear-gradient(
+    155deg,
+    color-mix(in srgb, #fff 5%, var(--elev-3)),
+    var(--elev-3) 52%
+  );
+  border-color: var(--edge-3);
+  border-top-color: color-mix(in srgb, var(--accent) 45%, var(--edge-3));
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--accent-hover) 35%, transparent),
+    var(--shadow-3);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   YÜZEY BASAMAKLARI — `.surface-1` / `.surface-2` / `.surface-3`
+   (FAZ ART-DIRECTION, 2026-08-13)
+
+   Yukarıdaki `--elev-*` rampasının kullanıma hazır hâli. Bir kart
+   artık "kenarlıkla tarif edilen boşluk" değil, GERÇEK bir yüzey:
+   zeminden luminance ile ayrılır, gölgeyle havalanır, üst kenarındaki
+   ince ışık çizgisiyle yönünü belli eder.
+
+   Üstteki hafif `linear-gradient` kasıtlı ve çok zayıf (%3–4): tek
+   düz dolgu "flat" okunur, gradyan yüzeye eğrilik hissi verir. Işık
+   kuralı (§3.2) korunur — 155° yani ÜSTTEN, her yöne yayılan glow yok.
+
+   Hangi basamağı seçeceğin:
+     .surface-1  liste satırı, chip, input, sekme şeridi, alt-panel
+     .surface-2  KART — varsayılan seçim, sayfanın taşıyıcı yüzeyi
+     .surface-3  modal, popover, dropdown, öne çıkan tek hero kart
+   ═══════════════════════════════════════════════════════════════ */
+.surface-1,
+.surface-2,
+.surface-3 {
+  border-style: solid;
+  border-width: 1px;
+  transition:
+    background var(--duration-slow) var(--ease-default),
+    border-color var(--duration-slow) var(--ease-default),
+    box-shadow var(--duration-slow) var(--ease-default),
+    transform var(--duration-base) var(--ease-default);
+}
+
+.surface-1 {
+  background: var(--elev-1);
+  border-color: var(--edge-1);
+  box-shadow: var(--shadow-1);
+}
+
+.surface-2 {
+  background: linear-gradient(
+    155deg,
+    color-mix(in srgb, #fff 3.5%, var(--elev-2)),
+    var(--elev-2) 52%
+  );
+  border-color: var(--edge-2);
+  border-top-color: color-mix(in srgb, #fff 10%, var(--edge-2));
+  box-shadow: var(--shadow-2), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.surface-3 {
+  background: linear-gradient(
+    155deg,
+    color-mix(in srgb, #fff 5%, var(--elev-3)),
+    var(--elev-3) 52%
+  );
+  border-color: var(--edge-3);
+  border-top-color: color-mix(in srgb, #fff 14%, var(--edge-3));
+  box-shadow: var(--shadow-3), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* Tıklanabilir yüzey — bir basamak yukarı "kalkar". Accent yalnız üst
+   kenarda belirir (§3.1 bütçesi harcanmaz), zemin nötr kalır. */
+.surface-2.is-interactive:hover,
+.surface-3.is-interactive:hover {
+  transform: translateY(-2px);
+}
+
+.surface-2.is-interactive:hover {
+  background: linear-gradient(
+    155deg,
+    color-mix(in srgb, #fff 5%, var(--elev-3)),
+    var(--elev-3) 52%
+  );
+  border-color: var(--edge-3);
+  border-top-color: color-mix(in srgb, var(--accent) 45%, var(--edge-3));
+  box-shadow: var(--shadow-3), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .surface-2.is-interactive:hover,
+  .surface-3.is-interactive:hover {
+    transform: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CAM YÜZEY + MİKRO-IŞIMA (FAZ DASHBOARD-REDESIGN, 2026-08-13)
+   `.surface-lit`in glassmorphism varyantı — blur'lu, yükseltilmiş bento
+   kartları için (§2 "Glass yalnız yükselen öğelerde"). Işık kuralı aynı
+   kalır: glow HER ZAMAN `overflow:hidden` ile kartın kendi `border-radius`ına
+   KIRPILIR, asla zemine yayılmaz (§3.2/§9 — "her yöne yayılan glow yasak"ı
+   ihlal etmeden hover'da "canlı" hissettirir).
+   ═══════════════════════════════════════════════════════════════ */
+/* FAZ ART-DIRECTION (2026-08-13): cam yüzey artık `--surface`in %68'i
+   DEĞİL, `--elev-2` rampasının %88'i. Eski değer zeminle neredeyse aynı
+   luminance'a düşüyordu — "cam" görünmüyordu, yalnız kenarlıklı boşluk
+   oluyordu. %88 opaklık blur'u korur ama yüzeyi gerçekten zeminden
+   ayırır. */
+.surface-glass {
+  position: relative;
+  overflow: hidden;
+  background: var(--material-bg-card);
+  backdrop-filter: var(--material-blur);
+  border: var(--material-border);
+  border-top-color: color-mix(in srgb, #fff 14%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    var(--shadow-card);
+  transition:
+    border-color var(--duration-slow) var(--ease-default),
+    box-shadow var(--duration-slow) var(--ease-default),
+    transform var(--duration-base) var(--ease-default);
+}
+
+.surface-glass::before {
+  /* Cursor-tracking glow — JS `--mx`/`--my` yazmazsa kart merkezinde durur,
+     sabit bir "üstten ışık" gibi davranır (progressive enhancement). */
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: radial-gradient(
+    220px 220px at var(--mx, 50%) var(--my, 0%),
+    color-mix(in srgb, var(--accent) 16%, transparent),
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity var(--duration-base) var(--ease-default);
+  pointer-events: none;
+}
+
+.surface-glass:hover {
+  background: var(--material-bg-card-hover);
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--edge-3));
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--accent-hover) 35%, transparent),
+    var(--shadow-popover);
+  transform: translateY(-2px);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .surface-glass {
+    backdrop-filter: none;
+    background: var(--elev-2);
+  }
+  .surface-glass:hover {
+    background: var(--elev-3);
+  }
+}
+
+.surface-glass:hover::before {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .surface-glass {
+    transition: border-color var(--duration-base) var(--ease-default);
+  }
+  .surface-glass:hover {
+    transform: none;
+  }
+}
+
+/* Dekoratif hover yalnız gerçek pointer'da (touch-hover-capability.md) —
+   mobilde parmak "hover"ı taklit etmesin. */
+@media (hover: hover) and (pointer: fine) {
+  .surface-glass {
+    cursor: default;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SAYILAR VERİ GİBİ DİZİLİR (dashboard-design.md §3.5)
+   İstatistik/metrik sayıları mono + tabular. Display/analytics font
+   yalnız kimlik anlarında (büyük "68 SAAT", recap başlıkları, kimlik kartı).
+   ═══════════════════════════════════════════════════════════════ */
+.num-data {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-weight: var(--font-semibold);
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  /* Tek kesimli display fontlarını (Archivo Black, Bebas Neue) tarayıcının
+     sahte-kalınlaştırmasından koru: istenen ağırlık yoksa mevcut gerçek kesim
+     kullanılır, sentez yapılmaz. Çok kesimli aileler (Geist, Barlow) etkilenmez. */
+  font-synthesis-weight: none;
+}
+
+/* Story-deck (recap) açıkken sayfa scroll'u kapalı — deck kendi viewport'una
+   kilitli tam ekran odak deneyimi (story-deck.tsx/yearly-story-deck.tsx
+   mount/unmount'ta toggle eder). */
+/* FAZ R1.2 (2026-07-20): html'e de kilit gerekiyordu. Yalnız body'de
+   overflow:hidden varken html hâlâ kaydırılabiliyordu — Sahibin ekran
+   görüntülerinde sağdaki kaydırma çubuğu buradan geliyordu. Deck zaten
+   position:fixed olduğu için sayfanın kayacak bir içeriği yok; kalan
+   çubuk saf artıktı ve "tam ekran odak" hissini bozuyordu. */
+html:has(body.recap-stage-open),
+body.recap-stage-open {
+  overflow: hidden;
+  overscroll-behavior: none;
+  /* İçerik yüksekliğinin viewport'u aşmasını kaynağında engelle. */
+  height: 100%;
+}
+
+/* ── Living Avatar (Profil HeroCard) animasyonları ─── */
+@keyframes blobA {
+  0%, 100% { transform: translate(-12%, -8%) scale(1); }
+  50%      { transform: translate(10%, 6%) scale(1.18); }
+}
+@keyframes blobB {
+  0%, 100% { transform: translate(8%, 10%) scale(1.1); }
+  50%      { transform: translate(-10%, -6%) scale(0.9); }
+}
+@keyframes blobC {
+  0%, 100% { transform: translate(6%, -10%) scale(0.95); }
+  50%      { transform: translate(-8%, 8%) scale(1.2); }
+}
+@keyframes orbSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50%      { opacity: 0.9; transform: scale(1.06); }
+}
+@keyframes dotPulse {
+  0%, 100% { opacity: 0.4; }
+  50%      { opacity: 1; }
+}
+@keyframes memDrift1 {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  50%      { transform: translate(14px, -18px) rotate(22deg); }
+}
+@keyframes memDrift2 {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  50%      { transform: translate(-16px, 12px) rotate(-18deg); }
+}
+@keyframes barShimmer {
+  0%   { background-position: -150% 0; }
+  100% { background-position: 250% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Track/sanatçı adı → detay sayfası (2026-07-16: görülen her track/artist
+   tıklanabilir, recap+journey hariç). Rengi satırından miras alır — 60:30:10
+   bütçesinden harcamaz; hover'da accent alt çizgi, klavye odağı görünür (§7). */
+.entity-link {
+  color: inherit;
+  text-decoration: none;
+  border-radius: 4px;
+}
+.entity-link:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--color-accent);
+  text-underline-offset: 3px;
+}
+.entity-link:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   iOS OTOMATİK ZOOM KORUMASI (FAZ GÖRÜNMEYEN-KAHRAMANLAR, 2026-08-13)
+
+   🔴 ÖLÇÜLEBİLİR MOBİL KIRIK, stil tercihi değil:
+   iOS Safari, `font-size < 16px` olan bir metin alanına odak gelince
+   sayfayı otomatik ZOOM'lar ve kendiliğinden geri çıkmaz. Kullanıcı
+   formun ortasında büyütülmüş, yatay kayan bir ekranda kalır — üstelik
+   "yatay scroll yasak" kuralımızı (mobil-design.md §18) tarayıcı
+   kendisi ihlal etmiş olur.
+
+   Projede input/textarea/select'lerin çoğu `--text-sm` (14px) ile
+   yazılmıştı: ayarlar, kişisel bilgiler, onboarding, ilgi alanları,
+   şikayet formu, arama kutuları… Hepsini tek tek düzeltmek yerine
+   kaynağa TEK kural yazılıyor.
+
+   ⚠ Yalnız `max-width: 767px`te uygulanır — masaüstünde tipografi
+   kararları (14px input) dokunulmadan kalır, hiçbir sayfa etkilenmez.
+   Yazı tipi boyutu dışında hiçbir şey değiştirilmez.
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 767px) {
+  input:not([type='checkbox']):not([type='radio']):not([type='range']),
+  textarea,
+  select {
+    font-size: max(16px, 1em);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * Durum sayfaları (404 / hata sınırı) — design.md uyumlu sade estetik.
+ *
+ * 2026-09-24 performans denetimi: eskiden `status-page.module.css` idi.
+ * `(dashboard)/error.tsx` hata sınırı HER dashboard sayfasının ağacında
+ * durduğu için Turbopack onun CSS chunk'ını (`1pw50eiluia77.css`) her
+ * sayfada preload ediyordu; hata olmadığında hiç kullanılmıyordu
+ * (HAR: dashboard, taste, artist, mood, recap, settings, landing… 17 kayıt).
+ * Global stile taşındı: ~2 KB ana CSS'e katılır, ayrı istek ve boşa
+ * preload kalmaz. Kural: docs/reference/kural-performans.md §4.
+ * ───────────────────────────────────────────────────────────────────────── */
+.status-page {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: var(--space-3);
+  padding: var(--space-8);
+  background: var(--color-bg);
+}
+
+.status-page__code {
+  font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
+  font-size: var(--text-5xl);
+  font-weight: var(--font-bold);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-tertiary);
+}
+
+.status-page__title {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+}
+
+.status-page__description {
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+  max-width: 380px;
+  line-height: var(--leading-normal);
+}
+
+.status-page__cta {
+  margin-top: var(--space-4);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-5);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: background var(--duration-base) ease,
+              transform 200ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow var(--duration-base) ease;
+}
+.status-page__cta:hover {
+  background: var(--color-accent-hover);
+  transform: translateY(-1px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+.status-page__cta:active {
+  transform: translateY(0) scale(0.98);
+  transition-duration: 80ms;
+}
+.status-page__cta:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* 404'teki ikincil yollar — birincil CTA'yla yarışmayan, sakin bir şerit.
+   (2026-08-21: tek çıkışlı 404 ölü sondu; aramadan gelen ziyaretçiye
+   içeriğe giden başka kapılar da açıldı.) */
+.status-page__alt-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-5);
+  margin-top: var(--space-6);
+}
+
+.status-page__alt-links a {
+  position: relative;
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+  text-decoration: none;
+  transition: color var(--duration-base) ease;
+}
+
+.status-page__alt-links a:hover {
+  color: var(--color-text-primary);
+}
+
+.status-page__alt-links a:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 4px;
+  border-radius: var(--radius-sm);
+}
+
+/* Dokunma hedefi 44px — görsel yükseklik metnin kendisi kalır. */
+.status-page__alt-links a::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 44px;
+  transform: translateY(-50%);
+}

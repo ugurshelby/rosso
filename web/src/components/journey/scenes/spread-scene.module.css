@@ -1,0 +1,154 @@
+.sceneSection {
+  position: relative;
+  min-height: 100dvh;
+  min-height: 100svh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  scroll-snap-align: start;
+  scroll-snap-stop: normal;
+  padding: clamp(var(--space-4), 4vw, var(--space-8));
+  box-sizing: border-box;
+  background:
+    radial-gradient(circle at var(--y-focus-x, 50%) 20%, color-mix(in srgb, var(--y-glow, #6366f1) 22%, transparent) 0%, transparent 68%),
+    linear-gradient(180deg, var(--y-from, #1e1b4b) 0%, rgba(5, 5, 8, 0.94) 50%, var(--y-to, #08040C) 100%);
+  contain: content;
+}
+
+.spreadContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(var(--space-3), 2.5vh, var(--space-5));
+  max-width: 960px;
+  width: 100%;
+  text-align: center;
+  margin: 0 auto;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+}
+
+.yearNum {
+  font-family: var(--font-journey, 'Bodoni Moda', Georgia, serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(2.4rem, 6vw, 3.8rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: color-mix(in srgb, var(--y-accent, #ec4899) 30%, #ffffff);
+  margin: 0;
+}
+
+.breakBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  background: rgba(239, 68, 68, 0.16);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #fca5a5;
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.mansetBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.mansetDeger {
+  font-family: var(--font-social, 'Barlow Semi Condensed', sans-serif);
+  font-weight: 900;
+  font-size: clamp(2.8rem, 7vw, 5rem);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  color: var(--y-accent, #ec4899);
+}
+
+.mansetEtiket {
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* ── Asymmetric Cover Mosaic (3-5 items, different scale, uncropped 1:1) ─ */
+
+.mosaicWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(var(--space-2), 2vw, var(--space-4));
+  flex-wrap: wrap;
+  margin: var(--space-2) 0;
+}
+
+.mosaicPrimary {
+  --artwork-size: clamp(180px, 28vmin, 320px);
+  --artwork-radius: 10px;
+  width: var(--artwork-size);
+  aspect-ratio: 1 / 1;
+  box-shadow: 0 20px 48px -12px rgba(0, 0, 0, 0.8), 0 0 30px -8px color-mix(in srgb, var(--y-glow, #6366f1) 25%, transparent);
+}
+
+.mosaicSecondaryCol {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(var(--space-2), 1.5vw, var(--space-3));
+}
+
+.mosaicSecondary {
+  --artwork-size: clamp(100px, 15vmin, 160px);
+  --artwork-radius: 8px;
+  width: var(--artwork-size);
+  aspect-ratio: 1 / 1;
+  box-shadow: 0 14px 32px -8px rgba(0, 0, 0, 0.7);
+}
+
+.mosaicTertiaryCol {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(var(--space-2), 1.2vw, var(--space-3));
+}
+
+.mosaicTertiary {
+  --artwork-size: clamp(70px, 10vmin, 110px);
+  --artwork-radius: 6px;
+  width: var(--artwork-size);
+  aspect-ratio: 1 / 1;
+  box-shadow: 0 10px 24px -6px rgba(0, 0, 0, 0.6);
+}
+
+.genresRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.genreTag {
+  padding: 4px 10px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.7);
+}

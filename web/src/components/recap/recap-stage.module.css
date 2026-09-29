@@ -1,0 +1,75 @@
+/* RecapStage — tek sahne kontratı (FAZ R0/R0.1/R1.1, 2026-07-20).
+
+   🔴 DÖRT arıza turunun ardından kesin çözüm (Sahip talimatı):
+   "sol sidebar'ın bu katmanda TAMAMEN gizlendiği ve ekranın tamamen sahneye
+   kaldığı senaryo."
+
+   Önceki turlar neden yetmedi:
+     tur 1-3 → sahnenin İÇİNDE arandı (aspect-ratio, yükseklik zinciri, html overflow)
+     tur 4   → sahne fixed yapıldı ama `left: 220px` SABİTİ vardı; sidebar dar
+               pencerede gizlenince/daralınca sahne yanlış yerden başlıyor,
+               sağda ve altta boşluk kalıyordu (Sahibin 5-6. ekran görüntüsü)
+   tur 5 (bu) → sahne TÜM viewport'u kaplar (inset:0, left ofseti YOK) ve
+               sidebar + bottom-nav bu katmanda gizlenir. Ofset yok → hizalama
+               hatası da yok. */
+
+.stage {
+  position: fixed;
+  inset: 0;
+  /* Sidebar ve bottom-nav z-index: 40 — sahne onların ÜSTÜNDE olmalı. */
+  z-index: 60;
+  overflow: hidden;
+  color: #fff;
+  background: #000;
+}
+
+/* Sahne açıkken kabuk navigasyonu tamamen gizlenir — "ekran tamamen sahneye
+   kalır" (Sahip talimatı).
+
+   ⚠ Kardeş/alt seçici (`.stage ~ aside`) BURADA ÇALIŞMAZ: sahne
+   DashboardShell'in <main> ağacının içinde, sidebar ise onun DIŞINDA duruyor —
+   aralarında kardeşlik yok. Bu yüzden bileşen mount olduğunda <body>'ye
+   `recap-stage-open` sınıfı eklenir ve gizleme oradan yapılır. */
+/* ⚠ Seçici KABUK navlarına özeldir (`aria-label="Ana menü"` / `"Ana menü (mobil)"`).
+   Journey'de aynı desen `nav[aria-label]` yazıldığı için sahnenin KENDİ navigasyonunu
+   da gizlemişti (2026-08-14 testi, K-3). Recap destesinin butonları bugün <nav>
+   içinde değil — yani burada henüz görünür bir kırık yok — ama seçici aynı tuzağı
+   taşıyordu: sahneye bir <nav> eklendiği an sessizce kaybolurdu. */
+:global(body.recap-stage-open) :global(aside),
+:global(body.recap-stage-open) :global(nav[aria-label^='Ana menü']) {
+  display: none;
+}
+
+/* Kabuğun kendi padding/max-width'i sahnenin arkasında görünmesin diye
+   gövde kaydırması da kilitlenir (scroll sözleşmesi). */
+:global(body.recap-stage-open) {
+  overflow: hidden;
+}
+
+/* Zincirin ikinci halkası — sahne ile kart arasında yükseklik almayan katman
+   OLAMAZ. Bu geçmişte AnimatePresence/motion.div'in yükseklik almaması
+   yüzünden .cardShell'in height:100% sıfıra çökmesiyle bozulmuştu. */
+.motionLayer {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+}
+
+.cardShell {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+
+  /* ── Chrome güvenli bölgeleri (H-FAZ 0, 2026-08-02) ──
+     Story-bar (üst) ve ROSSO künye şeridi (alt) `position: absolute` overlay.
+     Kartlar tam yüksekliği kullandığı için liste yoğun kartlarda son satır
+     footer'ın ALTINDA kalıyordu (R2: kart 3-4'te 5. satır okunmuyordu).
+
+     Kartlar bu token'ları okuyup içeriklerini o kadar içeri çeker. Tek yerden
+     tanımlanır: şerit yüksekliği değişirse yalnız burası güncellenir.
+     Değerler ölçüldü (2026-08-02): footer padding 16+20 + 10px satır ≈ 56px,
+     story-bar padding 12+16 + 3px segment ≈ 40px. */
+  --recap-chrome-bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+  --recap-chrome-top: 40px;
+}

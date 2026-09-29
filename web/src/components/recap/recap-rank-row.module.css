@@ -1,0 +1,241 @@
+/* Recap sıralama satırı — Kart 3 (sanatçı) ve Kart 4 (şarkı) kardeş deseni.
+   Mobil: blur'lu arka plan + cam katman + kare pul + metin + metrik.
+   ≥900px: editorial liste şeridi (blur kapanır). */
+
+.row {
+  position: relative;
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: 0 var(--space-5);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.row + .row .glass {
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--color-text-primary) 10%, transparent);
+}
+
+.bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(18px) saturate(1.35);
+  transform: scale(1.15);
+}
+
+.glass {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  backdrop-filter: blur(10px) saturate(1.15);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--bg) 88%, transparent) 0%,
+    color-mix(in srgb, var(--bg) 68%, transparent) 55%,
+    color-mix(in srgb, var(--bg) 52%, transparent) 100%
+  );
+  pointer-events: none;
+}
+
+.thumb {
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+  /* 🔴 2026-08-11 — pul 114px'ti ve metne yalnız 122px bırakıyordu
+     (ölçüldü, bkz. `.title`). 96px'e indirildi: kapak hâlâ rahat
+     okunuyor, isimler için 18px kazanıldı. */
+  height: 64cqh;
+  max-height: 12cqh;
+  aspect-ratio: 1 / 1;
+  border-radius: 2px;
+  overflow: hidden;
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--surface) 90%, transparent) 0%,
+    color-mix(in srgb, var(--bg) 95%, transparent) 100%
+  );
+}
+
+.thumbCircle {
+  border-radius: var(--radius-full, 9999px);
+}
+
+.thumbSquare {
+  border-radius: var(--radius-md, 12px);
+}
+
+.thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.text {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  min-width: 0;
+}
+
+.rank {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: color-mix(in srgb, var(--color-text-primary) 45%, transparent);
+  margin: 0 0 2px;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-weight: 900;
+  /* 🔴 2026-08-10 — MOBİLDE İSİMLER ORTADAN BÖLÜNÜYORDU.
+     Ekran görüntüsüyle doğrulandı (375px): "Madrig/al", "Nightc/all",
+     "Camba/z". Sebep `overflow-wrap: anywhere` idi — kelimeyi HERHANGİ
+     bir harften bölme izni veriyordu. `break-word` yalnız *sığmayan*
+     uzun kelimeyi böler, normal kelimeleri kelime sınırından sarar.
+
+     ⚠ Aynı hata recap genelinde **14 yerde** vardı; hepsi düzeltildi.
+
+     `hyphens: auto` da kaldırıldı: Türkçe hece bölme sözlüğü tarayıcıda
+     güvenilir değil ve display fontta tire görsel gürültü yapıyor.
+
+     Font 4.2cqh → 3.4cqh: 5 satırlık listede "Palaye Royale" gibi iki
+     kelimeli isimler 2 satıra sığsın (aksi halde line-clamp kesiyordu). */
+  /* 🔴 2026-08-11 — İSİMLER HÂLÂ BÖLÜNÜYORDU ("Madriga/l", "Nightcal/l").
+     10 Ağu'da `anywhere → break-word` yapılmıştı; DOĞRU ama YETERSİZDİ.
+
+     Canlı ölçüm (375px, 11 Ağu) kök nedeni gösterdi — sorun sarma
+     kuralı değil, sütunun DARLIĞI:
+        satır         : 375px
+        pul (.thumb)  : 114px
+        "524 ÇALMA"   :  67px
+        boşluk+padding:  72px
+        → metne kalan : 122px   ("Madrigal" 27,6px fontta ~150px ister)
+
+     `break-word` sığmayan TEK kelimeyi yine böler — 122px'e sığmayınca
+     bölmekten başka çaresi yok. Bu yüzden asıl düzeltme sütunu
+     GENİŞLETMEK: pul küçüldü, "ÇALMA" mobilde gizlendi (aşağıda),
+     font bir tık indi. Ölçülen yeni genişlik yorumda tutuluyor. */
+  font-size: clamp(0.85rem, 3.1cqh, 2rem);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  color: var(--color-text-primary);
+  margin: 0;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.subtitle {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: color-mix(in srgb, var(--color-text-primary) 60%, transparent);
+  margin: 2px 0 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.plays {
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: color-mix(in srgb, var(--color-text-primary) 78%, transparent);
+  white-space: nowrap;
+}
+
+/* 🔴 2026-08-11 — "ÇALMA" mobilde GÖRSEL olarak gizli, ekran okuyucuda VAR.
+   `display: none` kullanılmadı: o, kelimeyi TalkBack/VoiceOver'dan da
+   siler ve "524" tek başına anlamsız kalırdı. Bu desen metni erişilebilir
+   ağaçta tutar, yalnız boyayı kaldırır — kazanılan ~40px isimlere gider. */
+.playsUnit {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (min-width: 900px) {
+  .row {
+    flex: 1 1 0;
+    min-height: 0;
+    gap: clamp(1rem, 2vw, 2rem);
+    padding: 0;
+    box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--color-text-primary) 8%, transparent);
+  }
+
+  .row:last-child {
+    box-shadow: none;
+  }
+
+  .row + .row .glass {
+    box-shadow: none;
+  }
+
+  .bg,
+  .glass {
+    display: none;
+  }
+
+  .thumb {
+    height: 62cqh;
+    max-height: clamp(56px, 11cqh, 104px);
+  }
+
+  .rank {
+    font-size: clamp(0.8rem, 1vw, 1.1rem);
+    color: color-mix(in srgb, var(--color-text-primary) 30%, transparent);
+    margin: 0 0 var(--space-1);
+  }
+
+  .title {
+    font-size: clamp(1.2rem, 1.6vw, 2rem);
+    line-height: 1.15;
+  }
+
+  .subtitle {
+    font-size: clamp(0.8rem, 1vw, 1.15rem);
+    color: color-mix(in srgb, var(--color-text-primary) 50%, transparent);
+    margin-top: var(--space-1);
+  }
+
+  .plays {
+    font-size: clamp(0.85rem, 1.05vw, 1.25rem);
+    font-weight: 600;
+    color: color-mix(in srgb, var(--color-text-primary) 80%, transparent);
+  }
+
+  /* Masaüstünde yer bol — "ÇALMA" görünür hâline döner. */
+  .playsUnit {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    clip-path: none;
+  }
+}

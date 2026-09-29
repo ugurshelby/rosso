@@ -1,0 +1,158 @@
+/* Button — design.md §5 hiyerarşisi */
+.base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  line-height: 1;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition:
+    color var(--duration-base) ease,
+    background var(--duration-base) ease,
+    border-color var(--duration-base) ease,
+    transform 100ms ease-out,
+    box-shadow var(--duration-slow) ease;
+  white-space: nowrap;
+  /* FAZ SOSYAL-IOS: mobilde dokunmada beliren gri kutu kaldırılır —
+     geri bildirimi kendi `:active` ölçeklememiz veriyor, tarayıcının
+     varsayılan vurgusu onun üstüne binip "iki katmanlı" hissettiriyordu. */
+  -webkit-tap-highlight-color: transparent;
+}
+
+.base:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.base:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Primary — accent solid (tek ana CTA, ghost CTA YASAK: design-rules §3) */
+/* Liquid-glass sheen — dolu accent renk korunur (CTA okunurluğu), üstte
+   camsı bir ışık çizgisi (inset rim light) iOS "glass button" hissini
+   verir (2026-09-17, Sahip: tüm bu seçili elementlerde glass/renk vurgusu). */
+.primary {
+  background: var(--color-accent);
+  color: var(--color-accent-fg);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  transition: background var(--duration-base) ease,
+              transform var(--duration-slow) cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow var(--duration-slow) ease;
+}
+.primary:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+  transform: translateY(-1px);
+  box-shadow:
+    0 4px 20px color-mix(in srgb, var(--color-accent) 28%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+.primary:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.10);
+  transition-duration: 80ms;
+}
+
+/* Secondary — border + metin, bg yok */
+.secondary {
+  background: transparent;
+  border-color: var(--color-border);
+  color: var(--color-text-primary);
+}
+.secondary:hover:not(:disabled) {
+  background: var(--color-bg-sunken);
+  border-color: var(--color-border-strong);
+}
+.secondary:active:not(:disabled) {
+  transform: scale(0.98);
+  transition-duration: 80ms;
+}
+
+/* Ghost — sadece metin, hover'da hafif bg (nav/subtle aksiyon, CTA değil) */
+.ghost {
+  background: transparent;
+  color: var(--color-text-secondary);
+}
+.ghost:hover:not(:disabled) {
+  background: var(--color-bg-sunken);
+  color: var(--color-text-primary);
+}
+.ghost:active:not(:disabled) {
+  transform: scale(0.98);
+  transition-duration: 80ms;
+}
+
+/* Danger — kırmızı solid (silme, bağlantı kesme) */
+.danger {
+  background: var(--color-error);
+  color: var(--color-error-on);
+}
+.danger:hover:not(:disabled) {
+  background: var(--color-error-hover);
+}
+.danger:active:not(:disabled) {
+  transform: scale(0.98);
+  transition-duration: 80ms;
+}
+
+/* Icon — kare, sadece ikon (toolbar) */
+.icon {
+  padding: 0;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border-color: var(--color-border);
+  color: var(--color-text-secondary);
+}
+.icon:hover:not(:disabled) {
+  background: var(--color-bg-sunken);
+  color: var(--color-text-primary);
+}
+.icon:active:not(:disabled) {
+  transform: scale(0.98);
+  transition-duration: 80ms;
+}
+
+/* Boyutlar */
+.sm {
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-xs);
+}
+.lg {
+  padding: var(--space-3) var(--space-6);
+  font-size: var(--text-base);
+}
+
+.fullWidth {
+  width: 100%;
+}
+
+.spinner {
+  animation: spin 0.75s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+    opacity: 0.6;
+  }
+  .primary:hover:not(:disabled),
+  .secondary:hover:not(:disabled),
+  .ghost:hover:not(:disabled),
+  .icon:hover:not(:disabled),
+  .danger:hover:not(:disabled),
+  .base:active:not(:disabled) {
+    transform: none;
+  }
+}

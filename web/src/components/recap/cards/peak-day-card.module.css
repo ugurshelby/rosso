@@ -1,0 +1,230 @@
+/* Kart 7 — En yoğun gün. Merkez hizalı; tarih+dakika imza; numaralı dikey liste. */
+
+.frame {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  background: var(--bg);
+  container-type: size;
+  overflow: hidden;
+}
+
+/* Manifesto/obsession ile aynı ambient dil — TEK katman radial glow
+   (design.md §3/§9: çok katmanlı blur "kirli leke" riski). Sinyal
+   tepeden geliyor: gün boyunca biriken dinlemenin ağırlığı yukarıdan
+   çöküyor hissi, imza bloğunun arkasında yumuşak bir odak. */
+.glow {
+  position: absolute;
+  inset: -15% -10% auto -10%;
+  height: 65%;
+  background: radial-gradient(
+    ellipse at 50% 0%,
+    color-mix(in srgb, var(--accent) 16%, transparent),
+    transparent 68%
+  );
+  pointer-events: none;
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  width: 100%;
+  min-width: 0;
+  padding: var(--recap-chrome-top, 40px) var(--space-5) var(--recap-chrome-bottom, 56px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* 🔴 2026-08-10 — mobilde ORTADA DEV BOŞLUK.
+     `space-between` içeriği üst ve alt uçlara itiyordu; 375×812'de
+     ekranın ortası tamamen boş kalıyordu (ekran görüntüsüyle
+     doğrulandı). Plan §"hiçbir ekranın alt yarısı boş kalmayacak"
+     bunun tersini istiyor: içerik dikeyde DENGELİ dağılmalı.
+     `center` + daha geniş `gap` ile küme ortalanır. */
+  justify-content: center;
+  gap: clamp(var(--space-6), 8cqh, var(--space-10));
+  text-align: center;
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(var(--space-3), 3cqh, var(--space-5));
+  width: min(100%, 32rem);
+  min-width: 0;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: clamp(0.5rem, 1.5cqw, 0.7rem);
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text-primary) 50%, transparent);
+}
+
+.signature {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* 2026-08-11 — Sahip: "tarih/dakika arası boşluk artırılsın, mor kare
+     yerine ince çizgi." İki veri artık tek satırda sıkışmıyor: tarih
+     birincil (büyük), dakika ikincil (küçük, altta), aralarında ince
+     nötr bir çizgi — accent değil (mobil design.md §4: "hata/uyarı accent
+     DEĞİLDİR", accent yalnız tıklanabilir/aktif yerde kullanılır). */
+  gap: clamp(var(--space-4), 4cqh, var(--space-6));
+  min-width: 0;
+  max-width: 100%;
+}
+
+.datePart {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(1.75rem, 10cqi, 4.5rem);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  color: var(--color-text-primary);
+}
+
+.sep {
+  width: clamp(2.5rem, 12cqw, 4.5rem);
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--color-text-primary) 45%, transparent),
+    transparent
+  );
+}
+
+.minutesPart {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1rem, 5cqi, 1.9rem);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  color: color-mix(in srgb, var(--color-text-primary) 78%, transparent);
+  font-variant-numeric: tabular-nums;
+}
+
+.minutesUnit {
+  font-family: var(--font-mono);
+  font-size: 0.5em;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text-primary) 42%, transparent);
+}
+
+.listSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(var(--space-4), 4cqh, var(--space-6));
+  width: min(100%, 32rem);
+  min-width: 0;
+}
+
+.listTitle {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: clamp(0.55rem, 1.6cqw, 0.75rem);
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text-primary) 42%, transparent);
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(var(--space-3), 3cqh, var(--space-5));
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: clamp(var(--space-3), 3cqw, var(--space-4));
+  min-width: 0;
+  text-align: left;
+  width: 100%;
+  max-width: 30rem;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-text-primary) 3%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-text-primary) 6%, transparent);
+}
+
+.rank {
+  font-family: var(--font-mono);
+  font-size: clamp(0.75rem, 2.2cqw, 1rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: color-mix(in srgb, var(--accent) 75%, transparent);
+  flex-shrink: 0;
+  padding-top: 0.15em;
+}
+
+.thumb {
+  position: relative;
+  flex-shrink: 0;
+  width: clamp(2.5rem, 9cqw, 3.25rem);
+  aspect-ratio: 1 / 1;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--color-text-primary) 10%, transparent);
+  background: color-mix(in srgb, var(--surface) 90%, transparent);
+}
+
+.thumbImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.thumbFallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: color-mix(in srgb, var(--color-text-primary) 35%, transparent);
+}
+
+.trackMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.trackTitle {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(0.9rem, 3.2cqw, 1.25rem);
+  line-height: 1.12;
+  color: var(--color-text-primary);
+  overflow-wrap: break-word;
+}
+
+.trackArtist {
+  font-family: var(--font-mono);
+  font-size: clamp(0.55rem, 1.5cqw, 0.72rem);
+  letter-spacing: 0.06em;
+  color: color-mix(in srgb, var(--color-text-primary) 50%, transparent);
+  overflow-wrap: break-word;
+}
+
+@media (min-width: 900px) {
+  .content {
+    padding-inline: clamp(var(--space-6), 4vw, var(--space-10));
+  }
+}

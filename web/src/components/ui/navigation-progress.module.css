@@ -1,0 +1,43 @@
+/* Küresel gezinme çubuğu — tıklama anında görünür ince amber çizgi (G2).
+   60:30:10: accent'in meşru "aktif durum" kullanımı; kalıcı değil, işlem bitince
+   kaybolur (design-system §8 — amaçsız kalıcı animasyon yasak). */
+.bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 2px;
+  z-index: 9999;
+  background: linear-gradient(
+    90deg,
+    var(--color-accent) 0%,
+    var(--color-accent-hover, var(--color-accent)) 100%
+  );
+  box-shadow: 0 0 8px var(--color-accent-subtle, rgba(245, 158, 11, 0.3));
+  pointer-events: none;
+}
+
+.active {
+  width: 80%;
+  /* Hızlı başla, sona yaklaştıkça yavaşla — "dürüst olmayan %100" asla gösterme */
+  animation: navProgressGrow 8s cubic-bezier(0.1, 0.6, 0.2, 1) forwards;
+}
+
+.done {
+  width: 100%;
+  opacity: 0;
+  transition: width 120ms ease-out, opacity 250ms ease-out 100ms;
+}
+
+@keyframes navProgressGrow {
+  0%   { width: 0; }
+  15%  { width: 42%; }
+  45%  { width: 66%; }
+  100% { width: 82%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .active {
+    animation: none;
+    width: 60%;
+  }
+}

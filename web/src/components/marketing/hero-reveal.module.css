@@ -1,0 +1,51 @@
+/* HeroReveal — saf CSS fade+slide-in (2026-08-11, motion/react'ten çevrildi).
+   Eski spring: stiffness 280, damping 36 → görsel olarak hafif "overshoot"suz,
+   yumuşak yavaşlayan bir giriş. `cubic-bezier(0.16, 1, 0.3, 1)` (ease-out-expo
+   ailesi) aynı hissi verir: hızlı başlar, yumuşak biter, zıplama yok. */
+
+/*
+ * 🔴 LCP DÜZELTMESİ (canlı ölçüm, 2026-08-21).
+ *
+ * ─── Sorun ────────────────────────────────────────────────────────────
+ * Eski hâl `opacity: 0`dan başlayıp 1'e animasyon yapıyordu. Canlıda
+ * ölçüldü: animasyonun `startTime`ı **820ms**; CSS yüklenip animasyon
+ * başlayana kadar hero ŞEFFAF kalıyordu. Lighthouse şeffaf öğeyi LCP
+ * saymaz → **LCP 5,86sn** (FCP yalnız 1,4sn iken). Zaman çizelgesi:
+ * 1200ms'de font doğru ama opacity 0, 3500ms'de 0.68, 5500ms'de 1.
+ *
+ * ─── Neden `both` fill de yetmedi ─────────────────────────────────────
+ * İlk denemem `opacity: 0`ı keyframe'e taşıyıp `animation-fill-mode: both`
+ * yapmaktı. Ölçüldü: 400-900ms'de düzeldi ama 1500-2500ms'de yine 0'a
+ * düştü — `backwards` fill, animasyon KAYDEDİLDİĞİ anda geriye dönük
+ * uygulanıyor ve hero tekrar kayboluyordu.
+ *
+ * ─── Çözüm ────────────────────────────────────────────────────────────
+ * Opaklık animasyondan TAMAMEN çıkarıldı; geriye yalnız hareket kaldı.
+ * Hero ilk boyamadan itibaren OPAK — LCP hemen sayılır. Giriş hissi
+ * korunuyor çünkü asıl algılanan şey zaten yukarı kayma; fade onun
+ * yanında ikincildi.
+ *
+ * Tasarım kaybı yok denecek kadar az, kazanç ölçülebilir: bu sayfanın
+ * LCP'si tamamen buna bağlıydı.
+ */
+.reveal {
+  animation: hero-reveal-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  /* animation-delay component'ten inline style ile gelir (`delay` prop'u). */
+}
+
+@keyframes hero-reveal-in {
+  from {
+    transform: translateY(18px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}

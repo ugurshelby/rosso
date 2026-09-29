@@ -1,0 +1,134 @@
+.sceneSection {
+  position: relative;
+  min-height: 100dvh;
+  min-height: 100svh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  scroll-snap-align: start;
+  scroll-snap-stop: normal;
+  padding: clamp(var(--space-4), 4vw, var(--space-8));
+  box-sizing: border-box;
+  background:
+    radial-gradient(circle at var(--y-focus-x, 50%) 25%, color-mix(in srgb, var(--y-glow, #6366f1) 22%, transparent) 0%, transparent 68%),
+    linear-gradient(180deg, var(--y-from, #1e1b4b) 0%, rgba(5, 5, 8, 0.92) 50%, var(--y-to, #08040C) 100%);
+  contain: content;
+}
+
+.focusContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(var(--space-4), 3vh, var(--space-6));
+  max-width: 900px;
+  width: 100%;
+  text-align: center;
+  margin: 0 auto;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+}
+
+.yearNum {
+  font-family: var(--font-journey, 'Bodoni Moda', Georgia, serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(2.4rem, 6vw, 4rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: color-mix(in srgb, var(--y-accent, #ec4899) 30%, #ffffff);
+  margin: 0;
+}
+
+.breakBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  background: rgba(239, 68, 68, 0.16);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #fca5a5;
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.artworkHeroWrap {
+  --artwork-size: clamp(280px, 45vmin, 580px);
+  --artwork-radius: 12px;
+  width: var(--artwork-size);
+  aspect-ratio: 1 / 1;
+  margin: 0 auto;
+  transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 24px 60px -16px rgba(0, 0, 0, 0.8), 0 0 40px -10px color-mix(in srgb, var(--y-glow, #6366f1) 30%, transparent);
+}
+
+.artworkHeroWrap:active {
+  transform: scale(0.97);
+}
+
+.metaBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.trackTitle {
+  font-family: var(--font-geist-sans, sans-serif);
+  font-size: clamp(1.2rem, 3vw, 1.8rem);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: #ffffff;
+  margin: 0;
+  max-width: 28ch;
+  text-wrap: balance;
+}
+
+.trackArtist {
+  font-family: var(--font-geist-sans, sans-serif);
+  font-size: clamp(0.95rem, 2vw, 1.15rem);
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.65);
+  margin: 0;
+}
+
+.mansetBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin-top: var(--space-2);
+}
+
+.mansetDeger {
+  font-family: var(--font-social, 'Barlow Semi Condensed', sans-serif);
+  font-weight: 900;
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  color: var(--y-accent, #ec4899);
+}
+
+.mansetEtiket {
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .artworkHeroWrap {
+    transition: none;
+  }
+}

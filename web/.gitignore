@@ -1,0 +1,146 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+gcp-key.json
+*-key.json
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# vendor / external repos
+/ytmusicapi-repository/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Playwright
+/test-results/
+/playwright-report/
+/playwright/.cache/
+
+# Personal data — Spotify export files
+/docs/platform-dev-docs/Spotify Extended Streaming History/
+
+.vercel
+
+# Test profili görselleri (telifli olabilir — repoya girmez)
+test-profiles/
+
+# Sahibin kişisel Spotify playlist kapakları (~51 MB, 149 görsel; kişisel
+# fotoğraflar dahil). Yerel referans — repoya girmez (kişisel veri + boyut).
+owner-personal/
+
+# Superpowers brainstorm/mockup çıktıları
+.superpowers/
+
+# Spotify ham export arşivi (~205 MB, yerel referans — repoya girmez)
+docs/platform-dev-docs/spotify zip/
+
+# Sayfa ekran görüntüleri (Cursor için yerel referans — repoya girmez)
+docs/superpowers/reports/screens/
+
+# Platform ham dokumantasyon arsivi (Sahibin NotebookLM kaynaklari, 2026-07-12).
+# YERELDE durur, repo'ya girmez: 446 dosya / ~265 bin satir -> repo'yu sisirir.
+# Agent bu dosyalari okuyabilir; ama "kaynaga degil, olcume guven" (CLAUDE.md 1.5).
+docs/platform-dev-docs/platform-developer-docs/
+
+# Jarvis /screenshots ciktilari (repo sismesin)
+screenshots/
+
+# docs/ ve logs/ Git takibinde (Sahip kararı, 2026-07-26 gece oturumu):
+# 2026-07-17'de "yerel-özel kalsın" denip ignore edilmişti; 22-07 kayıp-veri
+# olayından sonra Sahip versiyon geçmişinin korunmasını istedi (gece
+# talimatı §6). İç dokümantasyon+loglar artık commit edilir ki çalışma
+# ağacından güvenle geri yüklenebilsin. İRİ HAM ARŞİVLER hâlâ ignore'da
+# (yukarıda satır: "spotify zip/" 205M + "platform-developer-docs/" 15M) —
+# repo şişmesin. Yalnız markdown/plan/log/karar dosyaları girer (~1 MB).
+/design-components/
+/rosso-reference-apk-docs/
+/lighthouse/
+
+# Railway/Vercel ham log dökümleri — teşhis için indirilir, repoya girmez.
+# Ölçüm dondurulmaz (CLAUDE.md §6.1): bulgular logs/YYYY-AA-GG.md'ye yazılır.
+docs/logs.*.json
+
+# ══════════════════════════════════════════════════════════════════════════
+# 🔴 DENETİM ÇIKTILARI — REPOYA GİRMEZ (Sahip kararı, 2026-08-08)
+#
+# Tüm denetim malzemesi repo AĞACININ DIŞINDA durur:
+#     ../rosso-audit/                     ← 847 MB
+#       ├── <TARIH>/                      rapor + ham ölçüm (overflow.json)
+#       ├── <TARIH>-shots/                ekran görüntüleri
+#       ├── <TARIH>-performans/           Lighthouse json/html
+#       └── .auth-state.json              🔴 CANLI Supabase token'ı
+#
+# ÜÇ AYRI OLAY bu kararı doğurdu, üçü de commit sırasında yakalandı:
+#   1. `fullPage` çekimler 772 MB tuttu; gecmis-1920.png tek başına 52 MB
+#      (GitHub sınırı 50). Git geçmişi kalıcı — commit yeniden kurulmak
+#      zorunda kaldı (4365045 → 0a3d90c).
+#   2. `.auth-state.json` 3.180 karakterlik gerçek erişim jetonu taşıyordu.
+#   3. Denetim betiğinin ham çalışma logu e-posta sızdırıyordu.
+#
+# Repoda kalan: yalnız BULGU. Rapor sayıyla anlatır; kanıt yereldedir.
+# Betik (scripts/dashboard-gorsel-dogrulama.mjs) yolları kendi kurar.
+# ══════════════════════════════════════════════════════════════════════════
+docs/audit/
+**/.auth-state.json
+olc-*.mjs
+
+# Sayfa ekran görüntüleri (scripts/sayfa-goruntusu.mjs).
+# Sahibin tasarım incelemesi için üretilir; her tur ~50 MB PNG.
+# Repoya girmez — gerektiğinde betikle yeniden üretilir.
+/ekran-goruntuleri/
+
+# Veritabanı yedekleri ve parola notları (2026-09-18)
+# Kök depoda da aynı desenler var. Buraya bir yedeğin/parola notunun yanlışlıkla
+# düşmesi ihtimaline karşı savunma; tek dosya adına değil türe bakar.
+*.sql.gz
+*.sql.gz.gpg
+*.dump
+rosso-yedek-*
+*sifre*.txt
+*şifre*.txt
+*parola*.txt
+*password*.txt
+*secret*.txt
+
+# Hero videolari Vercel Blob'da (store: rosso-medya, 2026-09-21 karari).
+# 36 MB'lik mp4 git gecmisine kalici olarak yazilmasin; yerel kopyalar burada
+# durur, yayindaki kaynak hero-ambient-video.tsx icindeki BLOB_TEMEL'dir.
+public/hero-videos/

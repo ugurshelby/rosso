@@ -1,0 +1,59 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding: var(--space-6) var(--space-4);
+}
+
+/* Hero iskeleti (FAZ UI-4) — playlist-hero.module.css ile AYNI ölçüler.
+   Farklı olursa yükleme bitince sayfa ZIPLAR (content-jumping). */
+.heroSkeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-bottom: var(--space-6);
+  margin-bottom: var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.heroTitleBlock {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.heroStats {
+  display: flex;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 1024px) {
+  .heroSkeleton {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-8);
+  }
+
+  .heroStats {
+    flex-shrink: 0;
+  }
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--space-4);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}

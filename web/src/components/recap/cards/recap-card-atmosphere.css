@@ -1,0 +1,47 @@
+/* ── Recap kart atmosferi (H-FAZ 3, 2026-08-02) ──────────────────────────────
+
+   Sahibin teşhisi (R3): kart 5-8'de "çok fazla negatif alan, sinematik
+   katman yok" — düz `#050506` zemin + tipografi. Boşluk "nefes" değil
+   "eksik" hissi veriyordu.
+
+   ⚠ KURAL: bu dosya GLOW EKLEMEZ. Kartların kendi `.glow` katmanı var ve
+   "TEK div + box-shadow, üst üste blur YASAK (kirli leke)" kuralı bağlayıcı
+   (bkz. streak-card.module.css başlığı). Buradaki katman glow'un
+   ALTINDA yaşar ve ışık üretmez:
+
+     vignette — kenarlardan merkeze doğru koyulaşma; kadrajı toplar
+
+   (2026-09-16, Sahibin doğrudan talimatı — "grain/noise/karıncalanma
+   efekti tamamen kaldırılsın": grain katmanı buradan kaldırıldı, yalnız
+   vignette kaldı.)
+
+   Kullanım: kartın `.frame`ine `recap-atmosphere` sınıfını ekle. Kartın
+   kendi zemini (`background`) korunur — bu katman pseudo-element.
+
+   `prefers-reduced-motion` konusu yok: katman statik. */
+
+.recap-atmosphere {
+  position: relative;
+}
+
+/* Vignette — kenarlardan koyulaşma. Işık EKLEMEZ, yalnız karartır. */
+.recap-atmosphere::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 78% 72% at 50% 45%,
+    transparent 45%,
+    rgba(0, 0, 0, 0.42) 100%
+  );
+}
+
+/* Kart içeriği bu iki katmanın ÜSTÜNDE kalmalı. Kartların `.content` /
+   `.glow` katmanları zaten `position: relative; z-index: 1` alıyor; bu
+   kural onu tüm doğrudan çocuklar için garantiye alır. */
+.recap-atmosphere > * {
+  position: relative;
+  z-index: 1;
+}

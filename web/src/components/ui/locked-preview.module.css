@@ -1,0 +1,241 @@
+/* ── Rosso Büyüyen Kimlik: Liquid Glass Kilitli Önizleme (Locked Preview) ── */
+
+.container {
+  position: relative;
+  width: 100%;
+  border-radius: var(--radius-lg, 16px);
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--elev-1, #13111a);
+  border: 1px solid var(--edge-1, rgba(255, 255, 255, 0.08));
+}
+
+.variantFullscreen {
+  min-height: calc(100vh - 120px);
+  display: flex;
+  flex-direction: column;
+}
+
+.variantInline {
+  border-radius: var(--radius-md, 12px);
+  min-height: 160px;
+}
+
+/* ── Blurlu Arka Plan Şablonu ── */
+.backdrop {
+  width: 100%;
+  height: 100%;
+  filter: blur(14px) saturate(130%) brightness(0.75);
+  transform: scale(1.03); /* Kenarlardaki blur kararmasını önler */
+  pointer-events: none;
+  user-select: none;
+  opacity: 0.55;
+  transition: opacity var(--duration-slow, 250ms) var(--ease-out, ease-out);
+}
+
+/* ── Ön Katman / Overlay ── */
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6, 24px);
+  background: radial-gradient(
+    ellipse at center,
+    rgba(22, 20, 31, 0.45) 0%,
+    rgba(14, 12, 20, 0.82) 100%
+  );
+  backdrop-filter: blur(4px);
+}
+
+/* ── Merkezdeki Liquid Glass Kart ── */
+.glassCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 480px;
+  width: 100%;
+  padding: var(--space-8, 32px) var(--space-6, 24px);
+  background: rgba(26, 23, 37, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-xl, 20px);
+  box-shadow:
+    0 16px 40px -12px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+    0 0 32px -8px color-mix(in srgb, var(--color-accent, #9333ea) 25%, transparent);
+  backdrop-filter: blur(20px) saturate(160%);
+  animation: glassAppear 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes glassAppear {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ── Rozet Satırı ── */
+.badgeRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--space-2, 8px);
+  margin-bottom: var(--space-4, 16px);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full, 999px);
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-accent, #c084fc);
+  background: color-mix(in srgb, var(--color-accent, #9333ea) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent, #9333ea) 28%, transparent);
+}
+
+.demoBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full, 999px);
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--color-accent, #c084fc);
+  background: color-mix(in srgb, var(--color-accent, #9333ea) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent, #9333ea) 28%, transparent);
+}
+
+.badgeIcon {
+  color: var(--color-accent, #c084fc);
+}
+
+/* ── Kilit İkonu ve Nabız ── */
+.lockIconWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  margin-bottom: var(--space-4, 16px);
+}
+
+.lockPulse {
+  position: absolute;
+  inset: -6px;
+  border-radius: var(--radius-full, 999px);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--color-accent, #9333ea) 35%, transparent) 0%,
+    transparent 70%
+  );
+  animation: pulseAnim 3s ease-in-out infinite;
+}
+
+@keyframes pulseAnim {
+  0%, 100% {
+    transform: scale(0.9);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.9;
+  }
+}
+
+.lockCircle {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full, 999px);
+  background: linear-gradient(135deg, #2b2540 0%, #1a1628 100%);
+  border: 1px solid color-mix(in srgb, var(--color-accent, #9333ea) 45%, rgba(255, 255, 255, 0.15));
+  color: #fff;
+  box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.5);
+}
+
+/* ── Başlık & Açıklama ── */
+.title {
+  font-family: var(--font-social, sans-serif);
+  font-size: clamp(1.25rem, 2.5vw, 1.5rem);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: var(--color-text-primary, #ffffff);
+  margin: 0 0 var(--space-2, 8px) 0;
+}
+
+.description {
+  font-family: var(--font-geist-sans, sans-serif);
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--color-text-secondary, rgba(255, 255, 255, 0.65));
+  margin: 0 0 var(--space-6, 24px) 0;
+  max-width: 380px;
+}
+
+/* ── CTA Butonu ── */
+.ctaButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 22px;
+  border-radius: var(--radius-md, 12px);
+  background: linear-gradient(135deg, var(--color-accent, #9333ea) 0%, #6b21a8 100%);
+  color: #ffffff;
+  font-family: var(--font-geist-sans, sans-serif);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow:
+    0 4px 14px -2px color-mix(in srgb, var(--color-accent, #9333ea) 50%, transparent),
+    0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+  transition: all 180ms ease;
+  cursor: pointer;
+}
+
+.ctaButton:hover {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow:
+    0 6px 20px -2px color-mix(in srgb, var(--color-accent, #9333ea) 65%, transparent),
+    0 0 0 1px rgba(255, 255, 255, 0.3) inset;
+}
+
+.ctaButton:active {
+  transform: translateY(0) scale(0.98);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glassCard {
+    animation: none;
+  }
+  .lockPulse {
+    animation: none;
+  }
+  .ctaButton:hover {
+    transform: none;
+  }
+}

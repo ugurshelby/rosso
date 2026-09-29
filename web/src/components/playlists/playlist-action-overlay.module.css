@@ -1,0 +1,113 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--elev-0, #050507) 55%, transparent);
+  backdrop-filter: blur(6px);
+  pointer-events: none;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-6) var(--space-7);
+  background: color-mix(in srgb, var(--elev-3) 92%, transparent);
+  backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--edge-3);
+  border-top-color: color-mix(in srgb, #fff 14%, var(--edge-3));
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-4, var(--shadow-3)), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  min-width: 220px;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .card {
+    background: var(--elev-3);
+    backdrop-filter: none;
+  }
+}
+
+.iconWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+}
+
+.cardSuccess .iconWrap {
+  background: color-mix(in srgb, var(--color-success) 18%, transparent);
+  color: var(--color-success);
+}
+
+.cardError .iconWrap {
+  background: color-mix(in srgb, var(--color-error) 18%, transparent);
+  color: var(--color-error);
+}
+
+.label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  text-align: center;
+  max-width: 240px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   YÜKLENİYOR — Spotify'a yazılırken (2026-09-21)
+   Sahip: "spotifya eklenene kadar bir loading animasyonu".
+
+   🔴 CSS ANIMATION, JS/Motion DEĞİL — bilinçli. `animate` skill'i:
+   "Predetermined motion that must stay smooth while the page is busy
+   loading → CSS animation (runs off the main thread)". Tam olarak bu
+   durum: arkada `fetch` + Spotify yazımı + server action dönüyor, ana
+   iş parçacığı meşgul. `requestAnimationFrame` tabanlı bir spinner
+   burada kare düşürür.
+
+   `linear` easing, `animate` skill'inin tablosuna göre: "Constant
+   motion (marquee, progress) → linear". Sabit hızlı dönmeyen bir
+   spinner, hız değişimi yüzünden "takılıyor" gibi görünür.
+   ═══════════════════════════════════════════════════════════════ */
+.cardLoading .iconWrap {
+  background: color-mix(in srgb, var(--color-text-primary) 8%, transparent);
+  color: var(--color-text-primary);
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  /* Halkanın kendisi: üç kenar soluk, biri parlak → dönerken yön okunur. */
+  border: 2.5px solid color-mix(in srgb, var(--color-text-primary) 16%, transparent);
+  border-top-color: var(--color-text-primary);
+  animation: overlaySpin 820ms linear infinite;
+}
+
+@keyframes overlaySpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/*
+ * Hareket kapalıysa DÖNMEZ ama KAYBOLMAZ: "reduced motion means fewer and
+ * gentler animations, not zero" (animate skill §7). Dönme yerine nefes alan
+ * bir opaklık — vestibüler etkisi yok, "çalışıyor" bilgisi duruyor.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: overlayPulse 1.4s ease-in-out infinite;
+    border-top-color: color-mix(in srgb, var(--color-text-primary) 45%, transparent);
+  }
+}
+
+@keyframes overlayPulse {
+  0%, 100% { opacity: 0.45; }
+  50%      { opacity: 1; }
+}

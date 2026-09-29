@@ -1,0 +1,80 @@
+/* P0.3 / Yeni Kullanıcı Deneyimi — Kilitli sayfa iskeleti ve mühür sarmalayıcısı */
+
+.pageShell {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4) var(--space-12);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  min-height: 70vh;
+}
+
+/* ─── Arka Plan İskeleti (Boyut koruyucu) ─── */
+.skeletonHero {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-8) var(--space-6);
+  border-radius: var(--radius-xl, 20px);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.03) 0%,
+    rgba(255, 255, 255, 0.01) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.skeletonLineSm {
+  width: 120px;
+  height: 14px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.skeletonLineLg {
+  width: 280px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.skeletonLineMd {
+  width: 440px;
+  height: 18px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.skeletonGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+}
+
+@media (max-width: 768px) {
+  .skeletonGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.skeletonCard {
+  height: 180px;
+  border-radius: var(--radius-lg, 16px);
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.skeletonList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.skeletonRow {
+  height: 56px;
+  border-radius: var(--radius-md, 10px);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}

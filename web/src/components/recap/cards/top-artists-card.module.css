@@ -1,0 +1,69 @@
+/* Kart 3 — Top 5 sanatçı listesi (Kart 4 ile kardeş düzen). */
+
+.frame {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  background: var(--bg);
+  overflow: hidden;
+  container-type: size;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  padding: clamp(var(--space-3), 3cqh, var(--space-5)) var(--space-5) 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  z-index: 3;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: clamp(0.5rem, 1.4cqw, 0.65rem);
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text-primary) 45%, transparent);
+  margin: 0;
+}
+
+.heading {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(1.15rem, 3.5cqw, 1.75rem);
+  letter-spacing: -0.03em;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  padding-bottom: var(--recap-chrome-bottom, 56px);
+  padding-top: var(--space-2);
+}
+
+@media (min-width: 900px) {
+  .header {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: clamp(2rem, 5cqh, 3.5rem) clamp(1.5rem, 4vw, 3rem) 0;
+  }
+
+  .list {
+    justify-content: center;
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: clamp(1rem, 2cqh, 2rem) clamp(1.5rem, 4vw, 3rem)
+      clamp(3rem, 6cqh, 4.5rem);
+  }
+}

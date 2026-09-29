@@ -1,0 +1,166 @@
+/* "Beğenilen Şarkılar" sanal listesinin hero'su — Dashboard katmanı.
+   Otorite: docs/design/katmanlar/dashboard-design.md
+
+   Gerçek playlist hero'suyla aynı tipografi ölçeğini kullanır (eyebrow/başlık/
+   meta) ama senkron ve dış-bağlantı aksiyonları YOK: bu liste Spotify'da tek
+   bir playlist değil, kullanıcının beğeni koleksiyonu. */
+
+.hero {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-5);
+  padding: var(--space-6) 0 var(--space-5);
+  margin-bottom: var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* Kapak yerine kalp: bu listenin gerçek bir kapak görseli yok, uydurmuyoruz. */
+.cover {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 160px;
+  height: 160px;
+  border-radius: 8px;
+  color: #fff;
+  background: radial-gradient(circle at 35% 25%, rgba(168, 85, 247, 0.45) 0%, rgba(124, 58, 237, 0.25) 50%, rgba(18, 16, 26, 0.95) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 16px 40px -8px rgba(124, 58, 237, 0.35), 0 0 32px -4px rgba(168, 85, 247, 0.2);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .cover {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: color-mix(in srgb, var(--accent) 24%, var(--color-bg-elevated));
+  }
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.title {
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: clamp(2rem, 6vw, 4rem);
+  font-weight: 800;
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+  margin: 0;
+  line-height: 1.05;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.meta {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+  margin: 0;
+}
+
+/* Dar ekranda kapak küçülür ve dikey dizilir — yatay scroll YASAK. */
+@media (max-width: 640px) {
+  .hero {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-4);
+    padding-top: var(--space-4);
+  }
+
+  .cover {
+    width: 112px;
+    height: 112px;
+  }
+}
+
+/*
+ * ── /playlists/liked iskeleti (loading.tsx) ──────────────────────────────
+ * 2026-09-24 performans denetimi: bu kurallar eskiden ayrı bir
+ * `liked-loading.module.css` dosyasındaydı. Turbopack onu ayrı bir CSS
+ * chunk'ı yaptı (`0qdz0-6vtdnr8.css`); sayfa akışı iskelet görünmeden
+ * bittiğinde tarayıcı "preload edildi ama kullanılmadı" uyarısı verdi
+ * (HAR: liked-songs + playlist-page). Sayfanın zaten yüklediği modüle
+ * taşındı → iskelet için ekstra istek yok, preload hep kullanılıyor.
+ * Aynı desen: playlist-detail.module.css `.loading*` sınıfları.
+ */
+.loadingPage {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.loadingHero {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-5);
+  padding: var(--space-6) 0 var(--space-5);
+  margin-bottom: var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.loadingCover {
+  flex-shrink: 0;
+}
+
+.loadingInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  flex: 1;
+  min-width: 0;
+}
+
+.loadingTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.loadingList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.loadingRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+}
+
+.loadingRowBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+@media (max-width: 640px) {
+  .loadingHero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .loadingCover {
+    width: 120px !important;
+    height: 120px !important;
+  }
+}

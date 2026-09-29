@@ -1,0 +1,116 @@
+/* ── Vibe Kartı — Taste hero (kalıcı kimlik gösterimi) ──
+   Kare-format hero revizyonu (2026-07-17, Sahip): "yatay/dikey değil kare,
+   çok daha hero bir his, kimlik kartım gibi dursun."
+
+   HERO REVİZYONU (2026-07-30, Sahip: "başlık ve kart masaüstünde iki kopuk
+   kutu gibi duruyor"): Bu bileşen artık bağımsız bir bölüm/kutu değil —
+   `IdentityHero` ile aynı ortak sahnenin (taste/page.tsx → .identityPlate)
+   ikinci sütunu. Kendi çerçevesini/arka planını/padding'ini bıraktı — sahne
+   onu üstleniyor. Sanat + metin artık DİKEY dizili (üstte kare, altta metin);
+   eskiden yan yana (1fr/1fr) idi ama dar bir sütuna sıkışınca (sahnenin
+   sağ tarafı) hem görsel hem metin küçülüp okunmaz oluyordu. */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+}
+
+/* ── Progressive blur sahnesi (2026-07-17 revizyon — Sahibin teknik teşhisi) ──
+   Teknik: docs/design/design-techniques/progressive-blur-card-design.md
+   Önceki hata: blur + scrim AYRI katmanlarda, farklı hizalarda başlıyordu →
+   iki dikdörtgenin üst üste binmesi "kirli leke" hissi veriyordu. Düzeltme:
+   TEK katman, backdrop-blur + saf siyah gradient + mask-image birlikte;
+   kartın en fazla %38'i kaplanır (görseli boğmaz), metin yoğun kontrast
+   bölgesine sıkı padding'le oturur. Kare format (1:1) — "kimlik kartı" hissi
+   16:9'dan çok daha güçlü; sanat eseri artık tam kare çerçevede hero gibi durur.
+   2026-07-30: `max-width` eklendi — artık tam sayfa genişliği değil, sahnenin
+   bir sütunu; sınırsız büyüme yerine paylaşılan alanla dengeli ölçek. */
+.artStage {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+}
+
+.blurLayer {
+  position: absolute;
+  inset: 62% 0 0 0;
+  backdrop-filter: blur(14px);
+  /* Saf siyah, kahve/sarı çamurlaşma yok — cold-toned kontrast (madde 4) */
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.78) 55%,
+    rgba(0, 0, 0, 0.92) 100%
+  );
+  /* Blur VE gradient AYNI mask ile kademeli açılır — sert kenar yok (madde 3) */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 40%, #000 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 40%, #000 100%);
+  pointer-events: none;
+}
+
+.overlayText {
+  position: absolute;
+  inset: auto 0 0 0;
+  /* Etiket blur'un en yoğun/en alt bölgesine sıkı oturur (madde 2) */
+  padding: var(--space-4) var(--space-5) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.eyebrow {
+  font-family: var(--font-geist-mono, monospace);
+  font-size: var(--text-xs);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  /* Görsel üstü: token yerine sabit off-white — kontrast her sanat eserinde garanti */
+  color: rgba(255, 255, 255, 0.72);
+  margin: 0;
+}
+
+/* ── Metin sütunu (artık sanat eserinin ALTINDA, hero sahnesinin ikinci
+   satırı) — kart adı yalnız burada gösterilir, görsel üstündeki tekrar
+   2026-07-30'da kaldırıldı. */
+.textCol {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.textColEyebrow {
+  font-family: var(--font-geist-mono, monospace);
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+  margin: 0;
+}
+
+.textColName {
+  font-family: var(--font-analytics), var(--font-sans), system-ui, sans-serif;
+  font-weight: 400;
+  /* İkincil kimlik — ana başlıktan (IdentityHero .name) belirgin şekilde
+     küçük, ama Bebas display ile yine de kendine has bir sinyal taşıyor. */
+  font-size: var(--text-2xl, 1.5rem);
+  letter-spacing: 0.03em;
+  color: var(--color-text-primary);
+  line-height: 1.15;
+  margin: 0;
+}
+
+.desc {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin: 0;
+  max-width: 46ch;
+}

@@ -1,0 +1,450 @@
+/* ─── Playlist Hero — "Sakin Dev" (FAZ UI-4, Sahibin kararı, 2026-07-12)
+
+   Sahip: "hero yazıların altında arama çubuğu grid düzeni kısmı sayfanın
+   altında kalır… sadece o yazıların bulunduğu alanda hero çalışması yapılmalı,
+   arama çubuğu ve playlist ilk sırası kısmı yine aynı kalmalı boyut ve konum
+   olarak."
+
+   → Yalnızca BAŞLIK ALANI büyür. Araç çubuğu ve ızgara dokunulmadan kalır;
+     sayfa açılışında ilk playlist'ler görünmeye devam eder.
+
+   Renkler token'dan gelir; hero metni zemine karşı AA eşiğini geçmelidir
+   (gövde ≥4,5:1, büyük metin ≥3:1). Göz kararı yetmez — palet değişince
+   yeniden ÖLÇ (bkz. gece paleti dersi). */
+
+/* G-FAZ 3: "Araçlar" bölümü kalktıktan sonra hero ile toolbar arasındaki
+   space-8 fazla geldi — toolbar kendi üst boşluğunu alıyor (playlists.module).
+   Hero space-6'ya çekildi; toplam nefes korunur, boşluk şişmez. */
+/* ══════════════════════════════════════════════════════════════════════════
+   HERO — kütüphanenin kendisinden doğar (2026-08-13, Sahibin talimatı)
+   ══════════════════════════════════════════════════════════════════════════
+
+   Sahip: *"hero section ve liste formatı bana spotify gibi gelmeli,
+   spotify gibi, apple ios gibi ama daha sinematik ve estetik."*
+
+   Ölçülen sorun (canlı kare): başlık boş bir zemin üstünde duruyordu,
+   sağdaki `114 · 1 · 5.731` bloğu dashboard'dan alınmış bir widget gibi
+   kopuktu. Spotify/Apple kütüphanesinde hero İÇERİKTEN doğar. */
+
+.hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  /*
+   * Doku için nefes alanı — başlık artık zeminin içinde yaşıyor.
+   * Alt boşluk üstten fazla: aksiyon kartları dokunun söndüğü bölgede
+   * duruyor, üzerlerine kolaj binmiyor (canlı karede kartlar dokunun
+   * içinde sıkışık görünüyordu).
+   */
+  padding: var(--space-7) 0 var(--space-7);
+  margin-bottom: var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+  isolation: isolate;
+  overflow: hidden;
+}
+
+/*
+ * Kütüphane dokusu — kullanıcının kendi kapakları.
+ *
+ * ⚠ `filter: blur()` KULLANILMIYOR. Beş büyük görseli blur'lamak her
+ * scroll karesinde yeniden raster gerektirir; uzun kütüphane sayfasında
+ * kare düşürür. Aynı "uzak doku" hissi `background-size` büyütme +
+ * düşük opaklık + üstteki gradyan maskesiyle bedelsiz elde ediliyor.
+ * (Aynı karar journey `.yearBlock::before` için de verildi.)
+ */
+.heroDoku {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  opacity: 0.2;
+  /*
+   * Maske: aşağı doğru söner, yanlara doğru DEĞİL.
+   *
+   * ⚠ İlk deneme 105° açılı bir gradyandı — canlı karede doku yalnız
+   * sol yarıda kaldı, sağ taraf boş siyah oldu ve kolaj yarım kesilmiş
+   * gibi durdu. Yatay yön yanlıştı: doku bir "şerit" değil, hero'nun
+   * ZEMİNİ. Zemin yukarıdan aşağı sönerek içeriğe yer açmalı.
+   *
+   * İki maske çarpışıyor: dikey sönüm (içerik alanını açar) + yanlarda
+   * hafif vinyet (kolajın kenarları kesik görünmesin).
+   */
+  mask-image:
+    linear-gradient(180deg, #000 0%, rgba(0, 0, 0, 0.55) 52%, transparent 96%),
+    linear-gradient(90deg, transparent 0%, #000 12%, #000 88%, transparent 100%);
+  -webkit-mask-image:
+    linear-gradient(180deg, #000 0%, rgba(0, 0, 0, 0.55) 52%, transparent 96%),
+    linear-gradient(90deg, transparent 0%, #000 12%, #000 88%, transparent 100%);
+  mask-composite: intersect;
+  -webkit-mask-composite: source-in;
+  pointer-events: none;
+}
+
+.heroDokuTile {
+  background-size: cover;
+  background-position: center;
+  /* Yakınlaştırma: kapak deseni değil, renk alanı okunsun. */
+  transform: scale(1.35);
+}
+
+/* Dokunun üstüne düşen ışık — hero'ya derinlik verir, düz kolaj olmasın. */
+.hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(
+    90% 120% at 8% 0%,
+    color-mix(in srgb, var(--color-accent) 12%, transparent) 0%,
+    transparent 58%
+  );
+  pointer-events: none;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  /* Şeffaflık azaltılmışsa doku tamamen kalkar — metin kontrastı korunur. */
+  .heroDoku {
+    display: none;
+  }
+  .heroVibeArt {
+    display: none;
+  }
+}
+
+/* ── Vibe-card sanat eseri (2026-09-17) — her zaman dolu ikinci katman ──
+   Sağda, dikey ortalı, 1:1 oranını KORUYARAK (`object-fit: contain`,
+   crop yok). Metinle çakışmasın diye sol tarafa doğru maskeyle söner ve
+   düşük opaklıkta durur — kolajın aksine "dekor", odak değil. */
+.heroVibeArt {
+  position: absolute;
+  top: 50%;
+  right: clamp(-40px, -4vw, 0px);
+  transform: translateY(-50%);
+  width: min(46vw, 380px);
+  aspect-ratio: 1;
+  object-fit: contain;
+  opacity: 0.5;
+  z-index: -1;
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0, 0, 0, 0.5) 30%,
+    black 60%
+  );
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0, 0, 0, 0.5) 30%,
+    black 60%
+  );
+  pointer-events: none;
+}
+
+@media (max-width: 767.98px) {
+  .heroVibeArt {
+    width: min(58vw, 240px);
+    opacity: 0.32;
+  }
+}
+
+@media (max-width: 520px) {
+  /* Aksiyon kartları + dar metin sütunuyla çakışmasın — sağ üst köşeye
+     küçülerek çekilir, hâlâ 1:1/contain, hâlâ kırpılmaz. */
+  .heroVibeArt {
+    width: 128px;
+    top: var(--space-4);
+    transform: none;
+  }
+}
+
+.headRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.titleBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0; /* uzun başlık ızgarayı taşırmasın */
+}
+
+/* Font ailesi BİLEREK belirtilmedi — mevcut PageHeader da belirtmiyor, gövde
+   fontunu miras alıyor. Yeni font İCAT ETMİYORUZ (Sahip: mevcut dil korunacak). */
+.title {
+  /*
+   * apple-design §15: tracking ve leading BOYUTA bağlıdır, sabit değil.
+   * Başlık büyüdükçe harfler birbirinden uzak görünür → tracking
+   * negatife gider; satır arası da sıkılaşır.
+   *
+   * `clamp` ile ölçek: mobilde 2.25rem, geniş ekranda 3.5rem.
+   * Önceki sabit `--text-4xl` geniş ekranda küçük kalıyordu ve hero
+   * "sakin dev" olmak yerine sadece sakin kalıyordu.
+   */
+  font-size: clamp(2.25rem, 4.5vw, 3.5rem);
+  font-weight: var(--font-bold);
+  letter-spacing: -0.028em;
+  line-height: 0.98;
+  color: var(--color-text-primary);
+  margin: 0;
+  text-wrap: balance;
+  -webkit-font-smoothing: antialiased;
+}
+
+.subtitle {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-relaxed);
+  margin: 0;
+  max-width: 42ch; /* satır uzunluğu okunabilir kalsın */
+}
+
+/* ─── Sayı şeridi — "Sessiz Şerit"
+   Başlıkla YARIŞMAZ, onu tamamlar. Rakam orta boy, etiket küçük ve soluk. */
+.stats {
+  display: flex;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+}
+
+/* `dl`/`dt`/`dd` anlamsal olarak doğru (terim + tanım), ama HTML'de `dt` (etiket)
+   önce gelir. Görsel sıra ters olmalı: RAKAM üstte, etiket altta.
+   → column-reverse. Ekran okuyucu DOM sırasını okur, görsel sıra onu etkilemez. */
+.stat {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 2px;
+}
+
+.stat dd {
+  margin: 0; /* tarayıcı varsayılanı: dd'nin sol boşluğu var */
+}
+
+.statValue {
+  font-size: var(--text-2xl); /* 24px — hero'yu bastırmaz */
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums; /* rakamlar zıplamasın */
+}
+
+.statLabel {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  letter-spacing: 0.06em;
+}
+
+/* ─── Aksiyon şeridi (G-FAZ 0, 2026-08-02) ───
+   Eskiden "Araçlar" başlığı altında iki büyük kart vardı (~209px) ve
+   kütüphaneyi ekranın altına itiyordu. Artık hero'nun içinde ghost buton:
+   yönlendirir, panel açmaz, hero'yu boğmaz. */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.action {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  /* WCAG dokunma hedefi — mobilde 44px'in altına inmez. */
+  min-height: 44px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  text-decoration: none;
+  transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+}
+
+.action:hover {
+  border-color: var(--color-border-strong);
+  background: var(--color-hover);
+  color: var(--color-text-primary);
+}
+
+.action:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Otomasyon açıksa küçük accent nokta — "bir şey çalışıyor" sinyali. */
+.actionDot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+}
+
+/* ─── Masaüstü: sayılar başlığın SAĞINDA (Sahibin isteği) ─── */
+@media (min-width: 768px) {
+  .title {
+    font-size: var(--text-5xl); /* 48px */
+  }
+}
+
+@media (min-width: 1024px) {
+  .headRow {
+    flex-direction: row;
+    align-items: flex-end; /* taban çizgileri hizalı — "sakin" duruş */
+    justify-content: space-between;
+    gap: var(--space-8);
+  }
+
+  .title {
+    font-size: var(--text-6xl); /* 72px — "Sakin Dev" */
+  }
+
+  .stats {
+    flex-shrink: 0;
+    padding-bottom: var(--space-1); /* alt başlıkla optik hizalama */
+  }
+}
+
+/* ── Hero'da ÜÇ EŞİT KART — Create · Mood · Liked ──────────────────────────
+   2026-09-17 (Apple Design + Glassmorphism turu): "Liked" 2026-08-13'te
+   kaldırılmıştı (altındaki tam genişlik satırla ikileşiyordu — bkz.
+   `page.tsx`'teki koşullu render notu), Sahibin üç eşit kart isteğiyle
+   geri geldi. Üçünün yapısı/boyutu/tipografisi/CAM DİLİ birebir aynı; `Mood`
+   yalnız renk katmanında ayrışır — dashboard-design.md §4.1 (Von Restorff):
+   aynı yapı + farklı renk = göz oraya gider.
+
+   Cam: kanonik `--glass-fill`/`--glass-border` (docs/design/stiller/
+   glassmorphism.md "Orta" tier) — hero'nun kendi vibe-art/kolaj zemini
+   üstünde oturduğu için (düz renk değil) rehberin "zengin zemin şartı"
+   sağlanıyor. */
+
+.heroCards {
+  display: grid;
+  /* Üç kart — auto-fit sayesinde masaüstünde eşit üçe bölünür, dar ekranda
+     260px altına inmeden sarar (yatay scroll yerine kendi satırına düşer,
+     ≤520px'te ise aşağıdaki media query 3 eşit sütuna sabitler). */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: var(--space-3);
+  /* Kartlar dokunun söndüğü bölgede — üzerlerine kolaj binmesin. */
+  position: relative;
+  z-index: 1;
+}
+
+.heroCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  /* WCAG dokunma hedefi — mobilde de 44px'in altına inmez. */
+  min-height: 96px;
+  padding: var(--space-4);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  background: var(--glass-fill);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  backdrop-filter: blur(14px) saturate(1.2);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    0 4px 20px rgba(0, 0, 0, 0.2);
+  color: var(--color-text-primary);
+  text-decoration: none;
+  overflow: hidden;
+  transition: border-color 160ms ease, transform 160ms ease, background 160ms ease;
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .heroCard {
+    background: var(--color-surface);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .heroCard:hover {
+    border-color: var(--color-accent);
+    background: color-mix(in srgb, var(--glass-fill) 60%, var(--color-accent) 6%);
+    transform: translateY(-2px);
+  }
+}
+
+.heroCard:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.heroCardIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-md);
+  background: var(--color-bg-sunken);
+  color: var(--color-accent);
+  margin-bottom: var(--space-1);
+}
+
+/* Başlık butonun ÜSTÜNDE, tek kelime İngilizce (Sahibin açık isteği). */
+.heroCardTitle {
+  font-family: var(--font-mono, monospace);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.heroCardDesc {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  line-height: 1.4;
+}
+
+/* ── Mood: TEK bilinçli renk sapması ──────────────────────────────────────
+   Sarı-turuncu-mor geçiş, AYNI cam tabanının ÜSTÜNDE bir renk katmanı
+   (yapı/blur/rim-light/gölge üçü de Create/Liked ile birebir aynı kalıyor —
+   yalnız renk sapıyor, glassmorphism.md'nin `.glassAccent` mantığı). Bu
+   sapma YALNIZ bu karta özeldir, palete genel bir kapı açmaz. */
+.heroCardMood {
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, #f59e0b 26%, transparent),
+      color-mix(in srgb, #ec4899 18%, transparent) 46%,
+      color-mix(in srgb, var(--color-accent) 30%, transparent)
+    ),
+    var(--glass-fill);
+  border-color: color-mix(in srgb, #f59e0b 28%, var(--glass-border));
+}
+
+.heroCardMood .heroCardIcon {
+  background: rgba(0, 0, 0, 0.28);
+  color: #fcd34d;
+}
+
+.heroCardMood .heroCardDesc {
+  color: color-mix(in srgb, var(--color-text-primary) 72%, transparent);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .heroCardMood:hover {
+    border-color: #fcd34d;
+  }
+}
+
+/* Dar ekran: üç kart eşit sütuna sabitlenir (YATAY SCROLL YASAK, §18). */
+@media (max-width: 520px) {
+  .heroCards {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-2);
+  }
+
+  .heroCard {
+    min-height: 84px;
+    padding: var(--space-3);
+  }
+
+  .heroCardDesc {
+    display: none; /* dar ekranda başlık yeter — kırpma/ellipsis yerine gizle */
+  }
+}

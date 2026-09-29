@@ -1,0 +1,151 @@
+/* Skeleton shimmer — Rosso dark theme
+   Tek global keyframe; tüm skeleton bileşenleri bunu kullanır.
+   Aynı anda nefes alır, her bileşen kendi animasyonu YAZMAZ. */
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Base shimmer surface
+   FAZ GÖRÜNMEYEN-KAHRAMANLAR (2026-08-13): iskelet artık `--elev-1`
+   basamağında (kart `--elev-2`nin bir altı) — yükleniyor olan şey henüz
+   "gelmemiş" bir yüzeydir, gelince bir basamak yükselir. Bu, bekleme
+   deneyimine sessiz bir hiyerarşi kazandırır.
+
+   Parıltı 1,6s → 1,9s ve `ease-in-out` korunuyor: apple-design §14
+   "slow looping oscillations (near 0.2 Hz / one cycle per 5s)" uyarısının
+   dışında kalır (bizimki ~0,53 Hz) ama daha sakin okunur. */
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.02) 25%,
+    rgba(255, 255, 255, 0.07) 50%,
+    rgba(255, 255, 255, 0.02) 75%
+  );
+  background-size: 200% 100%;
+  background-color: var(--elev-1);
+  animation: shimmer 1.9s ease-in-out infinite;
+  border-radius: var(--radius-md);
+}
+
+/* Legacy .skeleton alias — mevcut kullanımları kırmamak için */
+.skeleton {
+  display: block;
+  composes: shimmer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shimmer,
+  .skeleton {
+    animation: none;
+    background: var(--elev-1);
+  }
+}
+
+/* ── SkeletonCard ── */
+.card {
+  /* Işık üstten gelir (dashboard-design.md §3.2) — rampaya bağlandı,
+     gerçek kartla birebir aynı reçete: iskeletten içeriğe geçişte
+     yüzey "zıplamaz". */
+  background: linear-gradient(
+    155deg,
+    color-mix(in srgb, #fff 3.5%, var(--elev-2)),
+    var(--elev-2) 52%
+  );
+  box-shadow: var(--shadow-2), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--edge-2);
+  border-top-color: color-mix(in srgb, #fff 10%, var(--edge-2));
+  border-radius: var(--radius-2xl);
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.cardHeader {
+  composes: shimmer;
+  height: 1rem;
+  width: 40%;
+  border-radius: var(--radius-sm);
+}
+
+.cardBody {
+  composes: shimmer;
+  height: 2.5rem;
+  width: 65%;
+  border-radius: var(--radius-sm);
+}
+
+.cardFooter {
+  composes: shimmer;
+  height: 0.75rem;
+  width: 30%;
+  border-radius: var(--radius-sm);
+}
+
+/* ── SkeletonTrackRow ── */
+.trackRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+}
+
+.trackThumb {
+  composes: shimmer;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+}
+
+.trackMeta {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.trackName {
+  composes: shimmer;
+  height: 0.8125rem;
+  width: 55%;
+  border-radius: var(--radius-sm);
+}
+
+.trackArtist {
+  composes: shimmer;
+  height: 0.6875rem;
+  width: 35%;
+  border-radius: var(--radius-sm);
+}
+
+.trackDuration {
+  composes: shimmer;
+  width: 2.5rem;
+  height: 0.6875rem;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+}
+
+/* ── SkeletonStatBento ── */
+.statBento {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.statValue {
+  composes: shimmer;
+  height: 2.75rem;
+  width: 60%;
+  border-radius: var(--radius-sm);
+}
+
+.statLabel {
+  composes: shimmer;
+  height: 0.6875rem;
+  width: 40%;
+  border-radius: var(--radius-sm);
+}

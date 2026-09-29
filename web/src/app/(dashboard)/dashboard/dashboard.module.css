@@ -1,0 +1,1464 @@
+/* Dashboard homepage — premium editorial zero-state */
+
+/* ═══════════════════════════════════════════════════════════════════
+   FAZ ART-DIRECTION (2026-08-13) — ÜÇ EŞİT KOLON KALDIRILDI
+   Sahibin doğrudan talimatı: "sol taraf başka bir dünya, orta taraf
+   başka, sağ taraf başka gibi duruyor … mobildeki komponentleri yan yana
+   koyarak desktop yaratmaya çalışmışız gibi."
+
+   🔴 Teşhis — problem "üç kolon" değil, üçünün EŞİT AĞIRLIKTA olmasıydı.
+   Eski ızgara `hero(4) | mid(5) | aside(3)` üç BAĞIMSIZ dikey akış yan
+   yana diziyordu. Hiçbiri diğerini yönetmiyor, hiçbiri sayfanın kapağı
+   değil; göz nereye bakacağını bilmiyor çünkü üç eşit güçte giriş noktası
+   var. Bu, tanımı gereği "mobil kolonları yan yana koymak"tır — kolon
+   sayısını azaltmak da çözmez, çünkü hata SAYIDA değil HİYERARŞİDE.
+
+   Yeni kompozisyon — "Command Deck". Tek bir yatay omurga, üç kat:
+
+     ┌──────────────────────────────────────────────────────┐
+     │  BANNER — tam genişlik. Selamlama + KPI şeridi.      │  kat 1
+     │  Sayfanın kapağı; tartışmasız tek giriş noktası.     │
+     ├───────────────────────────────┬──────────────────────┤
+     │  MAIN                         │  RAIL                │  kat 2
+     │  Dinlemelerim, grafikler —    │  Son Dinlenenler,    │
+     │  sayfanın "eti". Geniş.       │  Recap, TASTE. Dar.  │
+     ├───────────────────────────────┴──────────────────────┤
+     │  (rail biterse main serbestçe altına akar)           │
+     └──────────────────────────────────────────────────────┘
+
+   Neden bu işe yarıyor:
+   • Kat 1 tam genişlikte olduğu için sayfayı BAĞLIYOR — üç kolonun
+     "üç ayrı dünya" hissi kaynağında ortadan kalkar, hepsi tek bir
+     başlığın altında yaşar.
+   • Kat 2 asimetrik (≈2,05:1). Eşit kolon "tablo" okunur; asimetri
+     hangisinin ana hangisinin yardımcı olduğunu ANINDA söyler.
+   • Rail `align-self: start` — main uzadıkça rail onunla birlikte
+     esnemez, kendi doğal boyunda kalır. Eski `stretch` kısa kolonları
+     zorla uzatıp içlerinde ölü boşluk açıyordu.
+
+   Mobil/tablet AYRI düşünüldü (Sahip: "desktop layout'un küçültülmüş
+   versiyonunu mobilmiş gibi kullanma"):
+     <768px   tek akış, ama SIRA değişir — DOM sırası desktop için
+              optimize; mobilde `order` ile "Son Dinlenenler" yukarı
+              alınır (telefonda en taze bilgi en üstte olmalı).
+     768–1099 tek kolon + geniş KPI şeridi; rail içeriği yatay
+              iki-kolonlu bir bloğa dönüşür (dar kolon tablette
+              sıkışıyordu).
+     ≥1024px  gerçek iki-kolonlu Command Deck.
+   ═══════════════════════════════════════════════════════════════════ */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+@media (min-width: 1024px) {
+  .page {
+    display: grid;
+    /* Asimetri kasıtlı ve ölçülü: minmax(0,…) taşmayı önler, 2,05:1
+       oranı "ana + yardımcı" ilişkisini tartışmasız kılar. */
+    grid-template-columns: minmax(0, 2.05fr) minmax(0, 1fr);
+    grid-template-areas:
+      'banner banner'
+      'main   rail';
+    column-gap: var(--space-8);
+    row-gap: var(--space-10);
+    align-items: start;
+  }
+}
+
+/* ── Kat 1: BANNER — sayfanın kapağı, tam genişlik ── */
+.zoneBanner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  min-width: 0;
+}
+
+/* ── Kat 2: MAIN — sayfanın eti ── */
+.zoneMain {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-10);
+  min-width: 0;
+}
+
+/* ── Kat 2: RAIL — yardımcı sütun ── */
+.zoneRail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  min-width: 0;
+}
+
+@media (min-width: 1024px) {
+  .zoneBanner { grid-area: banner; }
+  .zoneMain   { grid-area: main; }
+  .zoneRail   {
+    grid-area: rail;
+    /* Main uzadıkça rail zorla uzamaz — kendi boyunda kalır, içinde
+       ölü boşluk açılmaz (eski `align-items: stretch` hatası). */
+    align-self: start;
+    position: sticky;
+    top: var(--space-8);
+  }
+}
+
+/* Tablet (768–1099px): tek kolon, ama rail içeriği yan yana iki bloğa
+   açılır — dar dikey sütun bu genişlikte sıkışık ve boş duruyordu. */
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .zoneRail {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-6);
+    align-items: start;
+  }
+}
+
+/* Mobil sıralama — DOM sırası desktop kompozisyonu için yazıldı;
+   telefonda öncelik farklı: en taze bilgi (Son Dinlenenler) selamlamanın
+   hemen altına gelir, ağır listeler aşağı iner. */
+@media (max-width: 767.98px) {
+  .page {
+    gap: var(--space-9);
+  }
+  .zoneBanner { order: 0; }
+  .zoneRail   { order: 1; }
+  .zoneMain   { order: 2; }
+}
+
+/* Kart yüzeyleri (Son Dinlenenler, Dinlemelerim) kendi padding'ini
+   taşır. Eski kural ilk çocuğun padding-top ve border-top'unu sıfırlıyordu
+   — ayraç çizgisi kalktıktan sonra başlığı kartın üst kenarına yapıştırıyordu. */
+
+/* ═══════════════════════════════════════════════════════════════════
+   KAPAK YÜZEYİ (FAZ ART-DIRECTION) — selamlama + KPI tek gövdede
+   Eskiden selamlama başlığı ve KPI şeridi iki ayrı, zeminde yüzen
+   parçaydı; sayfanın "kapağı" yoktu. Artık ikisi TEK yükseltilmiş yüzey.
+   Bu, üç-kolon hissini kıran asıl hamle: ekranın tepesinde her şeyi
+   bağlayan tek bir gövde var.
+
+   Yüzey kendi ışığını taşır — sol üstten gelen geniş, çok yumuşak bir
+   accent yıkaması. Bu "her yere gradient koy" değil: TEK yüzeyde, TEK
+   ışık kaynağı, %8'in altında yoğunlukta (§3.2 ışık üstten gelir).
+   ═══════════════════════════════════════════════════════════════════ */
+.cover {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+  background: var(--material-bg-base);
+  backdrop-filter: var(--material-blur);
+  border: var(--material-border);
+  border-top-color: color-mix(in srgb, #fff 14%, transparent);
+  box-shadow: var(--shadow-card), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  padding: var(--space-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+}
+
+.cover::before {
+  content: '';
+  position: absolute;
+  left: -5%;
+  top: -30%;
+  width: 55%;
+  height: 120%;
+  background: radial-gradient(
+    ellipse at 20% 30%,
+    color-mix(in srgb, var(--accent) 14%, transparent),
+    transparent 62%
+  );
+  pointer-events: none;
+}
+
+@media (max-width: 767.98px) {
+  .cover {
+    padding: var(--space-6) var(--space-5);
+    gap: var(--space-6);
+    border-radius: var(--radius-lg);
+  }
+}
+
+/* Kapağın alt kenarında ince bir ışık çizgisi — yüzeyin bittiği yeri
+   yumuşak biçimde işaretler, sert bir kesim yerine sönümlenme. */
+.cover::after {
+  content: '';
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--accent) 28%, transparent),
+    transparent
+  );
+  pointer-events: none;
+}
+
+/* ─── Welcome header ─── */
+.header {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* FAZ DASHBOARD-REDESIGN (2. tur, §2 "Typography & Contrast"): Sahibin
+   talimatıyla bu ikincil etiket `--color-text-tertiary` yerine biraz daha
+   parlak `--color-text-secondary` alır — global `--faint` token'ı burada
+   DEĞİŞTİRİLMEDİ (tüm dashboard'u etkiler, blast radius geniş), yalnız bu
+   sayfanın eyebrow'u okunabilirlik için yükseltildi. */
+.eyebrow {
+  font-family: var(--font-geist-mono);
+  font-size: var(--text-xs);
+  font-weight: var(--font-normal);
+  letter-spacing: var(--tracking-caption);
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.welcomeTitle {
+  font-family: var(--font-sans), system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-size: clamp(1.75rem, 3vw, 2.25rem);
+  font-weight: 700;
+  letter-spacing: var(--tracking-display);
+  line-height: var(--leading-tight);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.welcomeTitle em {
+  font-style: normal;
+  color: var(--color-accent);
+}
+
+/* ─── Stat bar ───
+   FAZ DASHBOARD-REDESIGN: 4x1 yalnız geniş masaüstü şeridinde anlamlı kalıyor
+   (hero kolonu dar); tablet ve mobilde 2x2 KPI grid'i istendiği gibi (madde 1
+   "Mobile Layout — 2x2 grid", madde 2 "Tablet — KPI'lar 4x1 yerine 2x2"). */
+/* FAZ ART-DIRECTION: KPI şeridi artık kapağın İÇİNDE yaşıyor ve
+   kenarlıkla değil BOŞLUKLA bölünüyor.
+
+   🔴 Eski hâlin iki hatası vardı:
+   1. Her hücrede `border-left: 2px solid accent` — DÖRT accent çizgi yan
+      yana. §3.1 "bir viewport'ta TEK bağıran vurgu" kuralının en açık
+      ihlali; mor burada hiçbir şey İŞARETLEMİYORDU, yalnız süslüyordu.
+   2. Hücreler kutu ızgarasıydı (üst+alt+sağ+sol çizgiler) — "tablo"
+      okunuyordu, "gösterge paneli" değil.
+
+   Yeni hâl: çizgi yok, hücreler boşlukla ayrılıyor. Ayraç olarak yalnız
+   hücreler ARASINDA çok sönük tek bir dikey çizgi kalır (ilk hücrede yok).
+   Sayı büyür ve nefes alır. Mobilde 2x2, geniş ekranda 4x1. */
+.statBar {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+}
+
+@media (min-width: 768px) {
+  .statBar {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.statItem {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-5);
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.04);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  backdrop-filter: blur(16px) saturate(1.2);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    var(--shadow-card);
+  transition:
+    background var(--duration-base) var(--ease-spring-snappy),
+    border-color var(--duration-base) var(--ease-spring-snappy),
+    box-shadow var(--duration-base) var(--ease-spring-snappy),
+    transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .statItem:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.10);
+    transform: translateY(-2px);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.14),
+      0 0 20px -6px color-mix(in srgb, var(--color-accent) 35%, transparent),
+      var(--shadow-card);
+  }
+}
+
+.statItem:active {
+  transform: scale(var(--press-scale));
+}
+
+.statItem + .statItem::before {
+  display: none;
+}
+
+.statItem:first-child {
+  padding-left: var(--space-5);
+}
+
+.statValue {
+  font-family: var(--font-analytics), var(--font-sans), system-ui, sans-serif;
+  font-size: clamp(2rem, 3.2vw, 2.75rem);
+  font-weight: 400;
+  line-height: 0.95;
+  color: #F4F4F5;
+  letter-spacing: var(--tracking-display);
+  font-variant-numeric: tabular-nums;
+}
+
+.statLabel {
+  font-family: var(--font-geist-mono, monospace);
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  letter-spacing: var(--tracking-caption);
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* P0.6 — StatBar altındaki zaman penceresi bağlamı ("Spotify bağlantından beri").
+   Faz 2'de sayılar yalnız canlı API verisinden geliyor; kullanıcı bunu tüm
+   dinleme geçmişi sanmasın. Faz 3+'ta hiç render edilmez. */
+.statWindowLabel {
+  margin-top: var(--space-2);
+  font-family: var(--font-geist-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+  text-align: right;
+}
+
+/* Tür istatistiği kutusundaki chip listesi — en çok dinlenen türler */
+.statChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: var(--space-2);
+}
+
+.statChip {
+  font-family: var(--font-geist-mono);
+  font-size: 10px;
+  letter-spacing: 0.02em;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 2px 6px;
+  white-space: nowrap;
+}
+
+/* ─── Quick actions ─── */
+.sectionHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+/* FAZ DASHBOARD-REDESIGN (2. tur, §2): "SON DİNLENENLER" vb. bölüm
+   etiketleri — aynı gerekçeyle `.eyebrow` gibi secondary'e yükseltildi. */
+.sectionLabel {
+  margin: 0;
+  font-family: var(--font-geist-mono);
+  font-size: var(--text-xs);
+  font-weight: var(--font-normal);
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+/* Asimetrik bento: büyük sol (2/3) + sağ iki küçük */
+.actionsBento {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--space-4);
+}
+
+.actionsBentoRight {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+@media (max-width: 768px) {
+  .actionsBento {
+    grid-template-columns: 1fr;
+  }
+  .actionsBentoRight {
+    flex-direction: column;
+  }
+}
+
+.actionCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  border: 1px solid var(--edge-2);
+  border-radius: var(--radius-lg);
+  /* Işık üstten gelir (§3.2) — FAZ ART-DIRECTION: rampaya geçirildi. */
+  border-top-color: color-mix(in srgb, #fff 10%, var(--edge-2));
+  background: linear-gradient(
+    155deg,
+    color-mix(in srgb, #fff 3.5%, var(--elev-2)),
+    var(--elev-2) 52%
+  );
+  box-shadow: var(--shadow-2), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color var(--duration-base) ease,
+              background var(--duration-base) ease,
+              box-shadow var(--duration-base) ease,
+              transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Hover: bir basamak yükselir, üst kenar mora döner (§3.2) */
+.actionCard:hover {
+  border-color: var(--edge-3);
+  border-top-color: color-mix(in srgb, var(--accent) 45%, var(--edge-3));
+  background: linear-gradient(
+    155deg,
+    color-mix(in srgb, #fff 5%, var(--elev-3)),
+    var(--elev-3) 52%
+  );
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--accent-hover) 35%, transparent),
+    var(--shadow-3);
+  transform: translateY(-2px);
+}
+
+.actionCard:active {
+  transform: translateY(0) scale(0.99);
+  transition-duration: 80ms;
+}
+
+/* Büyük bento kartı — export (sol) */
+.actionCardLarge {
+  padding: var(--space-8);
+  justify-content: space-between;
+  min-height: 160px;
+}
+
+.actionCard[data-disabled="true"] {
+  pointer-events: none;
+  opacity: 0.45;
+  cursor: default;
+}
+
+.actionIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+.actionBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  flex: 1;
+}
+
+.actionTitle {
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+}
+
+.actionDesc {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-normal);
+  font-weight: var(--font-normal);
+}
+
+.actionArrow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  color: var(--color-text-tertiary);
+  margin-top: auto;
+}
+
+/* ─── Son Çalınan kart ─── */
+.lastPlayedCard {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-5) var(--space-6);
+  border: 1.5px solid var(--color-accent);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--color-accent) 6%, var(--color-bg-elevated));
+  position: relative;
+  overflow: hidden;
+}
+
+.lastPlayedCard::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--color-accent);
+}
+
+.lastPlayedIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-accent) 14%, transparent);
+  color: var(--color-accent);
+  flex-shrink: 0;
+}
+
+.lastPlayedBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.lastPlayedEyebrow {
+  font-family: var(--font-geist-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  opacity: 0.75;
+  line-height: 1;
+}
+
+.lastPlayedTrack {
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lastPlayedArtist {
+  font-family: var(--font-geist-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lastPlayedTime {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-family: var(--font-geist-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ─── Recently Played section ───
+   FAZ ART-DIRECTION: rail sütununa taşındı ve GERÇEK BİR YÜZEY oldu.
+   Eskiden zeminde yüzen, üstünde tek bir ayraç çizgisi olan bir listeydi
+   — Sahibin tarif ettiği "birkaç çizgi ve renkli text ile ayırt
+   edilen komponent"in tam örneği. Artık `--elev-2` basamağında oturan,
+   gölgesi olan bir kart. */
+.recentPlayedSection {
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(
+    155deg,
+    color-mix(in srgb, #fff 3.5%, var(--elev-2)),
+    var(--elev-2) 52%
+  );
+  border: 1px solid var(--edge-2);
+  border-top-color: color-mix(in srgb, #fff 10%, var(--edge-2));
+  box-shadow: var(--shadow-2), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.recentList {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Satır ayracı artık tam boy çizgi değil — kapak/metin hizasından
+   başlar (36px + gap). Liste "tablo" değil "akış" gibi okunur. */
+.recentItem {
+  position: relative;
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-2);
+  margin: 0 calc(var(--space-2) * -1);
+  border-radius: var(--radius-md);
+  transition: background var(--duration-base) var(--ease-default);
+}
+
+.recentItem:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: calc(36px + var(--space-3) + var(--space-2));
+  right: var(--space-2);
+  bottom: 0;
+  height: 1px;
+  background: var(--edge-1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .recentItem:hover {
+    background: color-mix(in srgb, #fff 4%, transparent);
+  }
+}
+
+/* FAZ DASHBOARD-REDESIGN (2. tur, §2 "Dynamic Album Art Accent"): en son
+   çalınan şarkının albüm kapağından örneklenen renk (recent-played-section.tsx
+   → useCoverPalette) tek satırın arkasına dar/kırpılı bir ışıma olarak
+   yansır. `--album-accent` yoksa (renk çıkarılamadıysa) kural etkisiz kalır.
+   Glow kartın kendi `border-radius`ına içerden sınırlı — dashboard-design.md
+   §9 "küçük durum göstergelerinde ve seyrek" istisnası. */
+.recentItem[data-accent='true'] {
+  background: radial-gradient(
+    140px 60px at 0% 50%,
+    color-mix(in srgb, var(--album-accent, transparent) 16%, transparent),
+    transparent 75%
+  );
+}
+
+.recentCoverPlaceholder {
+  width: 36px;
+  height: 36px;
+  border-radius: 4px;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.recentInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.recentTrack {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.recentArtist {
+  font-family: var(--font-geist-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.recentTime {
+  font-family: var(--font-geist-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ─── Your Recaps quick access ───
+   FAZ ART-DIRECTION: rail sütununda yaşıyor. Üstteki ayraç çizgisi
+   kaldırıldı — rail'in her bölümü zaten kendi yüzeyine sahip, ayrıca
+   çizgiyle bölmek gürültü olurdu. */
+.recapsSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* Dar rail sütununda iki kart yan yana sığmaz — dikey dizilir.
+   Geniş ekranda da dikey KALIR: rail zaten dar, burada 2 kolon
+   kartları okunamayacak kadar küçültürdü. */
+.recapCardGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+
+/* Tablette rail iki kolona açıldığı için (bkz. .zoneRail) recap kartları
+   kendi içinde tekrar bölünmemeli — tek kolon kalır. */
+@media (min-width: 481px) and (max-width: 767.98px) {
+  .recapCardGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Üst çizgi nötr (dashboard-design.md §3.1 — "bir viewport'ta TEK bağıran
+   vurgu"; Taste kartı `.ctaCardAccent` sayfanın birincil CTA'sı, bu kart
+   ikincil). Spec §4.4 (2026-08-13): 3 ayrı accent üst-çizgi imzası aynı
+   sayfada dikkat bütçesini bölüyordu. */
+/* FAZ DASHBOARD-REDESIGN (2026-08-13): widget kolonundaki kart — "yükselen
+   öğe" (dashboard-design.md §2 "Glass yalnız yükselen öğelerde"), glass +
+   kırpılı cursor-glow alır (globals.css .surface-glass). Işık hâlâ üstten
+   gelir, hover'da yalnız KART SINIRI içinde belirir — zemine yayılmaz. */
+/* FAZ ART-DIRECTION: rampaya geçirildi (bkz. .insightCard notu). */
+.recapQuickCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--elev-2) 88%, transparent);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--edge-2);
+  border-top-color: color-mix(in srgb, #fff 12%, var(--edge-2));
+  box-shadow: var(--shadow-2), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  text-decoration: none;
+  color: inherit;
+  overflow: hidden;
+  min-height: 132px;
+  transition: border-color var(--duration-base) ease,
+              background var(--duration-base) ease,
+              box-shadow var(--duration-base) ease,
+              transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.recapQuickCard::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: radial-gradient(
+    200px 200px at var(--mx, 50%) var(--my, 0%),
+    color-mix(in srgb, var(--accent) 14%, transparent),
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity var(--duration-base) ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.recapQuickCard:hover::before {
+  opacity: 1;
+}
+
+/* Hover: üst kenar mora döner, gölge derinleşir (dashboard-design.md §3.2) */
+.recapQuickCard:hover {
+  border-color: var(--edge-3);
+  border-top-color: color-mix(in srgb, var(--accent) 50%, var(--edge-3));
+  background: linear-gradient(
+    155deg,
+    color-mix(in srgb, #fff 5%, var(--elev-3)),
+    var(--elev-3) 52%
+  );
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--accent-hover) 35%, transparent),
+    var(--shadow-3);
+  transform: translateY(-2px);
+}
+
+.recapQuickCard[aria-disabled="true"] {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.recapQuickCard[aria-disabled="true"]:hover {
+  transform: none;
+  border-color: var(--edge-2);
+  border-top-color: color-mix(in srgb, #fff 12%, var(--edge-2));
+  background: color-mix(in srgb, var(--elev-2) 88%, transparent);
+  box-shadow: var(--shadow-2), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.recapQuickCard[aria-disabled="true"]::before {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .recapQuickCard:hover { transform: none; }
+}
+
+.recapQuickEyebrow {
+  font-family: var(--font-geist-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  opacity: 0.8;
+  position: relative;
+  z-index: 2;
+}
+
+.recapQuickTitle {
+  font-family: var(--font-analytics), var(--font-sans), system-ui, sans-serif;
+  font-size: clamp(1.7rem, 3.4vw, 2.3rem);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  color: var(--color-text-primary);
+  line-height: 1;
+  position: relative;
+  z-index: 2;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
+}
+
+.recapQuickSub {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  margin-top: auto;
+  position: relative;
+  z-index: 2;
+}
+
+.recapQuickArrow {
+  position: absolute;
+  bottom: var(--space-5);
+  right: var(--space-5);
+  color: var(--color-text-tertiary);
+  z-index: 2;
+  transition: transform 200ms ease, color 200ms ease;
+}
+
+.recapQuickCard:hover .recapQuickArrow {
+  transform: translateX(3px);
+  color: var(--color-text-primary);
+}
+
+/* ─── Card Artwork Backdrop (Recap & Taste 1:1 Sanat Eseri Arka Planı) ─── */
+.cardArtworkBackdrop {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.cardArtworkImage {
+  object-fit: cover;
+  object-position: 80% center;
+  opacity: 0.42;
+  filter: blur(1.5px) saturate(1.2);
+  transform: scale(1.02);
+  transform-origin: center right;
+  transition:
+    transform 400ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 300ms ease,
+    filter 300ms ease;
+}
+
+.recapQuickCard:hover .cardArtworkImage,
+.ctaCard:hover .cardArtworkImage {
+  opacity: 0.62;
+  filter: blur(0px) saturate(1.35);
+  transform: scale(1.06);
+}
+
+.cardArtworkOverlay {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    95deg,
+    rgba(13, 11, 23, 0.96) 0%,
+    rgba(13, 11, 23, 0.85) 42%,
+    rgba(13, 11, 23, 0.46) 75%,
+    rgba(13, 11, 23, 0.22) 100%
+  );
+  pointer-events: none;
+}
+
+.cardArtworkOverlayTaste {
+  background:
+    linear-gradient(
+      95deg,
+      rgba(15, 12, 28, 0.95) 0%,
+      rgba(15, 12, 28, 0.84) 42%,
+      rgba(15, 12, 28, 0.42) 75%,
+      rgba(15, 12, 28, 0.18) 100%
+    ),
+    radial-gradient(
+      circle at 100% 0%,
+      color-mix(in srgb, var(--accent) 30%, transparent) 0%,
+      transparent 65%
+    );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .recapQuickCard:hover .cardArtworkImage,
+  .ctaCard:hover .cardArtworkImage {
+    transform: none;
+  }
+}
+
+/* ─── Your Listenings section ───
+   FAZ ART-DIRECTION: ana kolonun asıl içeriği — kendi yüzeyinde oturur.
+   Üstteki "havada asılı ayraç çizgisi" yerine gerçek bir kart gövdesi. */
+.listeningsSection {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  background: var(--material-bg-card);
+  backdrop-filter: var(--material-blur);
+  border: var(--material-border);
+  border-top-color: color-mix(in srgb, #fff 12%, transparent);
+  box-shadow: var(--shadow-card), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+@media (min-width: 1024px) {
+  .listeningsSection {
+    padding: var(--space-8);
+  }
+}
+
+.listeningSectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-5);
+}
+
+/* Hızlı Başlangıç — kapağın altında, banner katında yaşar. */
+.quickStartSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ─── Empty state ─── */
+.emptyState {
+  padding: var(--space-8) 0;
+}
+
+.emptyStateText {
+  font-family: var(--font-geist-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.02em;
+  color: var(--color-text-tertiary);
+  line-height: var(--leading-relaxed);
+}
+
+.emptyStateLink {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.emptyStateLink:hover {
+  text-decoration: underline;
+}
+
+/* ─── Insight row (Dinleme Dağılımı + Platform Dağılımı) ───
+   FAZ DASHBOARD-REDESIGN (2. tur, §1 "Vertical Space Utilization"): tek
+   platformlu kullanıcıda (%91'i — bkz. insights-row.tsx yorumu) ikinci hücre
+   hiç render edilmiyordu, `1fr 1fr` kartı yarı genişlikte bırakıp sağda
+   devasa boşluk yaratıyordu. `data-single` tam genişliğe açar — grafik artık
+   enine geniş, boyu kısa; dead-space kapanır. */
+.insightRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.insightRow[data-single='true'] {
+  grid-template-columns: 1fr;
+}
+
+@media (max-width: 680px) {
+  .insightRow {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Üst çizgi nötr — bkz. .recapQuickCard yorumu (spec §4.4). */
+/* FAZ DASHBOARD-REDESIGN: hero kolonundaki grafik kartı — glass yüzey,
+   tıklanamaz olduğu için hover-glow YOK (yalnız statik derinlik). */
+/* FAZ ART-DIRECTION: `surface 70% + transparent` zeminle neredeyse aynı
+   luminance'a düşüyordu (ölçüm: ~3 L puanı fark). Rampanın `--elev-2`
+   basamağına geçirildi — kart artık gerçekten yüzey. Blur korunuyor
+   (arkadaki atmosfer ışıkları kartın altından yumuşak geçmeye devam
+   ediyor), ama opaklık ayrışmayı garanti ediyor. */
+.insightCard {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  background: var(--material-bg-card);
+  backdrop-filter: var(--material-blur);
+  border: var(--material-border);
+  border-top-color: color-mix(in srgb, #fff 12%, transparent);
+  box-shadow: var(--shadow-card), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+/* ─── Keşif kartı (Dinleme Geçmişi + Anlar) — tam-genişlik ayrı satır ───
+   2026-07-28 (Sahip): /gecmis + /mood mobilde tek erişim noktası. insightRow
+   grid'inden bağımsız; aynı .insightCard görsel diliyle ama tam genişlik.
+   insightRow'dan --space-4 boşlukla ayrılır (grid gap'iyle aynı ritim). */
+.discoverCard {
+  composes: insightCard;
+  margin-top: var(--space-4);
+}
+
+/* Tam-genişlik satırda iki bağlantı yan yana (masaüstü); mobilde alt alta —
+   DiscoverPagesCard'ın varsayılan column akışını yalnız BU bağlamda ezer. */
+.discoverCard .discoverNav {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+@media (max-width: 680px) {
+  .discoverCard .discoverNav {
+    grid-template-columns: 1fr;
+  }
+}
+
+.insightCardEyebrow {
+  font-family: var(--font-geist-mono);
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
+  letter-spacing: 0.15em;
+  color: var(--color-text-tertiary);
+  margin-bottom: var(--space-5);
+}
+
+.insightPeakRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-bottom: var(--space-5);
+}
+
+.insightPeakLabel {
+  font-family: var(--font-geist-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.1em;
+  color: var(--color-accent);
+  font-weight: var(--font-bold);
+}
+
+.insightPeakValue {
+  font-family: var(--font-analytics), var(--font-sans), system-ui, sans-serif;
+  font-size: clamp(1.5rem, 2.8vw, 2rem);
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  color: var(--color-text-primary);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.insightPeakCount {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  margin-top: var(--space-1);
+}
+
+.insightChartWrap {
+  flex: 1;
+  min-height: 100px;
+}
+
+.insightDonutWrap {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: var(--space-4);
+}
+
+/* ─── Keşfet yönlendirme kartı (2026-07-27) — kronotip kartının yerine ───
+   /gecmis + /mood sayfalarına götüren iki satır. Kronotip kartı yandaki
+   Dinleme Dağılımı bar chart'ıyla çakışıyordu (Sahip), kaldırıldı. */
+.discoverNav {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: var(--space-3);
+  justify-content: center;
+}
+
+.discoverNavItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  min-height: 44px; /* dokunma hedefi (dashboard-design.md) */
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-text-primary) 3%, transparent);
+  text-decoration: none;
+  transition: border-color 160ms ease, transform 160ms ease;
+}
+
+.discoverNavItem:hover {
+  border-color: color-mix(in srgb, var(--color-accent) 45%, var(--color-border));
+  transform: translateX(2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .discoverNavItem { transition: border-color 160ms ease; }
+  .discoverNavItem:hover { transform: none; }
+}
+
+.discoverNavIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  color: var(--color-accent);
+}
+
+.discoverNavText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  flex: 1;
+  min-width: 0;
+}
+
+.discoverNavTitle {
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+}
+
+.discoverNavDesc {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  line-height: 1.4;
+}
+
+.discoverNavArrow {
+  flex-shrink: 0;
+  color: var(--color-text-tertiary);
+}
+
+/* Ok işareti accent almaz (dashboard-design.md §3.1) — hover'da yalnız
+   metin rengine yükselir. */
+.discoverNavItem:hover .discoverNavArrow {
+  color: var(--text);
+}
+
+/* Paket hazırlanıyor durumu (2026-07-31, Aşama 3 · paket #4).
+   StatBar'ın yerini tutar: `user_stats_pkg` üretilene kadar sayılar
+   BİLİNMİYOR — canlı hesaba düşmek yerine durum gösterilir (§12.4-A).
+   `insightEmpty` ile aynı dil; kart içinde değil satır olarak durur. */
+.statsPreparing {
+  margin: 0;
+  padding: var(--space-4) 0;
+  font-family: var(--font-geist-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.06em;
+  color: var(--color-text-tertiary);
+}
+
+.insightEmpty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-height: 120px;
+  font-family: var(--font-geist-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.06em;
+  color: var(--color-text-tertiary);
+}
+
+/* ─── CTA Grid — Taste / Playlists (2026-07-17: Profil kartı kaldırıldı,
+   navbar'da zaten var; iki imza-kart eşit ağırlıkta yan yana) ─── */
+/* FAZ ART-DIRECTION: rail sütununda tek kart kaldı (Playlist CTA'sı daha
+   önce kaldırılmıştı) — 2 kolonluk ızgara anlamsızdı, tek kolon. Üst
+   ayraç çizgisi de kaldırıldı: rail bölümleri kendi yüzeyleriyle ayrışır. */
+.ctaGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+
+/* FAZ DASHBOARD-REDESIGN: sayfanın birincil CTA'sı (TASTE) — widget kolonunda
+   en güçlü glass+glow alan kart, hâlâ tek accent bütçesi içinde (§3.1 "bir
+   viewport'ta TEK bağıran vurgu" — bu zaten sayfanın tek accent CTA'sı). */
+/* FAZ ART-DIRECTION: sayfanın TEK accent CTA'sı — rail'in kapanış kartı.
+   `--elev-3` basamağında (rail'in en yükseği) + kendi accent yıkaması.
+   Bu, sayfada morun "bağırmasına" izin verilen tek yer (§3.1 bütçesi). */
+.ctaCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-5);
+  padding: var(--space-7) var(--space-6);
+  border-radius: var(--radius-lg);
+  background:
+    radial-gradient(
+      ellipse 100% 85% at 12% 0%,
+      color-mix(in srgb, var(--accent) 20%, transparent),
+      transparent 66%
+    ),
+    linear-gradient(155deg, color-mix(in srgb, #fff 5%, var(--elev-3)), var(--elev-3) 55%);
+  border: 1px solid color-mix(in srgb, var(--accent) 26%, var(--edge-3));
+  border-top-color: color-mix(in srgb, var(--accent) 55%, var(--edge-3));
+  box-shadow: var(--shadow-3), inset 0 1px 0 rgba(255, 255, 255, 0.09);
+  text-decoration: none;
+  color: inherit;
+  overflow: hidden;
+  transition: border-color var(--duration-base) ease,
+              background var(--duration-base) ease,
+              box-shadow var(--duration-base) ease,
+              transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  min-height: 172px;
+}
+
+.ctaCard::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: radial-gradient(
+    240px 240px at var(--mx, 50%) var(--my, 0%),
+    color-mix(in srgb, var(--accent) 18%, transparent),
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity var(--duration-base) ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.ctaCard:hover::before {
+  opacity: 1;
+}
+
+/* Hover: üst kenar mora döner, gölge derinleşir (dashboard-design.md §3.2) */
+.ctaCard:hover {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--edge-3));
+  border-top-color: color-mix(in srgb, var(--accent) 75%, var(--edge-3));
+  background:
+    radial-gradient(
+      ellipse 100% 85% at 12% 0%,
+      color-mix(in srgb, var(--accent) 28%, transparent),
+      transparent 68%
+    ),
+    linear-gradient(155deg, color-mix(in srgb, #fff 6%, var(--elev-3)), var(--elev-3) 55%);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--accent-hover) 45%, transparent),
+    var(--shadow-3);
+  transform: translateY(-2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ctaCard:hover { transform: none; }
+}
+
+/* `.ctaCardAccent` artık `.ctaCard`ın kendisinde — accent yıkaması taban
+   tanımın parçası. Sınıf uyumluluk için duruyor ama ek stil taşımıyor
+   (page.tsx hâlâ birlikte veriyor; kaldırmak yerine nötrleştirildi ki
+   ileride ikinci bir nötr CTA eklenirse ayrım korunabilsin). */
+.ctaCardAccent {
+  border-top-width: 1px;
+}
+
+/* Playlist kartı — Taste ile aynı imza-kart dili (üst çizgi + hero değer + CTA
+   pill), ama accent bütçesini Taste'e bırakmak için nötr tonlu üst çizgi ve
+   hero değeri mono/tabular sayı (kelime değil) — iki kart birbirinin klonu
+   olmasın diye kasıtlı küçük fark (2026-07-17). */
+.ctaCardPlaylist {
+  border-top: 2px solid var(--color-text-tertiary);
+}
+
+.ctaHeroCount {
+  font-family: var(--font-analytics), var(--font-sans), system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(2rem, 3.4vw, 2.8rem);
+  font-weight: 400;
+  color: var(--color-text-primary);
+  line-height: 1;
+}
+
+.ctaCardContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  position: relative;
+  z-index: 2;
+}
+
+.ctaEyebrow {
+  font-family: var(--font-geist-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  opacity: 0.8;
+}
+
+.ctaHero {
+  font-family: var(--font-analytics), var(--font-sans), system-ui, sans-serif;
+  font-size: clamp(2rem, 3.4vw, 2.8rem);
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  color: var(--color-accent);
+  line-height: 1;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.5);
+}
+
+.ctaTitle {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+  line-height: 1;
+}
+
+.ctaBody {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-normal);
+}
+
+/* button.module.css .primary ile aynı token dili (bg/fg/radius) — bu bir
+   `<Link>` içindeki görsel CTA etiketi, gerçek `<button>` değil (tıklanabilirlik
+   dış Link'te), bu yüzden Button component'ine taşınmaz, yalnız stil senkron
+   edilir (spec §4.5, madde 14). */
+.ctaCTA {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-5);
+  background: color-mix(in srgb, var(--color-accent) 65%, transparent);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  backdrop-filter: blur(16px) saturate(1.2);
+  color: var(--color-accent-fg);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  align-self: flex-start;
+  white-space: nowrap;
+  position: relative;
+  z-index: 2;
+  transition:
+    background 200ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 200ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 100ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ctaCTA:hover {
+  background: color-mix(in srgb, var(--color-accent) 85%, transparent);
+  box-shadow:
+    0 0 24px color-mix(in srgb, var(--color-accent) 50%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.ctaCTA svg {
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ctaCTA:hover svg {
+  transform: translateX(4px);
+}
+
+.ctaCTA:active {
+  transform: scale(0.97);
+}
+
+/* Playlist kartının CTA'sı nötr — amber bütçesi Taste'te kalır (60:30:10) */
+.ctaCardPlaylist .ctaCTA {
+  background: var(--color-bg-sunken);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border-strong);
+}
+
+.ctaArrow {
+  margin-top: auto;
+  align-self: flex-end;
+  color: var(--color-text-tertiary);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .cover,
+  .statItem,
+  .listeningsSection,
+  .insightCard,
+  .recentPlayedSection,
+  .recapQuickCard {
+    backdrop-filter: none;
+    background: var(--elev-2);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .statItem:active {
+    transform: none;
+  }
+}
+
+
+/* glass-restore @supports */
+@supports not (backdrop-filter: blur(1px)) {
+  .cover,
+  .statItem,
+  .insightCard,
+  .listeningsSection,
+  .recentPlayedSection,
+  .recapQuickCard {
+    background: var(--elev-2);
+  }
+  .ctaCTA {
+    background: var(--color-accent);
+    backdrop-filter: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .statItem:hover {
+    transform: none;
+  }
+  .ctaCTA:active,
+  .ctaCTA:hover svg {
+    transform: none;
+  }
+}

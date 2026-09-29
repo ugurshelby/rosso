@@ -1,0 +1,52 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build output
+.next/
+out/
+build/
+dist/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+
+# Environment and secrets — NEVER commit these
+.env
+.env.*
+!.env.example
+*-key.json
+*.pem
+*.p8
+*.p12
+*.keystore
+*.gpg
+*.sql.gz
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Editors / OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Local tooling
+.vercel/
+.claude/
+.cursor/
+.agents/
+.turbo/
+*.log
+ekran-goruntuleri/
+_arsiv/

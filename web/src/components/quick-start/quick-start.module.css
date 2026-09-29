@@ -1,0 +1,250 @@
+/* ─── Quick Start — Apple-Design Kartlar ve Bento Düzeni ─── */
+
+.section {
+  width: 100%;
+  margin-bottom: var(--space-8);
+  transition: opacity 500ms cubic-bezier(0.16, 1, 0.3, 1),
+              transform 500ms cubic-bezier(0.16, 1, 0.3, 1),
+              max-height 500ms cubic-bezier(0.16, 1, 0.3, 1),
+              margin 500ms ease;
+  overflow: hidden;
+}
+
+.sectionDissolving {
+  opacity: 0;
+  transform: translateY(-8px) scale(0.98);
+  max-height: 0 !important;
+  margin-bottom: 0 !important;
+  pointer-events: none;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+  padding: 0 var(--space-1);
+}
+
+.headerLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.eyebrow {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--color-accent, #7c5cff);
+}
+
+.title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-text-primary, #f4f4f5);
+}
+
+.counterBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  background: rgba(124, 92, 255, 0.1);
+  border: 1px solid rgba(124, 92, 255, 0.2);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-accent, #7c5cff);
+}
+
+/* ─── Grid / Bento Yerleşimi ─── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .grid > *:last-child:nth-child(odd) {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  .grid > *:last-child:nth-child(odd) {
+    grid-column: auto;
+  }
+}
+
+/* ─── Kart Yapısı (Apple Glassmorphism + Rim-light) ─── */
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: var(--space-5);
+  min-height: 180px;
+  border-radius: var(--radius-lg, 16px);
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--color-surface, #16141f) 90%, transparent) 0%,
+    color-mix(in srgb, var(--color-surface-hi, #1f1c2c) 75%, transparent) 100%
+  );
+  backdrop-filter: blur(20px) saturate(1.2);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  text-decoration: none;
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    transform 160ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    opacity 450ms cubic-bezier(0.16, 1, 0.3, 1),
+    filter 450ms cubic-bezier(0.16, 1, 0.3, 1);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(124, 92, 255, 0.35);
+  box-shadow:
+    0 12px 32px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(124, 92, 255, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.card:active {
+  transform: scale(0.98);
+}
+
+/* Çözülme (Dissolve) Animasyonu */
+.cardDissolving {
+  opacity: 0 !important;
+  transform: scale(0.92) !important;
+  filter: blur(12px) !important;
+  pointer-events: none;
+}
+
+/* Kart İç Başlığı ve İkon */
+.cardTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.iconWrap {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-md, 10px);
+  background: rgba(124, 92, 255, 0.12);
+  border: 1px solid rgba(124, 92, 255, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent, #7c5cff);
+  transition: transform 160ms ease;
+}
+
+.card:hover .iconWrap {
+  transform: scale(1.05);
+  background: rgba(124, 92, 255, 0.18);
+}
+
+.cardArrow {
+  color: var(--color-text-tertiary);
+  transition: transform 160ms ease, color 160ms ease;
+}
+
+.card:hover .cardArrow {
+  color: var(--color-accent, #7c5cff);
+  transform: translateX(3px);
+}
+
+/* Kart Gövdesi */
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.cardTitle {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--color-text-primary, #f4f4f5);
+}
+
+.cardDesc {
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--color-text-secondary, #a5a0b5);
+}
+
+/* ZIP Kartı İlerleme Çubuğu ve Rozetleri */
+.progressWrap {
+  margin-top: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.progressHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.6875rem;
+  font-family: var(--font-geist-mono), monospace;
+  color: var(--color-text-tertiary);
+}
+
+.progressBar {
+  width: 100%;
+  height: 4px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--color-accent, #7c5cff);
+  border-radius: var(--radius-full);
+  transition: width 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 8px var(--color-accent, #7c5cff);
+}
+
+/* Tamamlandı İşareti / Rozeti */
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #34d399; /* emerald */
+  background: rgba(52, 211, 153, 0.1);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(52, 211, 153, 0.2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .section, .card, .iconWrap, .progressFill, .cardArrow {
+    transition: none !important;
+  }
+}

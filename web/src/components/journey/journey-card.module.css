@@ -1,0 +1,236 @@
+/* İmza ürün vurgusu (2026-07-17): recap sayfasında artık en üstte, tam-genişlik
+   bant olarak açılıyor — küçük bir yatay kart değil. Recap "özet", Journey
+   "hikâye" — görsel ağırlık bu farkı yansıtmalı. */
+.card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  padding: var(--space-8) var(--space-8);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg, 16px);
+  background: var(--color-bg-elevated);
+  width: 100%;
+  text-align: left;
+  min-height: 148px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.cardLocked {
+  opacity: 0.8;
+}
+
+.cardUnlocked {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(124, 92, 255, 0.45);
+  border-radius: var(--radius-lg, 16px);
+  background: rgba(22, 20, 31, 0.55);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  backdrop-filter: blur(24px) saturate(160%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 16px 48px -20px rgba(0, 0, 0, 0.6),
+    0 0 32px -8px rgba(124, 92, 255, 0.2);
+  transition:
+    border-color var(--duration-base) ease,
+    box-shadow var(--duration-base) ease,
+    background var(--duration-base) ease,
+    transform var(--duration-base) cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cardUnlocked:hover {
+  transform: translateY(-2px);
+  border-color: rgba(124, 92, 255, 0.35);
+  border-top-color: rgba(124, 92, 255, 0.75);
+  background: rgba(26, 23, 38, 0.65);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 24px 60px -16px rgba(0, 0, 0, 0.7),
+    0 0 40px -4px rgba(124, 92, 255, 0.35);
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .cardUnlocked {
+    background: linear-gradient(
+      168deg,
+      color-mix(in srgb, var(--color-accent) 10%, var(--color-bg-elevated)),
+      var(--color-bg-elevated) 58%
+    );
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .cardUnlocked {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: linear-gradient(
+      168deg,
+      color-mix(in srgb, var(--color-accent) 10%, var(--color-bg-elevated)),
+      var(--color-bg-elevated) 58%
+    );
+  }
+}
+
+.cardUnlocked:active {
+  transform: translateY(0);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   İMZA ATMOSFERİ (2026-08-08 — Sahip: "daha imza, 'bize özel bir şey'
+   hissi versin")
+
+   Önceki hâl: tek radyal parıltı, düz zemin. Kart "bir kart"tı; oysa Journey
+   Rosso'nun imza ürünü ve sayfanın EN ÜSTÜNDE duruyor.
+
+   ⚠ Neden hazır bir vibe-card görseli KULLANILMADI: `public/vibe-cards/`
+     altındaki 21 görselin hepsi zaten sahipli — 11'i recap kapak havuzu,
+     10'u taste arketipi. Journey'ye birini "ödünç" vermek, kullanıcının
+     başka yerde gördüğü bir görseli burada tekrar göstermek olurdu; imza
+     değil, tekrar hissi verirdi. Bunun yerine kendi atmosferi kuruldu:
+     katmanlı ışık + ince ızgara + akan ufuk çizgisi.
+
+   ⚠ Katman sınırı korundu: Bodoni/serif YOK (dashboard-design.md §11 sızma
+     yasağı). İmza hissi tipografiden değil, IŞIKTAN geliyor.
+   ══════════════════════════════════════════════════════════════════════════ */
+.unlockedGlow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    /* 1) Sol üstten gelen ana ışık — mevcut karakteri koruyor */
+    radial-gradient(ellipse 90% 70% at 15% 0%,
+      color-mix(in srgb, var(--color-accent) 20%, transparent), transparent 62%),
+    /* 2) Sağ alttan karşı ışık — derinlik; tek kaynak düz görünüyordu */
+    radial-gradient(ellipse 70% 90% at 92% 108%,
+      color-mix(in srgb, var(--color-accent-gold, var(--color-accent)) 14%, transparent), transparent 58%);
+}
+
+/**
+ * Ufuk çizgileri — "yolculuk" metaforunun görsel karşılığı.
+ * Perspektifte uzaklaşan yatay şeritler; hareket YOK, yalnız derinlik.
+ * `repeating-linear-gradient` tek boyama, DOM düğümü eklemiyor.
+ */
+.horizon {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--color-accent) 9%, transparent) 0 1px,
+    transparent 1px 14px
+  );
+  /* Aşağı indikçe sıklaşan ritim yerine, üstte yoğun alta doğru kaybolan
+     bir perde — metin alanı temiz kalsın. */
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, transparent 72%);
+  mask-image: linear-gradient(to bottom, #000 0%, transparent 72%);
+}
+
+.lockIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--color-bg-sunken);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  position: relative;
+  z-index: 1;
+}
+
+.eyebrow {
+  font-family: var(--font-geist-mono, monospace);
+  font-size: var(--text-xs);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+
+.cardUnlocked .eyebrow {
+  color: var(--color-accent);
+}
+
+.title {
+  /* 2026-07-28 (bug-error, Sahip onayı): bu kart Recap LİSTE sayfasında
+     (dashboard katmanı) duruyor; sayfadaki diğer tüm başlıklar --font-analytics
+     sans. Journey'nin Bodoni serif'i buraya yabancı düşüyordu → dashboard
+     fontuna hizalandı. (Journey'nin İÇ sayfası hâlâ Bodoni — o katmanın kimliği.) */
+  font-family: var(--font-analytics), var(--font-sans), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
+  letter-spacing: -0.01em;
+  color: var(--color-text-primary);
+}
+
+.body {
+  font-size: var(--text-base, 1rem);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-normal);
+  max-width: 520px;
+  margin: 0;
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: #fff;
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: rgba(124, 92, 255, 0.18);
+  border: 1px solid rgba(124, 92, 255, 0.35);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 4px 16px -2px rgba(124, 92, 255, 0.25);
+  margin-top: var(--space-4);
+  transition: background 200ms cubic-bezier(0.16, 1, 0.3, 1), border-color 200ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cardUnlocked:hover .cta {
+  background: rgba(124, 92, 255, 0.32);
+  border-color: rgba(124, 92, 255, 0.55);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 0 24px rgba(124, 92, 255, 0.45);
+}
+
+.ctaArrow {
+  display: inline-block;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cardUnlocked:hover .ctaArrow {
+  transform: translateX(4px);
+}
+
+@media (max-width: 640px) {
+  .card {
+    padding: var(--space-6);
+    min-height: unset;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cardUnlocked {
+    transition: none;
+  }
+}

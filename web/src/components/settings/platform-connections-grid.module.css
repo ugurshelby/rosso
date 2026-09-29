@@ -1,0 +1,211 @@
+/* ── Bağlantı durumu banner'ı ── */
+.banner {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+}
+
+.bannerSuccess {
+  background: color-mix(in srgb, var(--color-success) 12%, transparent);
+  color: var(--color-success);
+  border: 1px solid color-mix(in srgb, var(--color-success) 30%, transparent);
+}
+
+.bannerError {
+  background: color-mix(in srgb, var(--color-error) 12%, transparent);
+  color: var(--color-error);
+  border: 1px solid color-mix(in srgb, var(--color-error) 30%, transparent);
+}
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* E-FAZ 1 (2026-08-02) — DT1: 3 sabit kolon, tek platform (Spotify) varken
+   masaüstünde kartı sola sıkıştırıp sağda iki boş hücre bırakıyordu.
+   `auto-fit` + `minmax`: kart sayısı kadar kolon açılır, boş hücre olmaz.
+   Üst sınır (`--platform-card-max`) tek kartın ekranı boydan boya kaplayıp
+   şişmesini engeller — boşluk bilinçli, dağınık değil. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, var(--platform-card-max, 420px)));
+  gap: var(--space-4);
+}
+
+@media (max-width: 640px) {
+  .grid {
+    /* Mobilde tek sütun tam genişlik — üst sınır burada engel olurdu. */
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Platform kartı ── */
+.card {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  /* Işık üstten gelir (dashboard-design.md §3.2) */
+  background: linear-gradient(
+    155deg,
+    color-mix(in srgb, #fff 4%, var(--surface)),
+    var(--surface) 46%
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 12px 28px -18px rgba(0, 0, 0, 0.9);
+  border: 1px solid var(--color-border);
+  transition: border-color 300ms ease, background 300ms ease;
+  flex: 1;
+  min-width: 0;
+}
+
+/* E-FAZ 2 (2026-08-02) — DT2/DT3: bağlı kart düz elevated yüzeydi ve
+   Spotify yeşili o kadar soluktu ki marka tanınmıyordu.
+
+   Renk `--platform-color`dan gelir (bileşen bastırır) — hardcoded hex YOK,
+   bu yüzden yarın bir platform daha eklenirse kural olduğu gibi çalışır.
+   Çok katmanlı radial: sol üstten güçlü, sağ alttan zayıf ışık; tek yönlü
+   aydınlatma korunur (dashboard-design.md §3.2). */
+.cardConnected {
+  border-color: color-mix(in srgb, var(--platform-color) 35%, transparent);
+  background:
+    radial-gradient(
+      ellipse 90% 70% at 0% 0%,
+      color-mix(in srgb, var(--platform-color) 22%, transparent),
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 60% 50% at 100% 100%,
+      color-mix(in srgb, var(--platform-color) 8%, transparent),
+      transparent 50%
+    ),
+    color-mix(in srgb, var(--platform-color) 6%, var(--color-bg-elevated));
+  backdrop-filter: blur(16px) saturate(1.2);
+}
+
+/* Bağlıyken sağ üst orb büyür ve güçlenir — "bu kanal canlı" sinyali.
+   Bağlı değilken nötr kalır (durum ayrımı gözle okunur). */
+.cardGlow {
+  position: absolute;
+  top: -36px;
+  right: -36px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--platform-color) 30%, transparent),
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+/* İkon kutusu bağlıyken platform renginde belirginleşir. */
+.cardConnected .cardIcon {
+  background: color-mix(in srgb, var(--platform-color) 18%, transparent);
+  border-color: color-mix(in srgb, var(--platform-color) 38%, transparent);
+}
+
+.cardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.cardIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  /* Bagli degilken notr; bagliyken .cardConnected .cardIcon ezer. */
+  background: var(--color-bg-sunken);
+  border: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: var(--platform-color, var(--color-text-secondary));
+  flex-shrink: 0;
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-border-strong);
+  flex-shrink: 0;
+  transition: background 300ms ease, box-shadow 300ms ease;
+}
+
+.statusDotConnected {
+  background: var(--platform-color, var(--color-accent));
+  box-shadow: 0 0 8px color-mix(in srgb, var(--platform-color) 45%, transparent);
+}
+
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  flex: 1;
+}
+
+.cardNameRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.cardName {
+  font-weight: 700;
+  font-size: var(--text-base);
+  color: var(--color-text-primary);
+  letter-spacing: var(--tracking-tight);
+}
+
+.cardMeta {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  font-family: var(--font-geist-mono, monospace);
+  letter-spacing: 0.04em;
+  margin: 0;
+}
+
+/* ── Device-auth dialog (YT Music) ── */
+.deviceDialog {
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-elevated);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.deviceDialogTitle {
+  font-weight: 600;
+  margin: 0;
+}
+
+.deviceDialogBody {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.deviceDialogWaiting {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.deviceDialogWaitingText {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}

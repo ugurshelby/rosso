@@ -1,0 +1,120 @@
+/* Kendi yüzeyi çizmiyor — bkz. LastPlayedCard.module.css başlık notu. */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.cardLabel {
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--color-text-tertiary);
+}
+
+.body {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Ring */
+.ringWrap {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+}
+
+.ringWrap::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--color-accent) 28%, transparent) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.ringSvg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  position: relative;
+  z-index: 1;
+}
+
+.ringScore {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: 2;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.9375rem;
+  font-weight: var(--font-semibold);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+/* Info */
+.info {
+  flex: 1;
+  min-width: 0;
+}
+
+.scoreLabel {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.2;
+  transition: opacity 200ms ease;
+}
+
+.card:hover .scoreLabel {
+  opacity: 0.85;
+}
+
+.genreCount {
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  margin-top: 0.35rem;
+}
+
+.genreNum {
+  font-family: var(--font-analytics), var(--font-sans), sans-serif;
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: var(--color-text-primary);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.genreSub {
+  font-size: 0.6875rem;
+  color: var(--color-text-tertiary);
+}
+
+/* ── Somut anlatı satırları (2026-07-17) ── */
+.story {
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+  margin: 0;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.factRow {
+  font-size: 0.6875rem;
+  color: var(--color-text-tertiary);
+  margin: 0;
+}
+
+.factRow strong {
+  color: var(--color-text-primary);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}

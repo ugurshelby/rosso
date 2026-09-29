@@ -1,0 +1,81 @@
+/*
+  Touch/hover capability omurga — docs/design/teknik/touch-hover-capability.md
+  Import: globals.css
+
+  apple-design §1: geri bildirim basma anında gelir; tarayıcının gri
+  vurgusu kendi :active ölçeklememizin üstüne binip "iki katmanlı" hissettirir.
+*/
+a,
+button,
+input[type='button'],
+input[type='submit'],
+input[type='reset'],
+summary,
+[role='button'],
+[role='tab'],
+[role='switch'] {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* apple-design §1: anında basma geri bildirimi — opt-in sınıf */
+.pressable:active {
+  transform: scale(0.97);
+  transition-duration: 100ms;
+  transition-timing-function: ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pressable:active {
+    transform: none;
+  }
+}
+
+/* Dekoratif hover yalnız gerçek fare + ince pointer */
+@media (hover: hover) and (pointer: fine) {
+  .hoverLift:hover {
+    transform: translateY(-2px);
+  }
+
+  .hoverSurface:hover {
+    background: var(--color-hover, var(--surface-hi));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hoverLift:hover {
+    transform: none;
+  }
+}
+
+/* Dokunmatikte en az 44×44 CSS px hedef */
+.touchTarget {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.touchTargetCompact {
+  position: relative;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.touchTargetCompact::before {
+  content: '';
+  position: absolute;
+  inset: 50%;
+  width: max(44px, 100%);
+  height: max(44px, 100%);
+  transform: translate(-50%, -50%);
+}
+
+@media (pointer: coarse) {
+  .hoverOnly {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+}

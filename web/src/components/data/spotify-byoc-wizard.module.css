@@ -1,0 +1,627 @@
+/* ═══════════════════════════════════════════════════════════════
+   Spotify BYOC (Bring Your Own Credentials) Wizard Styles
+   Otorite: apple-design & docs/design/katmanlar/dashboard-design.md
+   ═══════════════════════════════════════════════════════════════ */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4, 1rem);
+  width: 100%;
+}
+
+/* ─── Hata / Uyarı Banner'ı (Örn: Redirect URI Uyuşmazlığı) ─── */
+.alertBanner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3, 0.75rem);
+  padding: var(--space-4, 1rem);
+  border-radius: var(--radius-lg, 12px);
+  background: color-mix(in oklch, #e11d48 12%, var(--elev-1));
+  border: 1px solid color-mix(in oklch, #e11d48 35%, transparent);
+  color: var(--text);
+  box-shadow: 0 4px 16px -4px rgba(225, 29, 72, 0.2);
+}
+
+.alertIcon {
+  color: #f43f5e;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.alertContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 0.5rem);
+  font-size: var(--text-sm, 0.875rem);
+  line-height: 1.5;
+}
+
+.alertTitle {
+  font-weight: 600;
+  color: #fda4af;
+  letter-spacing: -0.01em;
+}
+
+.alertDesc {
+  color: var(--muted);
+  font-size: var(--text-xs, 0.8125rem);
+}
+
+/* ─── Ana Kart / Pencere Çerçevesi (Spotify Developer Dashboard Estetiği) ─── */
+.windowCard {
+  background: var(--elev-1);
+  border: 1px solid var(--edge-2);
+  border-radius: var(--radius-xl, 16px);
+  overflow: hidden;
+  box-shadow: var(--shadow-2), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  position: relative;
+  transition: border-color 200ms ease;
+}
+
+.windowCard:focus-within {
+  border-color: color-mix(in oklch, #1db954 50%, var(--edge-3));
+}
+
+/* Pencere Üst Çubuğu (Title Bar) */
+.windowHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.25rem;
+  background: color-mix(in oklch, #121212 90%, var(--elev-1));
+  border-bottom: 1px solid var(--edge-1);
+  gap: 1rem;
+}
+
+.windowMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.spotifyBrandIcon {
+  color: #1db954;
+  display: flex;
+  align-items: center;
+}
+
+.windowTitle {
+  font-size: var(--text-xs, 0.8125rem);
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.windowBreadcrumb {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.externalLinkBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: var(--text-xs, 0.75rem);
+  font-weight: 500;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  min-height: 32px;
+}
+
+.externalLinkBtn:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.externalLinkBtn:active {
+  transform: scale(0.97);
+}
+
+/* ─── Pencere İçeriği & Grid ─── */
+.windowBody {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+@media (min-width: 840px) {
+  .twoColGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 839px) {
+  .twoColGrid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+}
+
+/* ─── Mockup Panelleri (Spotify Ekranlarını Taklit Eden Bölümler) ─── */
+.mockupPanel {
+  background: #121212;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-lg, 12px);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.stepBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #1db954;
+  background: rgba(29, 185, 84, 0.12);
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  width: fit-content;
+}
+
+.panelTitle {
+  font-size: var(--text-base, 1rem);
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: -0.015em;
+  margin: 0;
+}
+
+.panelDesc {
+  font-size: var(--text-xs, 0.8125rem);
+  line-height: 1.5;
+  color: #a7a7a7;
+  margin: 0;
+}
+
+/* Spotify Form Önizleme Satırları */
+.spotifyFormMock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: #181818;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.mockField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.mockLabel {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #b3b3b3;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.mockValue {
+  font-size: 0.8125rem;
+  color: #ffffff;
+  background: #242424;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  font-family: inherit;
+}
+
+/* ─── Kopyala Kutusu (Redirect URI) ─── */
+.copyBoxContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.copyBoxLabel {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #b3b3b3;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.copyBox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #000000;
+  border: 1px solid rgba(29, 185, 84, 0.35);
+  border-radius: 6px;
+  padding: 0.375rem 0.5rem 0.375rem 0.75rem;
+  position: relative;
+}
+
+.copyBoxValue {
+  flex: 1;
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 0.75rem;
+  color: #1ed760;
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: none;
+}
+
+.copyBoxValue::-webkit-scrollbar {
+  display: none;
+}
+
+.copyBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  background: #1db954;
+  color: #000000;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border: none;
+  border-radius: 9999px;
+  padding: 0.375rem 0.75rem;
+  cursor: pointer;
+  transition: transform 120ms ease, background-color 150ms ease;
+  flex-shrink: 0;
+  min-height: 28px;
+}
+
+.copyBtn:hover {
+  background: #1ed760;
+}
+
+.copyBtn:active {
+  transform: scale(0.95);
+}
+
+.copyBtnCopied {
+  background: #ffffff;
+  color: #000000;
+}
+
+/* ─── Canlı Giriş Alanları (Adım 2: Client ID / Secret Yapıştırma) ─── */
+.inputForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.formField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.fieldLabelRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.fieldLabel {
+  font-size: var(--text-xs, 0.8125rem);
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.fieldHint {
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 0.6875rem;
+  color: var(--muted);
+}
+
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.textInput {
+  width: 100%;
+  height: 44px;
+  background: var(--elev-0);
+  border: 1px solid var(--edge-2);
+  border-radius: 8px;
+  padding: 0 2.5rem 0 0.875rem;
+  color: var(--text);
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.textInput:focus {
+  outline: none;
+  border-color: #1db954;
+  box-shadow: 0 0 0 2px rgba(29, 185, 84, 0.2);
+}
+
+.textInput::placeholder {
+  color: var(--faint);
+  font-family: inherit;
+}
+
+.inputIconRight {
+  position: absolute;
+  right: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: color 150ms ease;
+}
+
+.inputIconRight:hover {
+  color: var(--text);
+}
+
+.inputIconRight:active {
+  transform: scale(0.92);
+}
+
+/* ─── Hata Mesajı Kutusu ─── */
+.errorMsg {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 0.875rem;
+  border-radius: 6px;
+  background: color-mix(in oklch, #e11d48 12%, var(--elev-0));
+  border: 1px solid color-mix(in oklch, #e11d48 30%, transparent);
+  color: #fda4af;
+  font-size: var(--text-xs, 0.8125rem);
+  line-height: 1.4;
+}
+
+/* ─── Başarı Mesajı Kutusu ─── */
+.successMsg {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 0.875rem;
+  border-radius: 6px;
+  background: rgba(29, 185, 84, 0.12);
+  border: 1px solid rgba(29, 185, 84, 0.3);
+  color: #1ed760;
+  font-size: var(--text-xs, 0.8125rem);
+  line-height: 1.4;
+}
+
+/* ─── Doğrula ve Bağlan Butonu ─── */
+.submitBtn {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: #1db954;
+  color: #000000;
+  font-size: var(--text-sm, 0.875rem);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  border: none;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: background-color 150ms ease, transform 120ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 150ms ease;
+  box-shadow: 0 4px 12px rgba(29, 185, 84, 0.25);
+}
+
+.submitBtn:hover:not(:disabled) {
+  background: #1ed760;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(29, 185, 84, 0.35);
+}
+
+.submitBtn:active:not(:disabled) {
+  transform: scale(0.975);
+}
+
+.submitBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ─── Bağlı Durum Kartı (Step 4 & 5: Kilitli Durum) ─── */
+.connectedCard {
+  background: var(--elev-1);
+  border: 1px solid color-mix(in oklch, #1db954 30%, var(--edge-2));
+  border-radius: var(--radius-xl, 16px);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  box-shadow: var(--shadow-2), 0 0 24px -8px rgba(29, 185, 84, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.connectedHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.connectedBadgeGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.liveDotPulse {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #1db954;
+  box-shadow: 0 0 10px #1db954;
+  position: relative;
+}
+
+.liveDotPulse::after {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
+  border-radius: 50%;
+  border: 1px solid #1db954;
+  animation: pulseRipple 2s infinite cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes pulseRipple {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+.connectedTitleWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.connectedMainTitle {
+  font-size: var(--text-base, 1rem);
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.015em;
+}
+
+.connectedSubTitle {
+  font-size: var(--text-xs, 0.8125rem);
+  color: var(--muted);
+}
+
+.connectedMetaGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  background: var(--elev-0);
+  border: 1px solid var(--edge-1);
+  border-radius: var(--radius-lg, 12px);
+  padding: 1rem 1.25rem;
+}
+
+.metaItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.metaLabel {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.metaValue {
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.connectedFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--edge-1);
+  flex-wrap: wrap;
+}
+
+.connectedNote {
+  font-size: var(--text-xs, 0.75rem);
+  color: var(--faint);
+  line-height: 1.4;
+  max-width: 520px;
+}
+
+.disconnectBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  background: transparent;
+  color: var(--muted);
+  font-size: var(--text-xs, 0.8125rem);
+  font-weight: 500;
+  border: 1px solid var(--edge-2);
+  border-radius: 9999px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: all 150ms ease;
+  min-height: 36px;
+}
+
+.disconnectBtn:hover:not(:disabled) {
+  color: #fda4af;
+  border-color: color-mix(in oklch, #e11d48 40%, var(--edge-2));
+  background: color-mix(in oklch, #e11d48 10%, transparent);
+}
+
+.disconnectBtn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.disconnectBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ─── Reduced Motion Koruması ─── */
+@media (prefers-reduced-motion: reduce) {
+  .liveDotPulse::after {
+    animation: none;
+  }
+  .submitBtn,
+  .copyBtn,
+  .disconnectBtn,
+  .externalLinkBtn {
+    transition: none !important;
+    transform: none !important;
+  }
+}

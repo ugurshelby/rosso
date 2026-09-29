@@ -1,0 +1,44 @@
+name: On-Demand ZIP & Catalog Processor
+
+# Woken by the web app (`repository_dispatch: process_new_export`) when a Spotify export ZIP is
+# uploaded. Nothing runs 24/7: this job drains the queue and exits.
+on:
+  repository_dispatch:
+    types: [process_new_export]
+  workflow_dispatch:
+
+concurrency:
+  group: process-zip
+  cancel-in-progress: false
+
+jobs:
+  process:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: worker
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: pip
+          cache-dependency-path: worker/pyproject.toml
+
+      - name: Install
+        run: |
+          pip install --upgrade pip
+          pip install -e .
+
+      - name: Process queued exports and enrich genres
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          LASTFM_API_KEY: ${{ secrets.LASTFM_API_KEY }}
+          SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+          SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+          CONTACT_EMAIL: ${{ secrets.CONTACT_EMAIL }}
+        run: |
+          python -m app.pipeline.export_runner
+          python -m app.pipeline.genre_runner

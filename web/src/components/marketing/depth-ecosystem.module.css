@@ -1,0 +1,541 @@
+/* ── Depth Ecosystem Section (İstatistikten Öteye) ──
+   Apple Design & Rosso Dark Minimalist Discipline
+   Feature Highlight Architecture · Translucent Glass Depth · Symmetrical Rhythm ── */
+
+.section {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  padding: clamp(5rem, 10vw, 8rem) 0 clamp(4rem, 8vw, 7rem);
+  background:
+    radial-gradient(
+      ellipse 80% 50% at 50% 10%,
+      color-mix(in srgb, var(--landing-glow-violet) 10%, transparent),
+      transparent 70%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--landing-bg-sunken) 95%, #000) 0%,
+      color-mix(in srgb, var(--landing-bg-base) 92%, #000) 45%,
+      color-mix(in srgb, var(--landing-bg-sunken) 96%, #000) 100%
+    );
+  overflow: hidden;
+}
+
+.atmosphere {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.ambientGlowPrimary {
+  position: absolute;
+  width: min(70vw, 720px);
+  height: min(45vw, 480px);
+  top: 15%;
+  left: 20%;
+  transform: translate(-50%, -20%);
+  background: radial-gradient(
+    ellipse at center,
+    rgba(147, 51, 234, 0.12) 0%,
+    rgba(192, 132, 252, 0.04) 45%,
+    transparent 72%
+  );
+  filter: blur(64px);
+  border-radius: 50%;
+}
+
+.ambientGlowSecondary {
+  position: absolute;
+  width: min(60vw, 600px);
+  height: min(40vw, 420px);
+  bottom: 12%;
+  right: 15%;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(147, 51, 234, 0.08) 0%,
+    rgba(168, 85, 247, 0.02) 50%,
+    transparent 72%
+  );
+  filter: blur(56px);
+  border-radius: 50%;
+}
+
+.container {
+  position: relative;
+  z-index: 1;
+  max-width: var(--container-xl);
+  margin: 0 auto;
+  padding: 0 clamp(var(--space-4), 4vw, var(--space-8));
+}
+
+/* ── Section Header ── */
+.header {
+  text-align: center;
+  max-width: 58ch;
+  margin: 0 auto clamp(var(--space-8), 6vw, var(--space-12));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.tag {
+  display: block;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--landing-glow-violet) 82%, #fff);
+  margin-bottom: var(--space-4);
+  text-shadow: 0 0 20px color-mix(in srgb, var(--landing-glow-violet) 24%, transparent);
+}
+
+.tag::before {
+  content: '';
+  display: block;
+  width: 2.5rem;
+  height: 2px;
+  margin: 0 auto var(--space-4);
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--landing-glow-rose) 70%, transparent),
+    var(--color-accent),
+    color-mix(in srgb, var(--landing-glow-violet) 70%, transparent)
+  );
+  opacity: 0.9;
+}
+
+.title {
+  font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
+  font-size: clamp(2.25rem, 5vw, 3.5rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1.06;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-4);
+  text-wrap: balance;
+  -webkit-font-smoothing: antialiased;
+}
+
+.lead {
+  font-size: clamp(var(--text-base), 1.8vw, 1.0625rem);
+  line-height: 1.65;
+  font-weight: 300;
+  color: color-mix(in srgb, var(--color-text-secondary) 88%, #fff);
+  margin: 0;
+  text-wrap: balance;
+}
+
+/* ── Symmetrical Centered Grid (3 on Top + 2 on Bottom) ── */
+.grid {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(var(--space-4), 2vw, var(--space-6));
+  width: 100%;
+}
+
+.rowTop {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(var(--space-4), 2vw, var(--space-6));
+  width: 100%;
+}
+
+.rowBottom {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(var(--space-4), 2vw, var(--space-6));
+  width: 100%;
+}
+
+/* ── Card Base ── */
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-radius: var(--radius-xl);
+  background: linear-gradient(
+    180deg,
+    rgba(22, 18, 30, 0.72) 0%,
+    rgba(14, 11, 20, 0.88) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow:
+    0 12px 32px -12px rgba(0, 0, 0, 0.65),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(24px) saturate(1.2);
+  -webkit-backdrop-filter: blur(24px) saturate(1.2);
+  padding: clamp(var(--space-5), 2.2vw, var(--space-6));
+  overflow: hidden;
+  cursor: default;
+  transition:
+    transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.24s ease,
+    box-shadow 0.28s ease;
+}
+
+.rowTop .card {
+  min-height: 350px;
+}
+
+.rowBottom .card {
+  min-height: 220px;
+}
+
+/* Tek geniş kart: sol sütunda başlık + özellikler, sağda canlı akış göstergesi. */
+@media (min-width: 961px) {
+  .rowBottom .card {
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    column-gap: clamp(var(--space-6), 4vw, var(--space-12));
+    align-items: start;
+  }
+
+  .rowBottom .card > :nth-child(1) {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .rowBottom .card > :nth-child(2) {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .rowBottom .card > :nth-child(3) {
+    grid-column: 2;
+    grid-row: 1 / -1;
+    align-self: end;
+  }
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(192, 132, 252, 0.28);
+  box-shadow:
+    0 20px 48px -14px rgba(0, 0, 0, 0.8),
+    0 0 28px rgba(168, 85, 247, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+.card:active {
+  transform: scale(0.99);
+  transition: transform 100ms ease-out;
+}
+
+.cardTop {
+  display: flex;
+  flex-direction: column;
+}
+
+.cardMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.moduleBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #c084fc;
+}
+
+.moduleBadgeDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #c084fc;
+  box-shadow: 0 0 8px rgba(192, 132, 252, 0.5);
+}
+
+.moduleStep {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+/* ── Title Row with Icon ── */
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin-bottom: var(--space-2);
+}
+
+.cardIconWrap {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: rgba(192, 132, 252, 0.08);
+  border: 1px solid rgba(192, 132, 252, 0.22);
+  color: #c084fc;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  transition:
+    background-color 0.24s ease,
+    border-color 0.24s ease,
+    color 0.24s ease;
+}
+
+.card:hover .cardIconWrap {
+  background: rgba(192, 132, 252, 0.15);
+  border-color: rgba(192, 132, 252, 0.35);
+  color: #e9d5ff;
+}
+
+.cardIcon {
+  flex-shrink: 0;
+}
+
+.cardTitle {
+  font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
+  font-size: clamp(1.15rem, 1.6vw, 1.35rem);
+  font-weight: 750;
+  letter-spacing: -0.025em;
+  line-height: 1.22;
+  color: #f4f4f5;
+  margin: 0;
+}
+
+.cardDesc {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.52);
+  margin: 0 0 var(--space-4);
+}
+
+/* ── Feature Highlight List ── */
+.featureList {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.featureItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.featureBullet {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #c084fc;
+  box-shadow: 0 0 6px rgba(192, 132, 252, 0.4);
+  flex-shrink: 0;
+  margin-top: 0.45rem;
+}
+
+.featureText {
+  color: rgba(255, 255, 255, 0.82);
+  font-weight: 450;
+  letter-spacing: -0.01em;
+}
+
+/* ── Card Bottom Area ── */
+.cardBottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: auto;
+  padding-top: var(--space-3);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Meta badges & scopes */
+.metaRow {
+  display: flex;
+  align-items: center;
+}
+
+.metaBadge {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+/* Journey Years List */
+.yearsList {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.yearPill {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.625rem;
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.yearPillActive {
+  background: rgba(192, 132, 252, 0.12);
+  border-color: rgba(192, 132, 252, 0.3);
+  color: #e9d5ff;
+  font-weight: 600;
+}
+
+/* Playlists Live Indicator */
+.liveIndicatorRow {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.playlistBadge {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.5625rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 7px;
+  border-radius: 4px;
+  background: rgba(192, 132, 252, 0.1);
+  border: 1px solid rgba(192, 132, 252, 0.2);
+  color: #e9d5ff;
+}
+
+.liveMetaText {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.6875rem;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.waveform {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 14px;
+}
+
+.waveBar {
+  width: 2.5px;
+  border-radius: 2px;
+  background: #c084fc;
+}
+
+/* ── "Detaylar >" Interactive Hint ── */
+.detailsRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  flex-shrink: 0;
+  color: rgba(255, 255, 255, 0.35);
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.22s ease;
+}
+
+.detailsRow::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+}
+
+.detailsText {
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: inherit;
+}
+
+.detailsIcon {
+  color: inherit;
+  transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card:hover .detailsRow {
+  color: #c084fc;
+}
+
+.card:hover .detailsIcon {
+  transform: translateX(3px);
+}
+
+/* ── Responsive Adaptations ── */
+@media (max-width: 960px) {
+  .rowTop,
+  .rowBottom {
+    grid-template-columns: 1fr;
+  }
+
+  .rowTop .card,
+  .rowBottom .card {
+    min-height: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .section {
+    padding: clamp(3.5rem, 8vw, 5rem) 0;
+  }
+
+  .header {
+    text-align: left;
+    align-items: flex-start;
+    margin-bottom: var(--space-8);
+  }
+
+  .tag::before {
+    margin: 0 0 var(--space-3) 0;
+  }
+
+  .title {
+    font-size: clamp(1.85rem, 7.5vw, 2.35rem);
+  }
+
+  .card {
+    padding: var(--space-5);
+  }
+
+  .cardBottom {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .card:hover,
+  .card:active,
+  .detailsIcon {
+    transition: none !important;
+    transform: none !important;
+  }
+}

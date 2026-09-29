@@ -1,0 +1,133 @@
+/*
+  Dashboard sinematik zemin — Deep Violet.
+  Otorite: docs/design/katmanlar/dashboard-design.md §3.3
+
+  "Sayfa arka planı düz siyah değildir." Üstte işaretlenemeyecek kadar zayıf
+  iki radyal ışık katmanı + düşük opaklıkta grain ve vignette bulunur.
+  Katman sayısı ve konumları promptun reçetesidir — göz kararı değiştirme.
+
+  FAZ DASHBOARD-REDESIGN (2. tur, 2026-08-13, Sahibin doğrudan talimatı —
+  "Arka Plan Katmanlaşması", "siyahlığın kırılması"): reçete GÜNCELLENDİ,
+  eski değerler değil bunlar geçerli. Boyut/opaklık büyütüldü (700→820px,
+  0.16→0.20 · 620→760px, mavi→indigo, 0.09→0.13) — bu global sistem tüm
+  dashboard rotalarını etkiler (`dashboard-shell.tsx`), yalnız `/dashboard`'a
+  özel değil; Sahibin isteği "siyahlığı kırma" olduğu için kasıtlı genel
+  uygulandı. `filter:blur(140px)` yerine radial-gradient'in kendi yumuşak
+  geçişi (`transparent %`) kullanılmaya devam ediyor — gerçek blur() geniş
+  `position:fixed` elemanda ciddi repaint maliyeti yaratır, görsel sonuç
+  (yumuşak ışık odağı) pratikte ayırt edilemez.
+*/
+
+.dash-atmosphere {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* ── Radyal ışık 1 — sol üst, mor (Sahibin tarifi) ──
+   FAZ ART-DIRECTION (2026-08-13): kartlar `--elev-2` rampasına çıkınca
+   zemin göreli olarak DAHA DÜZ kaldı — kart yükseldiği için zeminin de
+   karakter kazanması gerekiyordu, yoksa yükseklik farkı "kart parlak,
+   zemin ölü" gibi okunuyor. Işık biraz genişletildi ve yoğunlaştırıldı,
+   ama hâlâ "işaretlenemeyecek kadar zayıf" eşiğinde. */
+.dash-atmosphere__accent {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    940px 580px at 4% -10%,
+    rgba(147, 51, 234, 0.24),
+    transparent 66%
+  );
+}
+
+/* ── Radyal ışık 2 — sağ alt, koyu indigo ── */
+.dash-atmosphere__warm {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    860px 540px at 96% 98%,
+    rgba(79, 70, 229, 0.16),
+    transparent 64%
+  );
+}
+
+/* ── Radyal ışık 3 — sağ ÜST, çok zayıf soğuk ton ──
+   İki ışık kaynağı ekranı köşegen boyunca bölüyordu; üçüncü, en zayıf
+   kaynak o köşegeni kırar ve zemine "tek yönlü gradyan" hissi yerine
+   gerçek bir ortam ışığı dağılımı verir. Opaklık kasıtlı olarak
+   diğerlerinin yarısından az — fark edilmemeli, yalnız hissedilmeli. */
+.dash-atmosphere__cool {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    620px 420px at 88% 2%,
+    rgba(99, 102, 241, 0.07),
+    transparent 60%
+  );
+}
+
+/* ── Vignette — kenarları içeri toplar ── */
+.dash-atmosphere__vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 118% 88% at 50% 42%,
+    transparent 45%,
+    rgba(0, 0, 0, 0.55) 100%
+  );
+}
+
+/* Işıklar çok yavaş nefes alır — hareket fark edilmemeli, yalnız
+   ekranın "ölü" olmadığını hissettirmeli. */
+@media (prefers-reduced-motion: no-preference) {
+  .dash-atmosphere__accent {
+    animation: dash-atmo-drift-a 28s ease-in-out infinite alternate;
+  }
+
+  .dash-atmosphere__warm {
+    animation: dash-atmo-drift-b 34s ease-in-out infinite alternate;
+  }
+
+  /* Üçüncü ışık en yavaş sürüklenir — üç katman farklı hızda hareket
+     edince tekrar eden bir ritim oluşmaz (paralaks etkisi). */
+  .dash-atmosphere__cool {
+    animation: dash-atmo-drift-c 46s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes dash-atmo-drift-c {
+  from {
+    transform: translate(0, 0) scale(1);
+  }
+  to {
+    transform: translate(-3%, 2%) scale(1.05);
+  }
+}
+
+@keyframes dash-atmo-drift-a {
+  from {
+    transform: translate(0, 0) scale(1);
+  }
+  to {
+    transform: translate(2%, 3%) scale(1.04);
+  }
+}
+
+@keyframes dash-atmo-drift-b {
+  from {
+    transform: translate(0, 0) scale(1);
+  }
+  to {
+    transform: translate(-2%, 2%) scale(1.03);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dash-atmosphere__accent,
+  .dash-atmosphere__warm,
+  .dash-atmosphere__cool {
+    animation: none;
+  }
+}

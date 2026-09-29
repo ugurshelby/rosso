@@ -1,0 +1,1022 @@
+/* ─── Izgara — Spotify ölçüleri (Sahip: "layout Spotify benzeri olsun, aidiyet
+   için"; renkler Rosso'nun kalır).
+
+   Spotify mobilde 2 sütun kullanır — biz 3 kullanıyorduk, kapaklar küçücük
+   kalıyordu. Masaüstünde auto-fill + 180px taban: pencere genişledikçe sütun
+   sayısı artar, kapak boyu sabit kalır (Spotify'ın davranışı). */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+@media (min-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-5);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: var(--space-5);
+  }
+}
+
+/* FAZ PERF-P1: kademeli görünürlük tetikleyicisi — görünmez ama scroll'da
+   IntersectionObserver'ın yakalayabilmesi için akışta yer kaplar. */
+/* ─── Library toolbar ─── */
+/* G-FAZ 3 (2026-08-02): araçlar bölümü kalkınca toolbar hero'ya yapışık
+   hissediyordu — kendi üst nefesini alır. */
+.libraryToolbar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.toolbarControls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.searchField {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 1 1 220px;
+  min-height: 42px;
+  padding: 0 var(--space-3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  background: rgba(22, 20, 31, 0.6);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .searchField {
+    backdrop-filter: none;
+    background: var(--color-surface);
+  }
+}
+
+.searchField:focus-within {
+  border-color: rgba(124, 92, 255, 0.6);
+  background: rgba(26, 23, 38, 0.75);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    0 0 0 3px rgba(124, 92, 255, 0.15),
+    0 0 20px -2px rgba(124, 92, 255, 0.25);
+  outline: none;
+}
+
+.searchIcon {
+  color: rgba(255, 255, 255, 0.45);
+  flex-shrink: 0;
+  transition: color 160ms ease;
+}
+
+.searchField:focus-within .searchIcon {
+  color: var(--color-accent);
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+}
+
+.searchInput:focus {
+  outline: none;
+}
+
+.searchInput::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.sortField {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 42px;
+}
+
+.sortLabel {
+  font-size: var(--text-sm);
+  color: rgba(255, 255, 255, 0.55);
+  white-space: nowrap;
+}
+
+.sortSelect {
+  min-height: 42px;
+  padding: 0 var(--space-3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  background: rgba(22, 20, 31, 0.6);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.sortSelect:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(26, 23, 38, 0.75);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .sortSelect {
+    backdrop-filter: none;
+    background: var(--color-surface);
+  }
+}
+
+.sortSelect:focus-visible {
+  border-color: rgba(124, 92, 255, 0.6);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    0 0 0 3px rgba(124, 92, 255, 0.15);
+  outline: none;
+}
+
+.viewToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  background: rgba(18, 16, 26, 0.65);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .viewToggle {
+    backdrop-filter: none;
+    background: var(--color-surface);
+  }
+}
+
+.viewBtn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: color 150ms ease, transform 80ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .viewBtn:hover {
+    color: #fff;
+  }
+
+  .listRow:hover {
+    background: var(--color-hover);
+  }
+
+  .card:hover {
+    background: var(--color-hover);
+  transition: transform 80ms ease;
+}
+}
+
+.viewBtn:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+  z-index: 1;
+}
+
+.viewBtnActive {
+  color: #fff;
+}
+
+.viewBtnIcon {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+}
+
+/* Sliding pill — Framer Motion layoutId ile render edilir */
+.viewBtnIndicator {
+  position: absolute;
+  inset: 0;
+  border-radius: 9px;
+  background: rgba(124, 92, 255, 0.22);
+  border: 1px solid rgba(124, 92, 255, 0.4);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 2px 8px rgba(124, 92, 255, 0.25);
+  z-index: 0;
+}
+
+.toolbarMeta {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+}
+
+.filterEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-8) 0;
+}
+
+.filterEmptyText {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.filterEmptyReset {
+  min-height: 44px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: transparent;
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: border-color 150ms ease, transform 80ms ease;
+}
+
+.filterEmptyReset:hover {
+  border-color: var(--color-accent);
+}
+
+.filterEmptyReset:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* ─── List view (Index 56px rows) ─── */
+.listView {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--color-surface);
+}
+
+.listRowWrap {
+  position: relative;
+}
+
+.listRow {
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
+  gap: var(--space-3);
+  align-items: center;
+  min-height: 56px;
+  height: 56px;
+  padding: 0 var(--space-3);
+  text-decoration: none;
+  color: inherit;
+  border-bottom: 1px solid var(--color-border);
+  transition: background 120ms ease;
+}
+
+/* Son satırın alt kenarlığı kalkar. `listRowWrap` bir `role="listitem"`
+   sarmalayıcının içinde yaşıyor (bkz. playlist-library / year-folders), o
+   yüzden `:last-child` doğrudan eşleşmez — listenin son çocuğu üzerinden
+   inilir. Yalnız `.listRowWrap:last-child` yazmak sessizce hiçbir şey
+   seçmiyordu, her satırda kenarlık kalıyordu. */
+.listView > :last-child .listRow,
+.listRowWrap:last-child .listRow {
+  border-bottom: none;
+}
+
+.listRow:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+  z-index: 1;
+}
+
+
+.listThumb {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--color-border);
+  flex-shrink: 0;
+}
+
+.listThumbImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.listText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding-right: var(--space-6);
+}
+
+.listTitle {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.listSubtitle {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.listSyncedAt {
+  font-family: var(--font-geist-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  padding-right: var(--space-1);
+}
+
+
+/* ─── Empty state ─── */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-16) var(--space-8);
+  text-align: center;
+}
+
+.emptyIcon {
+  color: var(--color-text-tertiary);
+  opacity: 0.4;
+}
+
+.emptyTitle {
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: var(--text-xl);
+  font-weight: var(--font-semibold);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.emptyDesc {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  max-width: 360px;
+  line-height: var(--leading-normal);
+  margin: 0;
+}
+
+.emptyActions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.emptyActionPrimary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-5);
+  background: var(--color-accent);
+  color: var(--color-accent-fg);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+
+.emptyActionPrimary:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.dropZone {
+  margin-top: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-8) var(--space-12);
+  border: 1.5px dashed var(--color-border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  transition: border-color 150ms ease;
+}
+
+.dropZone:hover {
+  border-color: var(--color-accent);
+}
+
+.dropZoneText {
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+}
+
+.dropZoneSubtext {
+  font-family: var(--font-geist-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  letter-spacing: 0.06em;
+  opacity: 0.6;
+}
+
+/* ─── Bağlantı koptu şeridi ───
+   Kart başına uyarı rozeti KALDIRILDI (2026-08-01): sorun tek, alarm 17 kezdi
+   ve rozet tıklanamıyordu. Tek şerit, tek mesaj, tıklanabilir çıkış.
+   Renk --color-error — accent DEĞİL (dashboard-design.md §3.1: mor yalnız
+   durum ve aksiyon işaretler, hata değil). */
+.disconnectNotice {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-5);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-error) 10%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--color-error) 32%, transparent);
+}
+
+.disconnectIcon {
+  display: flex;
+  flex-shrink: 0;
+  color: var(--color-error);
+}
+
+.disconnectText {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--color-text-secondary);
+}
+
+.disconnectText strong {
+  color: var(--color-text-primary);
+  font-weight: var(--font-semibold);
+}
+
+.disconnectAction {
+  flex-shrink: 0;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  text-decoration: none;
+  transition: background var(--duration-base) var(--ease-default);
+}
+
+.disconnectAction:hover {
+  background: var(--accent-hover);
+}
+
+.disconnectAction:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Dar ekranda buton alta iner — yatay scroll yasak (§5) */
+@media (max-width: 560px) {
+  .disconnectNotice {
+    flex-wrap: wrap;
+  }
+
+  .disconnectAction {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+/* ─── Platform micro logo (cover corner) ─── */
+.coverPlatformLogo {
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  z-index: 1;
+}
+
+.platformMicro {
+  display: block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(0,0,0,0.3);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+}
+
+/* ─── Playlist kartı — Spotify düzeni.
+
+   ÖNCEDEN: kart bir KUTUYDU (kenarlık + dolgu + arka plan). Spotify'da kart yoktur;
+   kapak öne çıkar, altında iki satır metin durur, hover'da zemin hafifçe belirir.
+   Kutuyu kaldırmak kapağa daha çok yer bırakır — Sahibin istediği aidiyet hissi. */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-3);
+  border: none;
+  border-radius: var(--radius-lg);
+  background: transparent;
+  text-decoration: none;
+  color: inherit;
+  transition: background 200ms ease;
+  cursor: pointer;
+}
+
+.card:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Kapak — kartın kahramanı. Gölge derinlik verir (Spotify'ın imzası). */
+.cover {
+  aspect-ratio: 1;
+  background: var(--color-bg-elevated);
+  overflow: hidden;
+  position: relative;
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.35);
+}
+
+.coverImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* CoverArt bileşeni .cover konteynerini doldurur (inline width/height'ı ezer). */
+.coverArtFill {
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 0;
+  background: transparent;
+}
+
+/* PERF-P3: kapak yakınlaşması — eski framer `whileHover={scale:1.04}` yerine saf
+   CSS. Yalnız GERÇEK hover (fare) cihazlarda: dokunmatikte "yapışık hover"
+   olmaz. Seçim modunda (data-selecting) kapalı. reduced-motion'da sabit. */
+.coverImg,
+.coverArtFill {
+  transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+@media (hover: hover) and (pointer: fine) {
+  .cover:not([data-selecting]):hover .coverImg,
+  .cover:not([data-selecting]):hover .coverArtFill {
+    transform: scale(1.04);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .coverImg,
+  .coverArtFill {
+    transition: none;
+  }
+  .cover:hover .coverImg,
+  .cover:hover .coverArtFill {
+    transform: none;
+  }
+}
+
+/* Metin bloğu — kutu kalktığı için dolgu da kalktı; kapağın hemen altında. */
+.cardBody {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+/* compact artık ayrı bir kutu değil — yalnız tipografi ölçeği. */
+.cardCompact {
+  gap: var(--space-3);
+}
+
+.cardCompact .cardBody {
+  gap: 2px;
+}
+
+.cardCompact .platformMicro {
+  width: 12px;
+  height: 12px;
+}
+
+
+/* Spotify tipografisi: ad kalın-beyaz, altsatır soluk. İki satıra kadar sarar
+   (Spotify da sarar — tek satıra kesmek uzun playlist adlarını okunmaz yapıyordu). */
+.cardName {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  line-height: 1.3;
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cardMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.cardTrackCount {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+
+.cardSyncedAt {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+/* Stat bar */
+.statBar {
+  display: flex;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.statValue {
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--color-text-primary);
+}
+
+.statLabel {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  letter-spacing: 0.02em;
+}
+
+/* Track table (for playlist detail) */
+.trackTable {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.trackRow {
+  display: grid;
+  grid-template-columns: 32px 1fr auto;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  align-items: center;
+  border-bottom: 1px solid var(--color-border);
+  transition: background 120ms ease;
+}
+
+.trackRow:last-child {
+  border-bottom: none;
+}
+
+.trackRow:hover {
+  background: var(--color-hover);
+}
+
+.trackNum {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.trackInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+}
+
+.trackTitle {
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.trackArtist {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.trackDuration {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ─── Taşı CTA (playlist sayfası → /migrate yönlendirmesi) ─── */
+/* ─── Seçim çubuğu — eski "Platformlar arası taşı" tanıtım kutusunun yerine.
+   Sahip: "yerleşimi en üstte olmamalı... playlistler ile bu özellik karışık
+   duruyor." Taşıma artık bir kutu değil, bir EYLEM: seç → taşı. */
+.selectionBar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+  min-height: 44px;
+}
+
+.selectionStart,
+.selectionExit,
+.selectionMigrate {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  cursor: pointer;
+  transition: border-color 150ms ease, background 150ms ease, color 150ms ease;
+}
+
+.selectionStart,
+.selectionExit {
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-secondary);
+}
+
+.selectionStart:hover,
+.selectionExit:hover {
+  border-color: var(--color-border-strong);
+  color: var(--color-text-primary);
+}
+
+.selectionMigrate {
+  border: none;
+  background: var(--color-accent);
+  color: var(--color-accent-fg);
+  font-weight: var(--font-semibold);
+  margin-left: auto;
+}
+
+.selectionMigrate:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+}
+
+.selectionMigrate:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.selectionStart:focus-visible,
+.selectionExit:focus-visible,
+.selectionMigrate:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.selectionCount {
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── Seçim işareti (kapak köşesinde) ─── */
+.selectMark {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid rgb(255 255 255 / 0.8);
+  background: rgb(0 0 0 / 0.45);
+  color: transparent;
+  backdrop-filter: blur(4px);
+}
+
+.selectMarkOn {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-accent-fg);
+}
+
+/* Seçili kart — kapak dışında da belli olsun */
+.cardSelected {
+  background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+}
+
+/* Seçim modunda kart <button> olur — buton varsayılanlarını sıfırla. */
+button.card {
+  border: none;
+  font: inherit;
+  text-align: left;
+  width: 100%;
+}
+
+.migrateEmptyLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-accent);
+  color: var(--color-accent-fg);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  align-self: flex-start;
+  transition: opacity 150ms ease;
+}
+
+.migrateEmptyLink:hover {
+  opacity: 0.9;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .migrateCta,
+  .migrateCtaChevron {
+    transition: none;
+  }
+
+  .migrateCta:hover .migrateCtaChevron {
+    transform: none;
+  }
+
+  .emptyActionPrimary:hover {
+    transform: none;
+  }
+}
+
+/* ── FAZ PLAYLIST-KLASÖR: açılır-kapanır yıl klasörleri ──────────────────── */
+
+.folderView {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.yearFolder {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* Başlık = tıklanabilir satır. Hiyerarşi boşlukla kurulur; kart-içinde-kart yok.
+   Alt kenarda hairline ayraç — yıl bloğunu görsel olarak sabitler. */
+.folderHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: 0 0 var(--space-3);
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+  background: transparent;
+  text-align: left;
+  transition: transform 80ms ease;
+}
+
+.folderHeader {
+  cursor: pointer;
+  color: inherit;
+}
+
+.folderChevron {
+  flex-shrink: 0;
+  color: var(--color-text-secondary);
+  transition: transform 200ms ease-out;
+}
+
+.folderChevronOpen {
+  transform: rotate(90deg);
+}
+
+/* Yıl = birincil etiket. Mono + tabular, "2021" bir tarih damgası gibi durur. */
+.folderYear {
+  font-family: var(--font-mono, monospace);
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  letter-spacing: 0.02em;
+  color: var(--color-text-primary);
+}
+
+.folderCount {
+  margin-left: auto;
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.folderPanel {
+  animation: folderReveal 200ms ease-out;
+}
+
+@keyframes folderReveal {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .folderChevron {
+    transition: none;
+  }
+  .folderPanel {
+    animation: none;
+  }
+}
+
+/* ─── iOS dokunma geri bildirimi (dashboard-design.md §3.2-c md.1) ────────
+   "Geri bildirim basma ANINDA gelir, bırakınca değil." Bekleyen buton ölü
+   hisseder. FAZ SOSYAL-IOS turunda dashboard/sosyal/recap'e uygulanmıştı;
+   playlist alt sayfaları o turda kapsam dışı kalmıştı (2026-08-25 ölçümü).
+
+   Ölçek küçük öğede 0.96, büyük yüzeyde 0.99'a yaklaşır — büyük kartın
+   sert ezilmesi ucuz görünür. Süre 80ms: basma anıyla eşzamanlı algılanır.
+   `:not(:disabled)` şart — pasif öğe basılmış gibi davranmamalı. */
+
+.sortSelect:active,
+.viewBtn:active,
+.filterEmptyReset:active {
+  transform: scale(0.96);
+}
+
+/* Kart büyük bir yüzey — sert ezilme ucuz görünür, hafif basılma yeter. */
+.card:active {
+  transform: scale(0.985);
+}
+
+.folderHeader:active {
+  transform: scale(0.99);
+}
+
+.selectionStart:active,
+.selectionExit:active,
+.selectionMigrate:active {
+  transform: scale(0.96);
+}

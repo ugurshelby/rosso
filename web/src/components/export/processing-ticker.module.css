@@ -1,0 +1,75 @@
+/* ═══════════════════════════════════════════════════════════════
+   İşleme ekranı dönen durum satırı (2026-09-21)
+   Gerekçeler bileşenin başında (`processing-ticker.tsx`).
+   ═══════════════════════════════════════════════════════════════ */
+
+.wrap {
+  /*
+   * SABİT YÜKSEKLİK — satır metinleri farklı uzunlukta ve iki satıra
+   * sarabiliyor. Yükseklik serbest bırakılsa her değişimde altındaki
+   * ilerleme çubuğu zıplardı: layout kaymasını animasyonla düzeltmek
+   * değil, HİÇ OLUŞTURMAMAK doğru çözüm.
+   */
+  min-height: 2.75rem;
+  display: flex;
+  align-items: flex-start;
+  margin-top: var(--space-2);
+}
+
+.satir {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+
+  /* Giriş: aşağıdan yukarı kısa bir kayma + belirme. Çıkış yok — satır
+     `key` değişiminde anında sökülüyor, yerine geleni ARKASINDAN değil
+     AYNI yerden geliyor (uzamsal tutarlılık: metin hep aynı satırda). */
+  animation: tickerGir 180ms cubic-bezier(0, 0, 0.2, 1) both;
+}
+
+@keyframes tickerGir {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Claude Code'daki `processing…` damgası: monospace, accent, küçük. */
+.etiket {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.06em;
+  color: var(--color-accent);
+  /* Rakam içeren satırlar (`12,480 of 122,996`) genişlik zıplatmasın. */
+  font-variant-numeric: tabular-nums;
+}
+
+.aciklama {
+  font-size: var(--text-xs);
+  line-height: 1.45;
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+  text-wrap: pretty;
+  max-width: 46ch;
+}
+
+/*
+ * Hareket kapalı: kayma gider, ÇAPRAZ GEÇİŞ kalır. Bilgi (satırın
+ * değiştiği) korunur; vestibüler etki yaratan hareket kalkar.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .satir {
+    animation: tickerGirSakin 180ms cubic-bezier(0, 0, 0.2, 1) both;
+  }
+}
+
+@keyframes tickerGirSakin {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}

@@ -1,0 +1,234 @@
+/* Kart 11 — #1'e ayırılan saat. Çalma sayısı listelerinden ayrı hikâye. */
+
+.frame {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  background: var(--bg);
+  container-type: size;
+  overflow: hidden;
+}
+
+/* Terazi kompozisyonu (Sahip: "iki veri bir terazi gibi dengelensin").
+   Tek bileşik gradyan: üst-sol köşe (sanatçı bloğu) accent ile, alt-sağ
+   köşe (şarkı bloğu) accent-hover ile aydınlanır — sert bir diagonal
+   çizgi değil, yumuşak karşıt ışıma (design.md §3/§9: kirli leke riski
+   taşıyan ayrı katmanlar yerine tek `background`). */
+.glow {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      ellipse 75% 55% at 28% 18%,
+      color-mix(in srgb, var(--accent) 20%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 70% 55% at 76% 88%,
+      color-mix(in srgb, var(--accent-hover) 16%, transparent),
+      transparent 58%
+    );
+  pointer-events: none;
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  width: 100%;
+  min-width: 0;
+  padding: var(--recap-chrome-top, 40px) var(--space-5) var(--recap-chrome-bottom, 56px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(var(--space-4), 5cqh, var(--space-7));
+  width: min(100%, 28rem);
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: clamp(0.5rem, 1.5cqw, 0.7rem);
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text-primary) 50%, transparent);
+}
+
+.blocksContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(var(--space-4), 4cqh, var(--space-6));
+  width: 100%;
+}
+
+.block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 0;
+  width: 100%;
+  /* Terazi hissi: mobilde hafif yana kayma */
+  transform: translateX(clamp(-0.5rem, -2cqw, 0rem));
+}
+
+.blockSecondary {
+  width: min(100%, 20rem);
+  transform: translateX(clamp(0rem, 2cqw, 0.5rem));
+}
+
+/* Kesin çizgi yerine ışık hattı — iki bloğu ayırır */
+.blockSecondary::before {
+  content: '';
+  display: block;
+  width: clamp(3rem, 16cqw, 6rem);
+  height: 1px;
+  margin: 0 auto clamp(var(--space-4), 4cqh, var(--space-6));
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--color-text-primary) 40%, transparent),
+    transparent
+  );
+}
+
+.avatar {
+  position: relative;
+  display: block;
+  width: clamp(3.5rem, 14cqw, 5rem);
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--color-text-primary) 14%, transparent);
+  background: color-mix(in srgb, var(--surface) 90%, transparent);
+  margin-bottom: var(--space-2);
+}
+
+.cover {
+  position: relative;
+  display: block;
+  width: clamp(3.5rem, 14cqw, 5rem);
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-md, 12px);
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--color-text-primary) 14%, transparent);
+  background: color-mix(in srgb, var(--surface) 90%, transparent);
+  margin-bottom: var(--space-2);
+}
+
+.coverSm {
+  position: relative;
+  display: block;
+  width: clamp(2.75rem, 10cqw, 3.75rem);
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-md, 12px);
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--color-text-primary) 12%, transparent);
+  background: color-mix(in srgb, var(--surface) 90%, transparent);
+  margin-bottom: var(--space-2);
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.avatarFallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: color-mix(in srgb, var(--color-text-primary) 35%, transparent);
+}
+
+.hours {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(2.5rem, 14cqw, 4.5rem);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  color: var(--color-text-primary);
+  font-variant-numeric: tabular-nums;
+  margin: 0;
+}
+
+.hoursSm {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(1.75rem, 9cqw, 2.75rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: color-mix(in srgb, var(--color-text-primary) 92%, transparent);
+  font-variant-numeric: tabular-nums;
+  margin: 0;
+}
+
+.unit {
+  font-family: var(--font-mono);
+  font-size: clamp(0.55rem, 1.6cqw, 0.7rem);
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text-primary) 45%, transparent);
+}
+
+.name {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(1.1rem, 4.5cqw, 1.65rem);
+  line-height: 1.1;
+  color: var(--color-text-primary);
+  margin: clamp(var(--space-2), 2cqh, var(--space-3)) 0 0;
+  overflow-wrap: break-word;
+}
+
+.subname {
+  font-family: var(--font-mono);
+  font-size: clamp(0.65rem, 2cqw, 0.85rem);
+  letter-spacing: 0.05em;
+  color: color-mix(in srgb, var(--color-text-primary) 55%, transparent);
+  margin: 0.15rem 0 0;
+  overflow-wrap: break-word;
+}
+
+@media (min-width: 900px) {
+  .content {
+    padding-inline: clamp(var(--space-6), 4vw, var(--space-10));
+  }
+}
+
+@container (min-width: 768px) {
+  .hero {
+    width: min(100%, 46rem);
+  }
+
+  .blocksContainer {
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-start;
+    gap: clamp(2rem, 5cqw, 4.5rem);
+  }
+
+  .block,
+  .blockSecondary {
+    flex: 1;
+    max-width: 22rem;
+    transform: none;
+  }
+
+  .blockSecondary::before {
+    display: none;
+  }
+}

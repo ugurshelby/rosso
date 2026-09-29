@@ -1,0 +1,115 @@
+/**
+ * Dashboard yüzeyi (Home) — `(dashboard)/dashboard/**`, `components/dashboard/**`,
+ * `components/charts/**` (dashboard'a özel grafik metinleri). BAŞLANGIÇ metni
+ * (Claude Code, 2026-09-27). Yapı (anahtar adları) değişirse `tr/dashboard.ts`
+ * aynı yapıda güncellenmeli (derleme zamanı kontrolü zorlar).
+ */
+export const dashboard = {
+  greeting: {
+    morning: 'Good morning',
+    afternoon: 'Good afternoon',
+    evening: 'Good evening',
+    night: 'Good night',
+  },
+  overview: 'Overview',
+  stats: {
+    track: 'Track',
+    artist: 'Artist',
+    genre: 'Genre',
+    listening: 'Listening',
+    windowLabel: 'Since you connected Spotify',
+    preparing: 'Your music history is being analyzed — stats will be ready shortly.',
+  },
+  time: {
+    checkedAt: 'Checked at {time}',
+    minutesShort: '{count}m',
+    hoursShort: '{count}h',
+    daysShort: '{count}d',
+  },
+  insights: {
+    listeningMix: 'Listening mix',
+    loadingListeningMix: 'Loading listening mix',
+    platformMix: 'Platform mix',
+    loadingPlatformMix: 'Loading platform mix',
+    hourlyListening: 'Hourly listening',
+    peakHours: 'Peak hours',
+    plays: {
+      one: '{count} play',
+      other: '{count} plays',
+    },
+    waitingForData: 'Waiting for data',
+    analyzing: 'Your music history is being analyzed',
+  },
+  recaps: {
+    title: 'Your Recaps',
+    latestMonthly: 'Latest monthly',
+    latestYearly: 'Latest yearly',
+    openRecap: 'Open Recap',
+    preparing: 'Preparing',
+    preparingMonthlyBody: 'It’ll show when the month ends',
+    preparingYearlyBody: 'Ready after you upload listening history',
+  },
+  cta: {
+    tasteEyebrow: 'Your Taste',
+    tasteBody: 'A Taste map made for you',
+    discover: 'Discover',
+  },
+  listenings: {
+    title: 'Your listening',
+    noData: 'No data for this period yet.',
+    uploadData: 'Upload data',
+  },
+  recentPlayed: {
+    title: 'Recently played',
+  },
+  freshness: {
+    lastUpdated: 'Last updated: {label}',
+    noUpdateYet: 'No update yet',
+    refresh: 'Refresh',
+  },
+  avatarMenu: {
+    accountMenu: 'Account menu — {name}',
+    account: 'Account',
+    settings: 'Settings',
+    signOut: 'Sign out',
+    signingOut: 'Signing out…',
+  },
+  topActions: {
+    settings: 'Settings',
+  },
+  notifications: {
+    panelLabel: 'Notifications panel',
+    title: 'Notifications',
+    new: {
+      one: '{count} new',
+      other: '{count} new',
+    },
+    dismissAll: 'Dismiss all',
+    dismiss: 'Dismiss notification',
+    unread: 'Notifications, {count} unread',
+    bell: 'Notifications',
+    rateLimitTitle: 'Spotify Rate Limit',
+    rateLimitBody: 'Spotify is slow right now — try again in {wait}.',
+    rateLimitHint: 'API protection cooldown',
+    permissionTitle: 'Spotify Permission Needed',
+    permissionBody: 'One more permission is needed to read your listening history, playlists, and likes.',
+    grantPermission: 'Grant permission →',
+    syncTitle: 'Listening Sync Status',
+    syncStale: 'Last listening update is over {hours} hours old — data may be a bit behind.',
+    syncFresh: 'Listening data is updating — there may be a few minutes of delay.',
+    syncNow: 'Sync with Spotify now',
+    syncing: 'Syncing with Spotify...',
+    autoSyncHint: 'Automatic background sync will resume with new playback.',
+    allCaughtUpTitle: 'All caught up',
+    allCaughtUpBody: 'No new notifications or system alerts right now.',
+  },
+  charts: {
+    totalPlays: 'TOTAL PLAYS',
+    singleSource: 'Single source',
+    waitingForData: 'Waiting for data',
+    plays: '{count} plays',
+    peak: 'Peak: {count} plays',
+    otherPlatform: 'Other',
+    listening: 'listening',
+  },
+} as const

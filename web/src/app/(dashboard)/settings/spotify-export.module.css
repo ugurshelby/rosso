@@ -1,0 +1,670 @@
+/* ── Drop zone — glassmorphism ──────────────────────────────────── */
+.dropzone,
+.dropzoneActive {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-16) var(--space-8);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--color-bg-elevated) 70%, transparent);
+  backdrop-filter: blur(12px);
+  cursor: pointer;
+  text-align: center;
+  transition:
+    border-color 300ms cubic-bezier(0.32, 0.72, 0, 1),
+    background 300ms ease,
+    box-shadow 300ms ease,
+    transform 300ms cubic-bezier(0.32, 0.72, 0, 1);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.04) inset,
+    0 4px 24px rgba(0,0,0,0.08);
+}
+
+/* Ambient radial glow — hidden by default */
+.dropzone::before,
+.dropzoneActive::before {
+  content: '';
+  position: absolute;
+  bottom: -30%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 60%;
+  background: radial-gradient(ellipse, color-mix(in srgb, var(--color-accent) 20%, transparent), transparent 70%);
+  opacity: 0;
+  transition: opacity 400ms ease;
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   HOVER POINTER KAPISINA ALINDI (2026-09-21)
+   Dokunmatikte tap sahte bir :hover tetikler ve parmak kalkınca da
+   durum yapışık kalır — kullanıcı "seçili mi?" diye bakar.
+   review-animations 8. standart: ungated :hover bir bulgudur.
+   ═══════════════════════════════════════════════════════════════ */
+@media (hover: hover) and (pointer: fine) {
+  .dropzone:hover {
+    border-color: color-mix(in srgb, var(--color-accent) 50%, var(--color-border));
+    background: color-mix(in srgb, var(--color-bg-elevated) 80%, var(--color-accent) 4%);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.06) inset,
+      0 8px 32px rgba(0,0,0,0.12),
+      0 0 0 1px color-mix(in srgb, var(--color-accent) 20%, transparent);
+  }
+
+  .dropzone:hover::before {
+    opacity: 1;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BASMA GERİ BİLDİRİMİ (2026-09-21)
+   apple-design §1: "Respond on pointer-down, not on release."
+   Dropzone tıklanabilir bir yüzey ama basıldığında hiçbir şey
+   olmuyordu; dosya seçici açılana kadar arayüz ölü görünüyordu.
+
+   scale(0.995): ~500px genişliğinde bir yüzeyde 0.97 aşırı olurdu —
+   büyük yüzeyler daha AZ ölçeklenir, yoksa hareket "kayma" gibi
+   okunur. 120 ms: animate skill "button press feedback 100–160ms".
+   ═══════════════════════════════════════════════════════════════ */
+.dropzone:active {
+  transform: scale(0.995);
+  transition-duration: 120ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dropzone:active {
+    transform: none;
+    border-color: var(--color-accent);
+  }
+}
+
+.dropzoneActive {
+  border-color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-bg-elevated) 80%, var(--color-accent) 8%);
+  transform: scale(1.01);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.08) inset,
+    0 12px 40px rgba(0,0,0,0.18),
+    0 0 0 1px var(--color-accent);
+}
+
+.dropzoneActive::before {
+  opacity: 1;
+}
+
+.dropzone:focus-visible,
+.dropzoneActive:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.dropIcon {
+  color: var(--color-text-tertiary);
+  transition: color 250ms ease, transform 250ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .dropzone:hover .dropIcon {
+    color: var(--color-accent);
+    transform: translateY(-3px);
+  }
+}
+
+.dropzoneActive .dropIcon {
+  color: var(--color-accent);
+  transform: translateY(-4px) scale(1.08);
+}
+
+.dropText {
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  letter-spacing: var(--tracking-tight);
+  transition: color 250ms ease;
+}
+
+.dropzone:hover .dropText {
+  color: var(--color-text-primary);
+}
+
+/* Signal 1 — drag active text */
+.dropTextActive {
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--color-accent);
+  letter-spacing: var(--tracking-tight);
+}
+
+/* Signal 1 — dragged filename chip */
+.dragPreview {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+  color: var(--color-accent);
+  font-size: var(--text-sm);
+  font-family: var(--font-geist-mono), monospace;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-accent) 30%, transparent);
+}
+
+.dropHint {
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+  font-family: var(--font-geist-mono, monospace);
+  letter-spacing: 0.04em;
+  transition: color 250ms ease;
+}
+
+.dropzone:hover .dropHint {
+  color: var(--color-text-secondary);
+}
+.hiddenInput {
+  display: none;
+}
+
+/* Signal 3 — inline retry error box */
+.errorBox {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-error) 8%, transparent);
+}
+.errorContent {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-error);
+  flex: 1;
+  min-width: 0;
+}
+.errorFile {
+  color: var(--color-text-tertiary);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.75rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.retryButton {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-elevated);
+  color: var(--color-text-primary);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color var(--duration-base) ease, background var(--duration-base) ease;
+  flex-shrink: 0;
+}
+.retryButton:hover {
+  border-color: var(--color-accent);
+  background: var(--color-accent-muted);
+  color: var(--color-accent);
+}
+
+/* Signal 2 — honest upload progress */
+.uploadingBox {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  /* Işık üstten gelir (dashboard-design.md §3.2) */
+  background: linear-gradient(
+    155deg,
+    color-mix(in srgb, #fff 4%, var(--surface)),
+    var(--surface) 46%
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 12px 28px -18px rgba(0, 0, 0, 0.9);
+}
+.uploadingHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+.fileIcon {
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+}
+.uploadingFileName {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--color-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+.uploadingSize {
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+  font-family: var(--font-geist-mono), monospace;
+  flex-shrink: 0;
+}
+.progressBarTrack {
+  position: relative;
+  height: 4px;
+  border-radius: var(--radius-full);
+  background: var(--color-border-strong);
+  overflow: hidden;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BELİRSİZ YÜKLEME ŞERİDİ (2026-09-21)
+
+   Storage SDK ilerleme geri çağrısı sunmuyor, yani yüklemenin ne kadarı
+   gitti BİLİNMİYOR. Eski kod bunu %2'lik sahte artışlarla dolduruyordu;
+   kaldırıldı (bkz. `spotify-export.tsx::uploadWithProgress`).
+
+   Belirsiz gösterge, `export-stage-progress.module.css` içindeki
+   `.indeterminate` ile AYNI reçete — iki ekranda iki farklı bekleme dili
+   olmasın (`animate` skill: "extend the codebase's tokens, don't fork
+   them"). Süre 1.4 sn, `ease-in-out`: ekranda ileri geri giden sürekli
+   hareket için doğru eğri (skill tablosu: "moving on screen").
+   ═══════════════════════════════════════════════════════════════ */
+.progressBarIndeterminate {
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  border-radius: inherit;
+  background: var(--color-accent);
+  animation: uploadIndeterminate 1.4s ease-in-out infinite;
+}
+
+@keyframes uploadIndeterminate {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(260%); }
+}
+
+/* Hareket kapalı: kayma gider, "çalışıyor" bilgisi soluk bir dolgu olarak
+   kalır — sıfırlamak kullanıcıyı bilgisiz bırakırdı. */
+@media (prefers-reduced-motion: reduce) {
+  .progressBarIndeterminate {
+    animation: none;
+    width: 100%;
+    opacity: 0.35;
+  }
+}
+.progressBarFill {
+  height: 100%;
+  background: var(--color-accent);
+  border-radius: var(--radius-full);
+  transition: width 0.2s ease;
+}
+.uploadingMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.uploadingPercent {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  font-family: var(--font-geist-mono), monospace;
+  color: var(--color-text-primary);
+}
+.uploadingStats {
+  display: flex;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+  font-family: var(--font-geist-mono), monospace;
+}
+
+.statusBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-8) var(--space-6);
+}
+.processing {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+.done {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+.doneIcon {
+  color: var(--color-success);
+}
+
+/* Signal 4 — file preview in completed card */
+.filePreviewRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+}
+.filePreviewInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.filePreviewName {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.filePreviewMeta {
+  font-size: 0.75rem;
+  color: var(--color-text-tertiary);
+  font-family: var(--font-geist-mono), monospace;
+}
+
+/* Processing info (headline + message + file name + period during processing) */
+.processingInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  margin-top: var(--space-4);
+  text-align: center;
+  max-width: 32rem;
+}
+.processingHeadline {
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  letter-spacing: -0.01em;
+}
+.processingMessage {
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-2);
+}
+.processingFileName {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--color-text-primary);
+  font-family: var(--font-geist-mono), monospace;
+}
+.processingPeriod {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: var(--color-text-tertiary);
+  font-family: var(--font-geist-mono), monospace;
+}
+
+/* Period badge in completed card */
+.periodBadge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-bg-sunken);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  font-family: var(--font-geist-mono), monospace;
+}
+
+/* Past uploads section */
+.pastJobsSection {
+  margin-top: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.pastJobsTitle {
+  font-size: 0.6875rem;
+  font-family: var(--font-geist-mono), monospace;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--color-text-tertiary);
+  margin-bottom: var(--space-2);
+}
+.pastJobRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-elevated);
+  transition: border-color var(--duration-base) ease;
+}
+.pastJobRow:hover {
+  border-color: var(--color-border-strong);
+}
+.pastJobIcon {
+  flex-shrink: 0;
+}
+.pastJobInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.pastJobName {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--color-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pastJobMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.75rem;
+  color: var(--color-text-tertiary);
+  font-family: var(--font-geist-mono), monospace;
+}
+.pastJobPeriod {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--color-text-secondary);
+}
+.pastJobActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+.pastJobDeleteBtn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  transition: border-color var(--duration-base) ease, color var(--duration-base) ease, background var(--duration-base) ease;
+}
+
+/* 🔴 DOKUNMA HEDEFİ (ölçüldü 2026-08-08, canlı 390px): görsel çap 28px (SİLME eylemi — yanlış dokunma pahalı),
+   44px kuralının altında. Görsel boyut DEĞİŞMEZ — genişleyen yalnız dokunma
+   alanı (Fitts). `transform` kullanılmaz; hover/aktif durumlar onu kullanır. */
+.pastJobDeleteBtn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44px;
+  height: 44px;
+  margin: -22px 0 0 -22px;
+  border-radius: inherit;
+}
+
+.pastJobDeleteBtn:hover {
+  border-color: var(--color-error);
+  color: var(--color-error);
+  background: color-mix(in srgb, var(--color-error) 8%, transparent);
+}
+.pastJobCountdown {
+  font-size: 0.75rem;
+  font-family: var(--font-geist-mono), monospace;
+  color: var(--color-error);
+  min-width: 18px;
+  text-align: center;
+}
+.pastJobUndoBtn {
+  font-size: 0.6875rem;
+  font-family: var(--font-geist-mono), monospace;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  white-space: nowrap;
+  transition: opacity var(--duration-base) ease;
+}
+.pastJobUndoBtn:hover {
+  opacity: 0.7;
+}
+
+.summaryCard {
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-elevated);
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.summarySection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.summaryTitle {
+  font-size: 0.75rem;
+  font-family: var(--font-geist-mono), monospace;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--color-text-tertiary);
+}
+
+.summaryValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  color: var(--color-text-primary);
+  font-family: var(--font-geist-mono), monospace;
+}
+
+.summaryMeta {
+  font-size: 0.75rem;
+  color: var(--color-text-tertiary);
+  font-family: var(--font-geist-mono), monospace;
+}
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--space-4);
+  margin-top: var(--space-2);
+}
+
+.summaryGridItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.summaryActions {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+}
+
+.undoBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  border: 1px solid var(--color-accent);
+  padding: var(--space-3) var(--space-4);
+  background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+  margin-top: var(--space-4);
+  border-radius: var(--radius-base);
+}
+
+.undoBannerText {
+  font-size: 0.8125rem;
+  color: var(--color-text-primary);
+  flex: 1;
+}
+
+.undoButton {
+  font-size: 0.6875rem;
+  font-family: var(--font-geist-mono), monospace;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--color-accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  transition: opacity var(--duration-base) ease;
+}
+
+.undoButton:hover {
+  opacity: 0.7;
+}

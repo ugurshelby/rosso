@@ -1,0 +1,310 @@
+/* ═══════════════════════════════════════════════════════════════
+   Spotify ZIP Rehberi ("Verilerini İndirme" Mockup) Styles
+   Otorite: apple-design & docs/design/katmanlar/dashboard-design.md
+   ═══════════════════════════════════════════════════════════════ */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4, 1rem);
+  width: 100%;
+}
+
+.windowCard {
+  background: var(--elev-1);
+  border: 1px solid var(--edge-2);
+  border-radius: var(--radius-xl, 16px);
+  overflow: hidden;
+  box-shadow: var(--shadow-2), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* Pencere Başlığı */
+.windowHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.25rem;
+  background: color-mix(in oklch, #121212 90%, var(--elev-1));
+  border-bottom: 1px solid var(--edge-1);
+  gap: 1rem;
+}
+
+.windowMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.spotifyBrandIcon {
+  color: #1db954;
+  display: flex;
+  align-items: center;
+}
+
+.windowTitle {
+  font-size: var(--text-xs, 0.8125rem);
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.windowBreadcrumb {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.externalLinkBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: var(--text-xs, 0.75rem);
+  font-weight: 500;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  min-height: 32px;
+}
+
+.externalLinkBtn:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.externalLinkBtn:active {
+  transform: scale(0.97);
+}
+
+/* Gövde */
+.windowBody {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.introSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.introTitle {
+  font-size: var(--text-base, 1rem);
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.015em;
+  margin: 0;
+}
+
+.introDesc {
+  font-size: var(--text-xs, 0.8125rem);
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ─── Spotify Veri Paketleri Mockup Kartları ─── */
+.packagesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.packageCard {
+  background: #121212;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-lg, 12px);
+  padding: 1.125rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  position: relative;
+  transition: border-color 150ms ease;
+}
+
+.packageCardActive {
+  background: color-mix(in oklch, #1db954 8%, #121212);
+  border: 1.5px solid #1db954;
+  box-shadow: 0 0 20px -4px rgba(29, 185, 84, 0.2);
+}
+
+.packageCardRecommended {
+  border-color: rgba(29, 185, 84, 0.4);
+}
+
+.packageHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.packageRadioIcon {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.packageRadioIconActive {
+  border-color: #1db954;
+  background: #1db954;
+  color: #000000;
+}
+
+.packageRadioIconRecommended {
+  border-color: rgba(29, 185, 84, 0.6);
+  background: rgba(29, 185, 84, 0.18);
+  color: #1db954;
+}
+
+.packageTitleGroup {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.packageTitle {
+  font-size: var(--text-sm, 0.875rem);
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+}
+
+.packageTag {
+  display: inline-flex;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #1db954;
+  background: rgba(29, 185, 84, 0.15);
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  width: fit-content;
+}
+
+.packageTagSoft {
+  color: #a7a7a7;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.packageDesc {
+  font-size: 0.75rem;
+  color: #a7a7a7;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.packageScope {
+  font-size: 0.6875rem;
+  color: var(--faint);
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  margin-top: auto;
+}
+
+/* ─── Dürüst Süre ve Beklenti Bilgilendirme Kutusu ─── */
+.expectationsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  background: var(--elev-0);
+  border: 1px solid var(--edge-1);
+  border-radius: var(--radius-lg, 12px);
+  padding: 1.25rem;
+}
+
+.expectationCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.expectationHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--text-xs, 0.8125rem);
+  font-weight: 600;
+  color: var(--text);
+}
+
+.expectationIcon {
+  color: var(--color-accent, #7c5cff);
+  flex-shrink: 0;
+}
+
+.expectationText {
+  font-size: 0.75rem;
+  color: var(--muted);
+  line-height: 1.45;
+  margin: 0;
+}
+
+/* ─── Alt CTA Çubuğu ─── */
+.actionFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.actionNote {
+  font-size: var(--text-xs, 0.75rem);
+  color: var(--faint);
+  max-width: 540px;
+  line-height: 1.4;
+}
+
+.privacyCtaBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 40px;
+  background: #1db954;
+  color: #000000;
+  font-size: var(--text-xs, 0.8125rem);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  padding: 0 1.25rem;
+  border-radius: 9999px;
+  text-decoration: none;
+  transition: all 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 12px rgba(29, 185, 84, 0.2);
+}
+
+.privacyCtaBtn:hover {
+  background: #1ed760;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(29, 185, 84, 0.3);
+}
+
+.privacyCtaBtn:active {
+  transform: scale(0.975);
+}
+
+/* ─── Reduced Motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  .externalLinkBtn,
+  .privacyCtaBtn {
+    transition: none !important;
+    transform: none !important;
+  }
+}

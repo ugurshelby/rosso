@@ -1,0 +1,33 @@
+.journeyArtworkWrap {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  width: var(--artwork-size, 100%);
+  height: auto;
+  max-width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: var(--artwork-radius, var(--radius-cards, 8px));
+  box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.7);
+  flex-shrink: 0;
+  background-color: rgba(18, 18, 18, 0.6);
+  user-select: none;
+}
+
+.artworkContent {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+  display: block;
+}
+
+.artworkRim {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+  pointer-events: none;
+  z-index: 2;
+}

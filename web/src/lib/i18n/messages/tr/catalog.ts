@@ -1,0 +1,96 @@
+/**
+ * `en/catalog.ts` ile birebir anahtar yapısı. Tip merkezi kayıttan sonra
+ * `Catalog['catalog']`e bağlanacak — bu ajan aşamasında henüz yok, bilinçli
+ * olarak tiplenmedi (bkz. i18n README §Yeni metin ekleme).
+ */
+export const catalog = {
+  actions: {
+    listenOnSpotify: "Spotify'da Dinle",
+  },
+  stats: {
+    playCount: 'Kez Dinledin',
+    totalTime: 'Toplam Süre',
+    completionRate: 'Tamamlama Oranı',
+    firstDiscovered: 'İlk Keşif',
+    uniqueTracks: 'Farklı Şarkı',
+    inPlaylists: "Playlist'inde",
+    skipRate: 'Geçilme Oranı',
+  },
+  album: {
+    kindBadge: 'Albüm',
+    trackCount: { one: '{count} şarkı', other: '{count} şarkı' },
+    completionValue: '%{rate}',
+    connectionTitle: 'Albümle Bağlantın',
+    connectionDescDefault: '{date} kütüphanende · Toplam {count} kez çaldın.',
+    longTermFallback: 'Uzun süredir',
+    discoveredBadge: '%{percent} Keşfedildi',
+    completeStoryTitle: 'Eksiksiz Bir Anlatı',
+    completeStoryDesc:
+      'Albümün parçalarını tek tek ayırmadan bütünsel bir yapıt olarak deneyimledin · %{percent} dinleme oranı.',
+    fullAlbumBadge: '★ Tam Albüm Deneyimi',
+    standoutTitle: 'Öne Çıkan Tutku',
+    standoutDesc: 'Bu albümde en çok "{track}" şarkısına tutuldun ({count} dinleme).',
+    tracklistEyebrow: 'Parça Listesi',
+    tracklistTitle: 'Kişisel Dinleme Geçmişi',
+  },
+  artist: {
+    kindBadge: 'Sanatçı',
+    plays: { one: '{count} dinleme', other: '{count} dinleme' },
+    tracks: { one: '{count} şarkı', other: '{count} şarkı' },
+    activeMonths: { one: '{count} aktif ay', other: '{count} aktif ay' },
+    connectionTitle: 'Sanatçıyla Bağlantın',
+    longTermDesc:
+      '{months} aydır müzik evreninin vazgeçilmez bir parçası · Toplam {duration} dinleme.',
+    recentDesc: 'Son dönemde yoğun ilgi gösterdiğin bir sanatçı · {count} kez çaldın.',
+    steadyDesc: 'Düzenli dinlediğin değerli sanatçılardan biri · İlk keşif {date}.',
+    inRecordsFallback: 'kayıtlarda',
+    peakEyebrow: 'Kişisel Zirve',
+    mostPlayedTitle: 'En Çok Dinlenen Şarkılar',
+    playsShort: { one: '{count} kez', other: '{count} kez' },
+    discographyEyebrow: 'Diskografi',
+    discoveredAlbumsTitle: 'Keşfettiğin Albümler',
+  },
+  track: {
+    kindBadge: 'Şarkı',
+    listsValue: { one: '{count} liste', other: '{count} liste' },
+    skipRateBadge: '%{rate} (Tılsım)',
+    connectionTitleDefault: 'Şarkıyla Bağlantın',
+    connectionDescDefault: '{date} kütüphanende · Toplam {count} kez çaldın.',
+    longTermFallback: 'Uzun süredir',
+    regularListeningBadge: 'Düzenli Dinleme',
+    talismanTitle: 'Kişisel Tılsımın',
+    talismanDesc: 'Bu şarkıyı neredeyse hiç atlamıyorsun (%{rate} skip) · Kusursuz odaklanma ve aidiyet.',
+    talismanTrackBadge: '★ Tılsım Şarkı',
+    circadianTitle: '{tag} Ritmi',
+    circadianFallbackTag: 'Sirkadiyen',
+    circadianDesc: 'Bu şarkıyı en çok saat {time} civarında dinliyorsun.',
+    circadianBadge: 'Saat {time}',
+    emptyState:
+      "Bu şarkıyı henüz dinlememişsin — playlist'inde duruyor ama kayıtlarda yok.",
+    rhythmEyebrow: 'Zaman İçindeki Akış',
+    rhythmTitle: 'Dinleme Ritmin',
+  },
+  listeningStats: {
+    talismanBadge: 'Tılsım',
+    plays: { one: '{count} dinleme', other: '{count} dinleme' },
+    trackCountShort: { one: '{count} parça', other: '{count} parça' },
+    unplayedInRosso: "Rosso'da henüz dinlenmedi",
+    timelineTooltip: { one: '{label}: {count} dinleme', other: '{label}: {count} dinleme' },
+    completionPill: '%{rate}',
+  },
+  likeButton: {
+    removedToast: '"{title}" beğenilen şarkılardan kaldırıldı.',
+    undo: 'Geri al',
+    busyError: 'Spotify şu an meşgul — {wait} sonra tekrar dene.',
+    needsConnection: 'Spotify bağlantına ihtiyacın var.',
+    saveFailed: 'Kaydedilemedi.',
+    unlikeAria: '{title} beğenisini kaldır',
+    likeAria: '{title} beğen',
+    unlikeTitle: 'Beğeniyi kaldır',
+    likeTitle: 'Beğen',
+    refreshAccess: 'Spotify erişimini yenile',
+  },
+  vibeCard: {
+    artAlt: '{name} vibe kartı sanat eseri',
+  },
+}

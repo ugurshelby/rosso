@@ -1,0 +1,252 @@
+/* Kart 1 — "The Ambient Blur Mirror" (FAZ R1.2, Sahibin düzeltme turu).
+   ★ KUTSAL KURAL: görsel 1:1 kare, kenarlardan TEK PİKSEL kesilmez.
+     → ön plandaki görsel `object-fit: CONTAIN` (cover DEĞİL)
+     → arkada aynı görselin blur'lu/doygun yansıması boşluğu doldurur
+
+   🔴 R1.1'de kırılım sorguları `@container` idi. Bir eleman KENDİ kurduğu
+      container'ı sorgulayamaz — `.frame`i hedefleyen kurallar sessizce
+      düşüyordu. Sahne zaten tam viewport olduğu için kırılımlar `@media`ye
+      çevrildi; cqw/cqh birimleri korunuyor (container-type duruyor).
+
+   Sahibin R1.2 teşhisi ve düzeltmeleri:
+     Masaüstü : "2024 görselin çok altında kaldı, solda kontrolsüz ölü boşluk"
+                → dikeyde görselin ORTA AKSINA hizalandı (align-items:center),
+                  sol padding 12vw'lik cesur grid'e açıldı
+     Tablet   : "görsel dikeyde çok yer kaplıyor, yazı alta sıkıştı"
+                → görsel 45vw'ye çekildi, yazı ALTINA değil SOLUNA yerleşti */
+
+.frame {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  background: #000;
+  overflow: hidden;
+  container-type: size;
+}
+
+/* ── Arka plan aynası ──
+   Aynı kare görsel viewport'u kaplayacak kadar büyütülür (cover) ve yoğun
+   blur + saturate ile soyut bir renk alanına dönüşür. Bu KIRPILAN kopya
+   yalnız zemin; kullanıcının gördüğü "gerçek" görsel öndeki contain'li olan. */
+.mirror {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.mirror img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  filter: blur(32px) saturate(1.4);
+  /* blur kenar sızmasını kapat */
+  transform: scale(1.15);
+}
+
+/* Tek bileşik scrim — tür rengi yok, yalnız okunabilirlik + derinlik
+   (design.md §3/§9: iki ayrı bağımsız katman YASAK). */
+.scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.55) 0%,
+    rgba(0, 0, 0, 0.35) 40%,
+    rgba(0, 0, 0, 0.72) 78%,
+    rgba(0, 0, 0, 0.92) 100%
+  );
+  pointer-events: none;
+}
+
+/* ── Sahne yerleşimi (MOBİL varsayılan) ── */
+.content {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(1rem, 4cqh, 2.5rem);
+  padding: var(--space-6) var(--space-5);
+}
+
+/* ── Ön plan: KESİLMEYEN kare görsel ── */
+.art {
+  flex-shrink: 0;
+  width: 80cqw;
+  max-width: 80cqh; /* dikeyde taşmasın — kare olduğu için yükseklik = genişlik */
+  aspect-ratio: 1 / 1;
+}
+
+.art img {
+  width: 100%;
+  height: 100%;
+  /* 🔴 CONTAIN — kutsal kural: tek piksel kesilmez. */
+  object-fit: contain;
+  display: block;
+}
+
+/* Tam güç cam — glassmorphism.md §"Recap/Journey'de görsel üstü veri
+   paneli". Bu kartın "kapı" hissi zayıftı (Sahip, 2026-09-17); metin artık
+   bulanık aynanın üstünde YÜZEN, accent sızıntılı gerçek bir cam panelde. */
+.text {
+  position: relative;
+  width: 100%;
+  max-width: 80cqw;
+  text-align: left;
+  padding: clamp(1.25rem, 3cqw, 2rem) clamp(1.5rem, 3.5cqw, 2.5rem);
+  border-radius: 20px;
+  background: linear-gradient(
+    155deg,
+    color-mix(in srgb, var(--color-accent) 10%, rgba(255, 255, 255, 0.08)),
+    rgba(255, 255, 255, 0.06) 70%
+  );
+  border: 1px solid color-mix(in srgb, var(--color-accent) 16%, rgba(255, 255, 255, 0.16));
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  backdrop-filter: blur(24px) saturate(1.4);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 20px 50px -16px rgba(0, 0, 0, 0.65);
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .text {
+    background: rgba(10, 10, 14, 0.72);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .text {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: rgba(10, 10, 14, 0.82);
+  }
+}
+
+/* Devasa, jilet gibi net başlık — Archivo Black poster ölçeği. */
+.title {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(2.75rem, 14cqw, 7rem);
+  line-height: 0.88;
+  letter-spacing: -0.03em;
+  margin: 0;
+  overflow-wrap: break-word;
+  text-wrap: balance;
+  text-shadow: 0 2px 40px rgba(0, 0, 0, 0.6);
+}
+
+/* Künye — yılın HEMEN ALTINDA (yayınevi logosu hissi). */
+.issueLabel {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.88);
+  margin: var(--space-3) 0 0;
+  padding-left: 0.24em;
+}
+
+/* Dönem etiketleri (Katman D): sessiz künye çipleri — accent yok, yalnız metin tonları.
+   Cam zemin zaten .text'te; çipler onun üstünde ince kenarlıkla ayrışır. */
+.tags {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: var(--space-4) 0 0;
+  padding: 0;
+}
+
+.tag {
+  padding: 4px 10px;
+  border-radius: var(--radius-full, 999px);
+  border: 1px solid rgb(255 255 255 / 18%);
+  background: rgb(255 255 255 / 6%);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 78%);
+  white-space: nowrap;
+}
+
+@media (prefers-contrast: more) {
+  .tag {
+    border-color: rgb(255 255 255 / 55%);
+    color: #fff;
+  }
+}
+
+/* ── TABLET (720–1099px): görsel 45vw, tipografi SOLUNDA yan yana ──
+   Sahip: "Yazıyı görselin altına değil, soluna asimetrik yerleştir." */
+@media (min-width: 720px) and (max-width: 1099px) {
+  .content {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(1.5rem, 4vw, 3rem);
+    padding: var(--space-8) clamp(2rem, 6vw, 4rem);
+  }
+
+  .art {
+    order: 2;
+    width: 45cqw;
+    max-width: min(45cqw, 62cqh);
+  }
+
+  .text {
+    order: 1;
+    flex: 1;
+    min-width: 0;
+    max-width: none;
+    /* Asimetri: yazı görselin tabanına değil, hafif yukarısına oturur. */
+    align-self: center;
+  }
+
+  .title {
+    font-size: clamp(3rem, 9cqw, 6rem);
+  }
+}
+
+/* ── MASAÜSTÜ (≥1100px): görsel SAĞDA, solda cesur grid + dev tipografi ──
+   Sahibin düzeltmesi: "2024'ü sol kenara yapıştırma, 12vw sol padding ile
+   grid'i aç. Yazıyı dikeyde görselin orta aksına eşitle." */
+@media (min-width: 1100px) {
+  .content {
+    flex-direction: row;
+    /* 🔴 Dikeyde ortak aks — yazı artık görselin altında kalmıyor. */
+    align-items: center;
+    justify-content: space-between;
+    gap: clamp(2rem, 6vw, 6rem);
+    /* Cesur sol grid boşluğu (Sahip: 12vw) — ölü boşluk kontrol altına alındı. */
+    padding: var(--space-10) clamp(2.5rem, 6vw, 6rem) var(--space-10)
+      clamp(3rem, 12vw, 14rem);
+  }
+
+  .art {
+    order: 2;
+    flex-shrink: 0;
+    width: 35cqw;
+    max-width: min(35cqw, 78cqh);
+  }
+
+  .text {
+    order: 1;
+    flex: 1;
+    min-width: 0;
+    max-width: 52cqw;
+    /* Görselin orta aksıyla aynı hizada — flex align-items: center bunu verir. */
+  }
+
+  .title {
+    /* Sol taraf serbest → tipografi patlar. */
+    font-size: clamp(4rem, 11cqw, 12rem);
+  }
+}

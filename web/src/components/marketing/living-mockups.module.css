@@ -1,0 +1,978 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Living Mockups — Apple Design Restraint & Spotify Musical Ergonomics
+   Katman: Marketing / Modül Tanıtım Vitrini
+   Otoriteler: .agents/skills/apple-design + .agents/skills/spotify-design-language
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Genel Mockup Kabuğu (Living Shell) ─── */
+.livingShell {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: #060608;
+  border-radius: clamp(14px, 2vw, 22px);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   1. RECAP LIVING MOCKUP (Spotify Wrapped Dikey Story Stack)
+   ═══════════════════════════════════════════════════════════════════════════ */
+.recapContainer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(12px, 3cqh, 24px) clamp(16px, 3cqw, 28px);
+  box-sizing: border-box;
+  perspective: 1200px;
+  background:
+    radial-gradient(
+      ellipse 90% 70% at 50% 20%,
+      rgba(147, 51, 234, 0.16) 0%,
+      rgba(5, 5, 7, 0.95) 70%
+    );
+}
+
+/* Arka Katman Desteleri (Layered Stack) */
+.recapStackLayer2 {
+  position: absolute;
+  width: min(88%, 340px);
+  height: min(92%, 460px);
+  border-radius: 20px;
+  background: rgba(18, 14, 28, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transform: rotate(5deg) translate(18px, 10px) scale(0.92);
+  filter: blur(2px);
+  opacity: 0.45;
+  pointer-events: none;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.7);
+}
+
+.recapStackLayer1 {
+  position: absolute;
+  width: min(92%, 350px);
+  height: min(95%, 470px);
+  border-radius: 20px;
+  background: rgba(22, 18, 34, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  transform: rotate(-3deg) translate(-10px, 4px) scale(0.96);
+  opacity: 0.75;
+  pointer-events: none;
+  box-shadow: 0 24px 54px rgba(0, 0, 0, 0.75);
+}
+
+/* Ön Plandaki Canlı Story Kartı */
+.recapStoryCard {
+  position: relative;
+  width: min(100%, 360px);
+  height: 100%;
+  max-height: 480px;
+  border-radius: 18px;
+  overflow: hidden;
+  background:
+    radial-gradient(
+      ellipse 80% 50% at 50% 10%,
+      rgba(168, 85, 247, 0.22) 0%,
+      rgba(8, 8, 11, 0.92) 80%
+    ),
+    #09090c;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-top: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow:
+    0 28px 72px -16px rgba(0, 0, 0, 0.9),
+    0 0 40px -10px rgba(168, 85, 247, 0.28);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(14px, 2.8cqh, 20px);
+  box-sizing: border-box;
+  z-index: 2;
+}
+
+/* Story Progress Segmentleri (- - - -) */
+.recapProgressRow {
+  display: flex;
+  gap: 5px;
+  width: 100%;
+  margin-bottom: clamp(8px, 1.8cqh, 14px);
+}
+
+.recapProgressBar {
+  flex: 1;
+  height: 3px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+  position: relative;
+}
+
+.recapProgressBarActive {
+  background: #ffffff;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.7);
+}
+
+.recapProgressBarCurrent {
+  background: linear-gradient(90deg, #ffffff 60%, #c084fc 100%);
+  box-shadow: 0 0 10px #c084fc;
+}
+
+/* Story Üst Barı */
+.recapStoryHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: clamp(10px, 2.2cqh, 16px);
+}
+
+.recapBrandBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #f0ece6;
+}
+
+.recapDotPulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #c084fc;
+  box-shadow: 0 0 8px #c084fc;
+}
+
+.recapPeriodTag {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.625rem;
+  color: rgba(255, 255, 255, 0.55);
+  letter-spacing: 0.08em;
+}
+
+/* Story Müzik Görseli ve Vibe Gövdesi */
+.recapVibeCenter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin: auto 0;
+}
+
+.recapCoverWrap {
+  position: relative;
+  width: clamp(110px, 25cqh, 150px);
+  aspect-ratio: 1;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow:
+    0 16px 36px -8px rgba(0, 0, 0, 0.8),
+    0 0 30px rgba(147, 51, 234, 0.3);
+  margin-bottom: clamp(10px, 2cqh, 16px);
+}
+
+.recapCoverImage {
+  object-fit: cover;
+}
+
+.recapVibeBadge {
+  display: inline-block;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #c084fc;
+  margin-bottom: 4px;
+}
+
+.recapVibeTitle {
+  font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
+  font-size: clamp(1.25rem, 3.4cqh, 1.65rem);
+  font-weight: 850;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  color: #ffffff;
+  margin: 0 0 4px;
+  text-wrap: balance;
+}
+
+.recapVibeSubtitle {
+  font-size: 0.6875rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+}
+
+/* Story Dinleme İstatistikleri Bandı (Corner Metrics) */
+.recapMetricsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  margin-top: clamp(8px, 1.8cqh, 14px);
+}
+
+.recapMetricPill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+}
+
+.recapMetricIcon {
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+.recapMetricText {
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.recapStoryFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: clamp(8px, 1.8cqh, 14px);
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.recapStorySticker {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.5625rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.recapEqBars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 12px;
+}
+
+.recapEqBar {
+  width: 2.5px;
+  border-radius: 1px;
+  background: #c084fc;
+}
+
+.recapEqBar:nth-child(1) { height: 7px; }
+.recapEqBar:nth-child(2) { height: 12px; }
+.recapEqBar:nth-child(3) { height: 9px; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   2. TASTE LIVING MOCKUP (Müzik Kişilik Kartı + Dinleme Saati Grafiği)
+   ═══════════════════════════════════════════════════════════════════════════ */
+.tasteContainer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(14px, 3cqh, 24px) clamp(16px, 3.5cqw, 26px);
+  box-sizing: border-box;
+  background:
+    radial-gradient(
+      ellipse 70% 45% at 50% 0%,
+      rgba(147, 51, 234, 0.14) 0%,
+      rgba(5, 5, 7, 0.98) 75%
+    );
+}
+
+/* Kişilik Kartı Üst Bölümü */
+.tastePersonalityHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: clamp(8px, 1.8cqh, 14px);
+}
+
+.tasteArchetypeEyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #c084fc;
+}
+
+.tasteScoreBadge {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.625rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 9999px;
+  background: rgba(147, 51, 234, 0.15);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  color: #f0ece6;
+}
+
+/* Kişilik Kartı Merkezi ("Gece Kurdu") */
+.tasteHeroBox {
+  display: flex;
+  flex-direction: column;
+  padding: clamp(12px, 2.4cqh, 18px);
+  border-radius: 14px;
+  background: rgba(18, 18, 22, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow:
+    0 16px 36px -10px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  margin-bottom: clamp(10px, 2cqh, 16px);
+}
+
+.tasteHeroTitleRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.tasteHeroTitle {
+  font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
+  font-size: clamp(1.3rem, 3.6cqh, 1.85rem);
+  font-weight: 850;
+  letter-spacing: -0.025em;
+  color: #ffffff;
+  margin: 0;
+}
+
+.tasteHeroMoonTag {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #c084fc;
+}
+
+.tasteHeroBlurb {
+  font-size: clamp(0.75rem, 1.8cqh, 0.8125rem);
+  line-height: 1.5;
+  color: rgba(240, 236, 230, 0.75);
+  margin: 0 0 10px;
+}
+
+.tasteTraitPills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tasteTraitPill {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.5625rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Dinleme Zamanı Grafiği (02:00 Zirvesi) */
+.tasteTimelineBox {
+  display: flex;
+  flex-direction: column;
+  padding: clamp(10px, 2cqh, 14px);
+  border-radius: 12px;
+  background: rgba(14, 14, 18, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: clamp(10px, 2cqh, 14px);
+}
+
+.tasteTimelineHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.tasteTimelineLabel {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.tastePeakCallout {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.625rem;
+  font-weight: 700;
+  color: #c084fc;
+  background: rgba(168, 85, 247, 0.12);
+  padding: 2px 7px;
+  border-radius: 4px;
+  border: 1px solid rgba(168, 85, 247, 0.25);
+}
+
+/* Histogram Çubukları (24 Saat) */
+.tasteHistoBars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2.5px;
+  height: clamp(34px, 8cqh, 48px);
+  padding-bottom: 2px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.tasteHistoBar {
+  flex: 1;
+  border-radius: 2px 2px 0 0;
+  background: rgba(255, 255, 255, 0.14);
+  min-height: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.tasteHistoBarPeak {
+  background: #c084fc;
+  box-shadow: 0 0 10px #c084fc;
+}
+
+.tasteHistoBarNight {
+  background: #a855f7;
+  opacity: 0.85;
+}
+
+.tasteHistoTimes {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 4px;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.5rem;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+/* 3 Adet Karakteristik Tür Hapı (#1f1f1f pill) */
+.tasteGenrePillsRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.tasteGenrePill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  border-radius: 9999px;
+  background: #18181b;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.tasteGenrePillLeft {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.tasteGenreDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.tasteGenreName {
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 550;
+  color: #f0ece6;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tasteGenrePct {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.625rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-left: 4px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   3. JOURNEY LIVING MOCKUP (Yatay Film Şeridi / Karşılaştırmalı Timeline)
+   ═══════════════════════════════════════════════════════════════════════════ */
+.journeyContainer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(14px, 3cqh, 24px) clamp(16px, 3.5cqw, 26px);
+  box-sizing: border-box;
+  background:
+    radial-gradient(
+      ellipse 85% 60% at 50% 50%,
+      rgba(124, 58, 237, 0.12) 0%,
+      rgba(5, 5, 7, 0.98) 75%
+    );
+}
+
+/* Yıllar Yatay Rayı */
+.journeyRailHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 4px 6px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: clamp(10px, 2.2cqh, 16px);
+}
+
+.journeyRailPill {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.625rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.journeyRailPillOrigin {
+  color: #c084fc;
+}
+
+.journeyRailPillActive {
+  background: #9333ea;
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 0 12px rgba(147, 51, 234, 0.6);
+}
+
+/* İki Çağın Karşılaştırmalı Sahnesi (2020 vs 2024) */
+.journeyStageRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: clamp(8px, 2cqw, 14px);
+  align-items: center;
+  margin: auto 0;
+}
+
+.journeyCardCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: clamp(10px, 2cqh, 16px);
+  border-radius: 14px;
+  background: rgba(18, 18, 22, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.6);
+}
+
+.journeyCardCover {
+  position: relative;
+  width: clamp(70px, 16cqh, 100px);
+  aspect-ratio: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+  margin-bottom: 8px;
+}
+
+.journeyCardYearTag {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #c084fc;
+  margin-bottom: 2px;
+}
+
+.journeyCardEra {
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
+.journeyCardTrack {
+  font-size: 0.625rem;
+  color: rgba(255, 255, 255, 0.6);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
+/* Merkezdeki Parlayan Evrim Çizgisi ve Metrik */
+.journeyCenterConduit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 4px;
+}
+
+.journeyGlowSparkline {
+  display: flex;
+  align-items: center;
+  position: relative;
+  width: clamp(40px, 8cqw, 70px);
+  height: 2px;
+  background: linear-gradient(90deg, #9333ea 0%, #c084fc 50%, #ffffff 100%);
+  box-shadow: 0 0 12px #c084fc;
+}
+
+.journeySparklineDot {
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 8px #ffffff;
+}
+
+.journeyMetricsBadge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(147, 51, 234, 0.12);
+  border: 1px solid rgba(168, 85, 247, 0.25);
+  white-space: nowrap;
+}
+
+.journeyMetricText {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  color: #f0ece6;
+}
+
+.journeyMetricSub {
+  font-size: 0.5rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Film Şeridi Alt Perforasyonu */
+.journeyFilmStripFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.journeyStripHoles {
+  display: flex;
+  gap: 6px;
+}
+
+.journeyStripHole {
+  width: 8px;
+  height: 5px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.journeyFooterTag {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.5625rem;
+  color: rgba(255, 255, 255, 0.45);
+  letter-spacing: 0.08em;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   4. PLAYLISTS LIVING MOCKUP (Spotify Tracklist Ergonomisi + Specular Cam)
+   ═══════════════════════════════════════════════════════════════════════════ */
+.playlistsContainer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(14px, 3cqh, 22px) clamp(16px, 3.5cqw, 24px);
+  box-sizing: border-box;
+  background:
+    radial-gradient(
+      ellipse 80% 50% at 85% 10%,
+      rgba(147, 51, 234, 0.12) 0%,
+      rgba(5, 5, 7, 0.98) 75%
+    );
+}
+
+/* Çalma Listesi Başlık Alanı */
+.playlistHeroHeader {
+  display: flex;
+  gap: clamp(10px, 2.5cqw, 16px);
+  align-items: center;
+  margin-bottom: clamp(10px, 2.2cqh, 16px);
+}
+
+.playlistSquareCover {
+  position: relative;
+  width: clamp(68px, 15cqh, 84px);
+  aspect-ratio: 1;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+  flex-shrink: 0;
+}
+
+.playlistHeroMeta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.playlistTypePill {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #c084fc;
+  margin-bottom: 2px;
+}
+
+.playlistHeroTitle {
+  font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
+  font-size: clamp(1.05rem, 2.8cqh, 1.4rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+  margin: 0 0 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.playlistHeroSub {
+  font-size: 0.6875rem;
+  color: #b3b3b3;
+  margin: 0 0 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.playlistActionRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Spotify Native Yeşil Play Butonu (Surgical Spotify Green) */
+.spotifyPlayCircle {
+  width: 34px;
+  height: 34px;
+  border-radius: 9999px;
+  background: #1ed760;
+  color: #000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(30, 215, 96, 0.4);
+  transition: transform 0.15s ease;
+  cursor: pointer;
+}
+
+.spotifyPlayCircle:hover {
+  transform: scale(1.06);
+}
+
+.spotifyHeartBtn {
+  color: #1ed760;
+  opacity: 0.9;
+  cursor: pointer;
+}
+
+/* Şarkı Listesi Tablosu (Spotify Ergonomisi) */
+.trackTable {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.trackTableHeader {
+  display: grid;
+  grid-template-columns: 24px 34px minmax(120px, 1fr) 48px;
+  gap: 10px;
+  padding: 4px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.5625rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: #767676;
+}
+
+.trackRow {
+  display: grid;
+  grid-template-columns: 24px 34px minmax(120px, 1fr) 48px;
+  gap: 10px;
+  align-items: center;
+  padding: 5px 8px;
+  border-radius: 4px;
+  transition: background-color 0.15s ease;
+  cursor: pointer;
+}
+
+.trackRow:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.trackRowActive {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.trackIndexSwap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.6875rem;
+  color: #b3b3b3;
+  width: 100%;
+}
+
+.trackPlayIconHover {
+  display: none;
+  color: #ffffff;
+}
+
+.trackRow:hover .trackNumberDefault {
+  display: none;
+}
+
+.trackRow:hover .trackPlayIconHover {
+  display: block;
+}
+
+.trackThumb40 {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  border-radius: 4px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.trackDetails {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.trackTitle {
+  font-size: 0.75rem;
+  font-weight: 550;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.trackTitlePlaying {
+  color: #1ed760;
+  font-weight: 600;
+}
+
+.trackArtist {
+  font-size: 0.625rem;
+  color: #b3b3b3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.trackDuration {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.6875rem;
+  color: #b3b3b3;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Sağ Altta Mor Işıltılı Specular Cam Rozeti (Specular Frosted Panel) */
+.playlistSpecularGlass {
+  position: relative;
+  align-self: flex-end;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  background: rgba(20, 16, 30, 0.75);
+  backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow:
+    0 12px 28px -6px rgba(0, 0, 0, 0.7),
+    0 0 20px rgba(168, 85, 247, 0.22);
+}
+
+.playlistGlassDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #1ed760;
+  box-shadow: 0 0 6px #1ed760;
+}
+
+.playlistGlassText {
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #f0ece6;
+}

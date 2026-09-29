@@ -1,0 +1,129 @@
+/* ═══════════════════════════════════════════════════════════════════
+   TOGGLE — iOS switch (FAZ GÖRÜNMEYEN-KAHRAMANLAR, 2026-08-13)
+
+   🔴 Eski hâl `design-components/on-off-button.css`ten türetilmiş bir
+   **neo-brutalist** switch'ti: 2px kalın kenarlık + `box-shadow: 2px 2px`
+   sert ofset gölge. O dil bilinçli bir seçimdi ama Sahibin bu turdaki
+   talimatı net: *"hepsi Apple/iOS hissinde olmalı, bir dili olmalı."*
+   Sert ofset gölge iOS'ta hiçbir yerde yoktur ve sayfadaki diğer tüm
+   yüzeylerle (yumuşak, katmanlı, ışığı üstten alan) çelişiyordu.
+
+   iOS switch anatomisi:
+   • Ray: tam yuvarlak, kenarlıksız; kapalıyken nötr, açıkken DOLU accent.
+   • Knob: saf beyaz daire, gerçek gölgeli — rayın üstünde YÜZER.
+   • Geçiş: knob kayarken ray rengi çapraz-solar. Spring hissi için
+     `cubic-bezier(0.16,1,0.3,1)` (apple-design §4 kritik sönümlü).
+   • Basılıyken knob hafifçe UZAR (iOS'ta gerçek davranış) — dokunulduğunu
+     söyler (§1 "respond on pointer-down").
+   ═══════════════════════════════════════════════════════════════════ */
+
+.switch {
+  position: relative;
+  display: inline-block;
+  /* iOS ölçüsü: 51×31pt. Web'de 51×31px birebir karşılık. */
+  width: 51px;
+  height: 31px;
+  flex-shrink: 0;
+}
+
+.toggle {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  box-sizing: border-box;
+  border-radius: var(--radius-full);
+  border: none;
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  /* Kapalı: nötr gömülü ray. */
+  background-color: var(--elev-3);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
+  transition: background-color 260ms cubic-bezier(0.16, 1, 0.3, 1);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 🔴 DOKUNMA HEDEFİ (2026-08-14, Ş-36): görsel ray 31px — iOS'un kendi
+   ölçüsü, DEĞİŞTİRİLMEZ. Ama dokunulabilir alan 44px olmalı (Apple HIG +
+   WCAG 2.2). `.slider`ın kutusunu büyütmek knob'un `top:2px` konumunu ve
+   `inset` gölgesini bozardı; bunun yerine görünmez bir genişletici katman
+   eklenir. `<label>`ın ::after'ı olduğu için tıklama YİNE label'a gider —
+   ayrı bir eleman değil, aynı kontrolün uzantısı. */
+.slider::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 44px;
+  transform: translateY(-50%);
+}
+
+/* Knob — beyaz, yüzen, gerçek gölgeli. */
+.slider::before {
+  content: "";
+  box-sizing: border-box;
+  height: 27px;
+  width: 27px;
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  border: none;
+  border-radius: var(--radius-full);
+  background-color: #fff;
+  box-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.35),
+    0 1px 1px rgba(0, 0, 0, 0.25);
+  transition:
+    transform 260ms cubic-bezier(0.16, 1, 0.3, 1),
+    width 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Açık: ray dolu accent. */
+.toggle:checked + .slider {
+  background-color: var(--accent);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.18);
+}
+
+.toggle:checked + .slider::before {
+  transform: translateX(20px);
+}
+
+/* Basılıyken knob uzar — iOS'un imza mikro-etkileşimi. Sağdayken
+   sola doğru uzasın diye `right` tarafı sabitlenir. */
+.slider:active::before {
+  width: 32px;
+}
+
+.toggle:checked + .slider:active::before {
+  width: 32px;
+  transform: translateX(15px);
+}
+
+.toggle:focus-visible + .slider {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+.toggle:disabled + .slider {
+  opacity: 0.5;
+  cursor: default;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slider,
+  .slider::before {
+    transition-duration: 1ms;
+  }
+  .slider:active::before,
+  .toggle:checked + .slider:active::before {
+    width: 27px;
+  }
+  .toggle:checked + .slider:active::before {
+    transform: translateX(20px);
+  }
+}

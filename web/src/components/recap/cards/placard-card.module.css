@@ -1,0 +1,237 @@
+/* Kart 13 — Kapanış. YENİDEN BAŞTAN (2026-08-11): "heroic ve the end havası."
+   Kapak arka plana da devasa ambient olarak yayılıyor (§9 tek katman —
+   obsession-card'daki desen), önplanda net kalıyor. "KAYDA GEÇTİ" final
+   jeneriği hissi verir. İstatistikler sessiz bir alt bant. */
+
+.frame {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  container-type: size;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--recap-chrome-top, 40px) var(--space-5) var(--recap-chrome-bottom, 56px);
+}
+
+/* Kapak arka plana yayılır — tek katman: bulanık kapak + tepe/taban
+   vinyeti AYNI `background` bildiriminde (design.md §9, kirli leke
+   riskinden kaçınmak için ayrı ayrı stack edilmez). */
+.ambient {
+  position: absolute;
+  inset: -5%;
+  z-index: 0;
+  background-size: cover;
+  background-position: center;
+  filter: blur(64px) saturate(1.2) brightness(0.5);
+  transform: scale(1.2);
+  opacity: 0.65;
+  pointer-events: none;
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(
+      ellipse 80% 60% at 50% 30%,
+      color-mix(in srgb, var(--bg) 20%, transparent),
+      transparent 65%
+    ),
+    radial-gradient(
+      ellipse 100% 75% at 50% 100%,
+      color-mix(in srgb, var(--bg) 55%, transparent),
+      var(--bg) 82%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--bg) 45%, transparent) 0%,
+      transparent 22%,
+      transparent 70%,
+      color-mix(in srgb, var(--bg) 70%, transparent) 100%
+    );
+  pointer-events: none;
+}
+
+.layout {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(var(--space-6), 6cqh, var(--space-9));
+  width: min(100%, 30rem);
+  min-width: 0;
+  flex: 1;
+}
+
+.artStage {
+  position: relative;
+  width: min(58cqw, 13.5rem);
+  aspect-ratio: 1 / 1;
+  margin: 0;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--color-text-primary) 16%, transparent);
+  box-shadow:
+    0 32px 80px color-mix(in srgb, var(--bg) 60%, transparent),
+    0 0 64px color-mix(in srgb, var(--color-text-primary) 10%, transparent);
+  background: color-mix(in srgb, var(--surface) 85%, transparent);
+}
+
+.art {
+  object-fit: contain !important;
+}
+
+.finale {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(var(--space-2), 2cqh, var(--space-4));
+  text-align: center;
+  min-width: 0;
+  width: 100%;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: clamp(0.5rem, 1.4cqw, 0.65rem);
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: color-mix(in srgb, var(--color-text-primary) 50%, transparent);
+}
+
+/* İmza öğesi — final jeneriği hissi. Devasa, cesur, tek satır.
+   ⚠ 11 Ağu dersi: cqw tavanı ölçümle konur. "KAYDA GEÇTİ" 11 karakter,
+   Archivo Black ~0,68em/karakter → 12cqw'de 375px kapta ~337px, güvenli
+   (~38px pay). `min()` yine de mutlak üst sınır olarak kalıyor. */
+.theEnd {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: min(10cqw, clamp(1.5rem, 9.5cqw, 3.75rem));
+  line-height: 0.95;
+  letter-spacing: -0.01em;
+  color: var(--color-text-primary);
+  text-shadow: 0 0 80px color-mix(in srgb, var(--color-text-primary) 22%, transparent);
+  white-space: nowrap;
+}
+
+/* Editoryal karakter: sessiz künye — accent yok, yalnız metin tonları. */
+.character {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  max-width: 100%;
+}
+
+.characterWords {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: clamp(0.65rem, 2.1cqw, 0.8rem);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text-primary) 78%, transparent);
+  text-wrap: balance;
+}
+
+.characterStat {
+  margin: 0;
+  max-width: 34ch;
+  font-size: clamp(0.72rem, 2.2cqw, 0.85rem);
+  line-height: 1.4;
+  color: color-mix(in srgb, var(--color-text-primary) 55%, transparent);
+  text-wrap: balance;
+}
+
+.meta {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.metaItem {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: clamp(0.6rem, 2cqw, 0.75rem);
+  color: color-mix(in srgb, var(--color-text-primary) 55%, transparent);
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.metaLabel {
+  font-size: 0.85em;
+  letter-spacing: 0.08em;
+  color: color-mix(in srgb, var(--color-text-primary) 35%, transparent);
+}
+
+.metaDot {
+  color: color-mix(in srgb, var(--color-text-primary) 25%, transparent);
+}
+
+.exportTag {
+  position: relative;
+  z-index: 21;
+  pointer-events: auto;
+  margin-top: clamp(var(--space-4), 4cqh, var(--space-6));
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: color-mix(in srgb, var(--color-text-primary) 72%, transparent);
+  text-decoration: none;
+  padding: 8px 18px;
+  border-radius: 2px;
+  border: 1px solid color-mix(in srgb, var(--color-text-primary) 18%, transparent);
+  background: color-mix(in srgb, var(--color-text-primary) 4%, transparent);
+  transition: color 180ms ease, border-color 180ms ease, background 180ms ease;
+  white-space: nowrap;
+}
+
+.exportTag:hover,
+.exportTag:focus-visible {
+  color: var(--color-text-primary);
+  border-color: color-mix(in srgb, var(--color-text-primary) 38%, transparent);
+  background: color-mix(in srgb, var(--color-text-primary) 8%, transparent);
+}
+
+.exportTag:focus-visible {
+  outline: 2px solid var(--color-text-primary);
+  outline-offset: 3px;
+}
+
+@media (min-width: 768px) {
+  .layout {
+    width: min(100%, 34rem);
+  }
+
+  .artStage {
+    width: min(30cqw, 15rem);
+  }
+
+  .theEnd {
+    font-size: min(9cqw, clamp(3rem, 9cqw, 6rem));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .exportTag {
+    transition: none;
+  }
+}

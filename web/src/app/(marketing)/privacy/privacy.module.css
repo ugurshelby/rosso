@@ -1,0 +1,285 @@
+.wrapper {
+  position: relative;
+  z-index: 1;
+  max-width: var(--container-md);
+  width: 100%;
+  margin: 0 auto;
+  padding: clamp(7rem, 10vw, 8rem) var(--space-6) var(--space-16);
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  margin-bottom: var(--space-8);
+  transition: color 200ms ease;
+}
+
+.backLink:hover {
+  color: color-mix(in srgb, var(--landing-glow-violet) 78%, #fff);
+}
+
+.title {
+  font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-3);
+  text-shadow: 0 0 48px color-mix(in srgb, var(--color-text-primary) 8%, transparent);
+}
+
+.lead {
+  font-size: var(--text-lg);
+  color: color-mix(in srgb, var(--color-text-secondary) 92%, #fff);
+  line-height: var(--leading-relaxed);
+  margin-bottom: var(--space-12);
+  font-weight: 300;
+  max-width: 68ch;
+}
+
+.section {
+  margin-bottom: var(--space-12);
+}
+
+.heading {
+  font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
+  font-size: var(--text-xl);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: color-mix(in srgb, var(--landing-glow-wine) 25%, var(--color-text-primary));
+  margin-bottom: var(--space-4);
+}
+
+.body {
+  font-size: var(--text-base);
+  color: color-mix(in srgb, var(--color-text-secondary) 92%, #fff);
+  line-height: 1.7;
+  font-weight: 300;
+  max-width: 68ch;
+}
+
+.body code {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.9em;
+  color: color-mix(in srgb, var(--landing-glow-rose) 70%, var(--color-text-primary));
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--color-text-primary) 10%, transparent);
+  background: color-mix(in srgb, var(--color-bg-elevated) 52%, rgba(0, 0, 0, 0.45));
+  margin-top: var(--space-4);
+}
+
+.table th,
+.table td {
+  padding: var(--space-4) var(--space-5);
+  text-align: left;
+  font-size: var(--text-sm);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-text-primary) 6%, transparent);
+}
+
+.table th {
+  font-weight: 600;
+  color: color-mix(in srgb, var(--landing-glow-violet) 75%, var(--color-text-secondary));
+  background: color-mix(in srgb, var(--landing-glow-violet) 6%, var(--color-bg-elevated));
+}
+
+.table td {
+  color: color-mix(in srgb, var(--color-text-secondary) 92%, #fff);
+  font-weight: 300;
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.tableScroll {
+  width: 100%;
+}
+
+.link {
+  color: color-mix(in srgb, var(--landing-glow-violet) 72%, var(--color-text-secondary));
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 200ms ease;
+}
+
+.link:hover {
+  color: color-mix(in srgb, var(--landing-glow-violet) 88%, #fff);
+}
+
+@media (max-width: 640px) {
+  .wrapper {
+    padding: clamp(5.5rem, 18vw, 7rem) var(--space-4)
+      calc(var(--space-12) + var(--marketing-bottom-nav-offset, 0px));
+  }
+
+  .title {
+    font-size: clamp(1.75rem, 7vw, 2.25rem);
+  }
+
+  .lead {
+    font-size: var(--text-base);
+    margin-bottom: var(--space-8);
+  }
+
+  .section {
+    margin-bottom: var(--space-8);
+  }
+
+  .heading {
+    font-size: var(--text-lg);
+  }
+
+  .tableScroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 calc(-1 * var(--space-4));
+    padding: 0 var(--space-4);
+  }
+
+  .table {
+    min-width: min(100%, 20rem);
+    font-size: var(--text-xs);
+  }
+
+  .table th,
+  .table td {
+    padding: var(--space-3) var(--space-3);
+  }
+}
+
+/* ─── 2026-09-22, KVKK denetimi: güncelleme tarihi, liste, alt başlık ve
+       çerez tercihi kutusu. Sayfa artık iki dilli ve içinde bir EYLEM var
+       (rızayı geri alma) — eylem, metnin içinde kaybolmamalı. ─────────── */
+
+.guncelleme {
+  font-size: var(--text-sm);
+  color: color-mix(in srgb, var(--color-text-secondary) 62%, transparent);
+  margin-bottom: var(--space-6);
+  font-weight: 300;
+  letter-spacing: 0.01em;
+}
+
+.altBaslik {
+  font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: color-mix(in srgb, var(--color-text-primary) 92%, transparent);
+  margin: var(--space-6) 0 var(--space-3);
+}
+
+.liste {
+  list-style: none;
+  padding: 0;
+  margin: var(--space-4) 0 0;
+  max-width: 68ch;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.liste li {
+  position: relative;
+  padding-left: var(--space-5);
+  font-size: var(--text-base);
+  line-height: 1.7;
+  font-weight: 300;
+  color: color-mix(in srgb, var(--color-text-secondary) 92%, #fff);
+}
+
+.liste li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.72em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--landing-glow-violet) 70%, transparent);
+}
+
+.tercihKutusu {
+  margin-top: var(--space-6);
+  padding: var(--space-5);
+  max-width: 68ch;
+  border-radius: var(--radius-lg, 16px);
+  border: 1px solid color-mix(in srgb, var(--color-text-primary) 10%, transparent);
+  background: color-mix(in srgb, var(--color-surface) 62%, transparent);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+}
+
+.tercihDurumu {
+  font-size: var(--text-sm);
+  color: color-mix(in srgb, var(--color-text-secondary) 88%, #fff);
+  margin: 0 0 var(--space-4);
+  font-weight: 300;
+}
+
+.tercihDurumu strong {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.tercihButonlari {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+/* 44px dokunma hedefi (apple-design) — gizlilik seçimi yanlış basılmamalı. */
+.tercihButonu {
+  min-height: 44px;
+  padding: 0 var(--space-5);
+  border-radius: 999px;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-primary);
+  border: 1px solid color-mix(in srgb, var(--color-text-primary) 16%, transparent);
+  background: color-mix(in srgb, var(--color-surface) 70%, transparent);
+  cursor: pointer;
+  transition:
+    background 200ms ease,
+    transform 240ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 200ms ease;
+}
+
+.tercihButonu:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-surface) 92%, #fff);
+}
+
+/* Anında dokunma geri bildirimi — basıldığı an görülür (apple-design §3). */
+.tercihButonu:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.tercihButonu:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.tercihButonuBirincil {
+  border-color: color-mix(in srgb, var(--landing-glow-violet) 55%, transparent);
+  background: color-mix(in srgb, var(--landing-glow-violet) 26%, transparent);
+}
+
+.tercihButonuBirincil:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--landing-glow-violet) 38%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tercihButonu,
+  .tercihButonu:active:not(:disabled) {
+    transition: background 200ms ease;
+    transform: none;
+  }
+}

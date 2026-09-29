@@ -1,0 +1,51 @@
+/* Input — design.md §5
+   FAZ GÖRÜNMEYEN-KAHRAMANLAR (2026-08-13):
+
+   🔴 **16px ZORUNLU.** iOS Safari, `font-size < 16px` olan bir alana odak
+   gelince sayfayı otomatik ZOOM'lar ve geri çıkmaz — kullanıcı formun
+   ortasında büyütülmüş, yatay kayan bir ekranda kalır. Eski değer
+   `--text-sm` (14px) idi, yani projedeki HER input bu davranışı
+   tetikliyordu (ayarlar, onboarding, kullanıcı adı, arama…).
+   Bu bir stil tercihi değil, mobil kırığıdır.
+
+   Ayrıca yüzey rampasına bağlandı ve dokunma hedefi 44px'e çıkarıldı. */
+.input {
+  width: 100%;
+  min-height: 44px;
+  background: var(--elev-1);
+  border: 1px solid var(--edge-2);
+  border-radius: var(--radius-lg);
+  padding: var(--space-2) var(--space-4);
+  font-size: 16px;
+  color: var(--color-text-primary);
+  transition: border-color 240ms cubic-bezier(0.16, 1, 0.3, 1),
+              background 240ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 240ms cubic-bezier(0.16, 1, 0.3, 1);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.input::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+/* Odak halkası — `:focus` (dokunmayla da belirir, beklenen davranış).
+   Halka biraz daraltıldı: 3px iOS'ta kalın duruyordu. */
+.input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  background: var(--elev-2);
+  box-shadow: 0 0 0 3.5px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.invalid {
+  border-color: var(--color-error);
+}
+.invalid:focus {
+  border-color: var(--color-error);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+}
