@@ -17,10 +17,12 @@ Rosso turns your Spotify listening history into a personal mirror: yearly and mo
 |---|---|
 | **Home** | Listening dashboard: top tracks/artists, streaks, discovery score |
 | **Recap** | Frozen monthly and yearly "story" cards — what defined a period of your life |
-| **Journey** | A lifetime archive told as five data-driven scenes (focus, discovery, volume, spread, calm) |
+| **Journey** | Your life in music, year by year — each year told through what accompanied it: the song, the artist and the album of the year, how the months moved from one artist to another, and the month one song took over. Opens with the artists and songs that stayed with you across the years |
 | **Taste** | Your musical character (what never changes) and your mood right now (what does) |
 | **Playlists** | Auto-generated monthly playlists, mood playlists, liked-songs views, one-tap push to Spotify |
 | **History** | Dense, fast listening history |
+
+**One song, one count.** Spotify serves the same recording under different IDs (single vs. album, "Remastered", "[From …]") and the two export formats plus live sync can record the same listen twice. Rosso merges duplicate recordings (keeping real versions like Acoustic, Live or Remix apart) and removes double-counted plays — hourly, in the database, with an archive so nothing is lost.
 
 Data comes from two places: the **Spotify Web API** (recent plays, synced every few minutes) and your **Spotify "Extended streaming history" ZIP** (your whole past). Both are optional to start with; the app has a demo preview so it never looks empty.
 
@@ -38,7 +40,7 @@ The architecture is built around **zero running cost**:
 ## Stack
 
 - **Web** — Next.js 16 (App Router), React 19, TypeScript (strict), Tailwind v4, Supabase SSR, Vitest
-- **Database** — PostgreSQL 17 on Supabase; 67 tables, RLS on every table, business logic in SQL functions; one-file schema in [`web/supabase/kurulum/schema.sql`](web/supabase/kurulum/schema.sql)
+- **Database** — PostgreSQL 17 on Supabase; 69 tables, RLS on every table, business logic in SQL functions; one-file schema in [`web/supabase/kurulum/schema.sql`](web/supabase/kurulum/schema.sql)
 - **Worker** — Python 3.13, FastAPI, pytest; Deezer + Last.fm + MusicBrainz enrichment
 - **Design** — dark, deep-violet identity; spring-based, interruptible motion (see [`docs/design`](docs/design))
 

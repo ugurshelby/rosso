@@ -1,0 +1,230 @@
+/* Prolog — ömür boyu eşlikçiler. Tam viewport, tek kahraman (ilk sanatçı), 1:1 görseller. */
+
+.section {
+  position: relative;
+  min-height: 100svh;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  scroll-snap-align: start;
+  padding: clamp(var(--space-8), 8vh, var(--space-16)) clamp(var(--space-4), 5vw, var(--space-12));
+  box-sizing: border-box;
+  background:
+    radial-gradient(90% 60% at 50% 20%, rgba(124, 58, 237, 0.18) 0%, transparent 65%),
+    #050507;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 100dvh;
+}
+
+.inner {
+  width: 100%;
+  max-width: 1120px;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(var(--space-6), 5vh, var(--space-12));
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.eyebrow,
+.label {
+  margin: 0;
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-journey, 'Bodoni Moda', Georgia, serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(2.6rem, 7vw, 5.5rem);
+  line-height: 0.98;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+}
+
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* Sanatçılar: ilk sanatçı kahraman, diğerleri onu izler. */
+.artists {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) repeat(4, minmax(0, 1fr));
+  gap: clamp(var(--space-3), 2vw, var(--space-6));
+  align-items: end;
+}
+
+.artist {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.artistArt {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 12px;
+  box-shadow: 0 20px 50px -18px rgba(0, 0, 0, 0.85), 0 0 40px -16px rgba(192, 132, 252, 0.35);
+}
+
+.artistName {
+  font-family: var(--font-geist-sans, sans-serif);
+  font-weight: 600;
+  font-size: 1rem;
+  letter-spacing: -0.015em;
+  color: #ffffff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.artist[data-lead='true'] .artistName {
+  font-size: clamp(1.2rem, 2.2vw, 1.6rem);
+}
+
+.artistSpan {
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: rgba(192, 132, 252, 0.85);
+}
+
+/* Geri dönen şarkılar: Spotify liste ergonomisi, iki sütun. */
+.songs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: var(--space-3);
+}
+
+.song {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.songArt {
+  flex: none;
+  width: 48px;
+  aspect-ratio: 1 / 1;
+  border-radius: 6px;
+}
+
+.songText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.songTitle,
+.songMeta {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-geist-sans, sans-serif);
+}
+
+.songTitle {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #ffffff;
+}
+
+.songMeta {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.begin {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: var(--space-2) var(--space-5);
+  border-radius: 9999px;
+  border: 1px solid rgba(192, 132, 252, 0.45);
+  background: rgba(147, 51, 234, 0.16);
+  color: #ffffff;
+  font-family: var(--font-geist-sans, sans-serif);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  transition: transform 140ms cubic-bezier(0.16, 1, 0.3, 1), background-color 200ms ease;
+}
+
+.begin:active {
+  transform: scale(0.97);
+}
+
+.begin:focus-visible {
+  outline: 2px solid #c084fc;
+  outline-offset: 3px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .begin:hover {
+    background: rgba(147, 51, 234, 0.26);
+  }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .head,
+    .block {
+      animation: companionsIn linear both;
+      animation-timeline: view();
+      animation-range: entry 5% cover 30%;
+    }
+  }
+}
+
+@keyframes companionsIn {
+  from {
+    opacity: 0.001;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .artists {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .artist[data-lead='true'] {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .begin { transition: none; }
+  .begin:active { transform: none; }
+}

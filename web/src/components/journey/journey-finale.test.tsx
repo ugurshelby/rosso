@@ -19,16 +19,21 @@ function renderWithI18n(ui: ReactNode) {
 
 // ---------------------------------------------------------------------------
 // Journey kapanış sahnesi. Sözleşmeler:
-//   1. AI metni yoksa eski iki satırlık kapanış aynen çizilir (AI vazgeçilmez değil).
-//   2. AI metni varsa her paragraf ve son cümle çizilir; eski satır çıkmaz.
+//   1. AI metni yoksa sade iki satırlık kapanış çizilir (AI vazgeçilmez değil).
+//   2. AI metni SEÇİLİ DİLDE varsa her paragraf ve son cümle çizilir; sade satır çıkmaz.
+//      O dilde metin yoksa sade kapanış (yanlış dilde metin gösterilmez).
 //   3. Yıl aralığı yalnız iki farklı yıl varsa gösterilir.
 //   4. "Back to start" tetikleyicisi çalışır.
 // ---------------------------------------------------------------------------
 
 const METIN = {
   tr: {
-    paragraphs: ["Her şey 2017'de başladı.", 'Sonra hip-hop geldi.', 'Bazı şarkılar hep kaldı.'],
-    last_line: 'Artık müzik sabah dokuzda başlıyor.',
+    paragraphs: ['Dedublüman 2020’de oradaydı.', 'Sonra hip-hop geldi.', 'Bazı şarkılar hep kaldı.'],
+    last_line: 'Bugünlerde yine Madrigal çalıyor.',
+  },
+  en: {
+    paragraphs: ['Dedublüman was there in 2020.', 'Then hip-hop arrived.', 'Some songs never left.'],
+    last_line: 'These days Madrigal is back on.',
   },
 }
 
@@ -36,25 +41,31 @@ describe('JourneyFinale', () => {
   it('kapanış metni yoksa eski iki satırı çizer', () => {
     renderWithI18n(<JourneyFinale onRestart={() => {}} />)
     expect(screen.getByText(/Every listen is a new line/)).toBeInTheDocument()
-    expect(screen.getByText('Yolculuk devam ediyor')).toBeInTheDocument()
+    expect(screen.getByText('The story goes on')).toBeInTheDocument()
+  })
+
+  it('seçili dilde (İngilizce) metin yoksa Türkçe metni göstermez, sade kapanışa düşer', () => {
+    renderWithI18n(<JourneyFinale closing={{ tr: METIN.tr }} onRestart={() => {}} />)
+    expect(screen.queryByText(METIN.tr.paragraphs[0]!)).not.toBeInTheDocument()
+    expect(screen.getByText(/Every listen is a new line/)).toBeInTheDocument()
   })
 
   it('AI metnini paragraf paragraf ve son cümleyle çizer; eski satırı çizmez', () => {
     renderWithI18n(<JourneyFinale closing={METIN} startYear={2017} endYear={2026} onRestart={() => {}} />)
-    for (const p of METIN.tr.paragraphs) expect(screen.getByText(p)).toBeInTheDocument()
-    expect(screen.getByText(METIN.tr.last_line)).toBeInTheDocument()
+    for (const p of METIN.en.paragraphs) expect(screen.getByText(p)).toBeInTheDocument()
+    expect(screen.getByText(METIN.en.last_line)).toBeInTheDocument()
     expect(screen.queryByText(/Every listen is a new line/)).not.toBeInTheDocument()
   })
 
   it('tek yıllık aralıkta yıl satırını göstermez', () => {
     const { rerender } = renderWithI18n(<JourneyFinale closing={METIN} startYear={2026} endYear={2026} onRestart={() => {}} />)
-    expect(screen.queryByLabelText(/ile .* arası/)).not.toBeInTheDocument()
+    expect(screen.queryByLabelText(/From .* to /)).not.toBeInTheDocument()
     rerender(
       <I18nProvider locale="en" messages={{ journey } as never}>
         <JourneyFinale closing={METIN} startYear={2017} endYear={2026} onRestart={() => {}} />
       </I18nProvider>,
     )
-    expect(screen.getByLabelText('2017 ile 2026 arası')).toBeInTheDocument()
+    expect(screen.getByLabelText('From 2017 to 2026')).toBeInTheDocument()
   })
 
   it('reduced-motion’da metin doğrudan görünür durumdadır', () => {

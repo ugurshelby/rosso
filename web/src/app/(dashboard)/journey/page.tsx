@@ -4,12 +4,12 @@ import { requireAuth } from '@/lib/auth'
 import { getPhaseState } from '@/lib/phase/read'
 import { LockedPreview } from '@/components/ui/locked-preview'
 import { JourneyPreviewBackdrop } from '@/components/journey/journey-preview-backdrop'
-import { getJourneyArc, getJourneyYearsPackage } from '@/lib/journey/read'
+import { getJourneyEslikcileri, getJourneyYearsPackage } from '@/lib/journey/read'
 import { getJourneyKapanisi, getJourneyYilNotlari } from '@/lib/analytics/editorial-read'
 import { getTasteProfile } from '@/lib/analytics/taste-profile'
 import { matchVibeCard } from '@/lib/vibe-cards/match'
 import { CarSessionsBento } from './car-sessions-bento'
-import { getT } from '@/lib/i18n/server'
+import { getLocale, getT } from '@/lib/i18n/server'
 import { Suspense } from 'react'
 import styles from './journey.module.css'
 
@@ -25,16 +25,17 @@ const COVERS_PER_YEAR = 12
 
 export default async function JourneyPage() {
   const user = await requireAuth('/journey')
-  const { t } = await getT()
+  const [{ t }, locale] = await Promise.all([getT(), getLocale()])
 
   // Tüm veritabanı ve durum sorgularını tek bir paralel turda çek (TTFB optimizasyonu)
-  const [phaseState, arc, pkg, tasteProfile, yearNotes, closing] = await Promise.all([
+  const [phaseState, pkg, eslikci, tasteProfile, yearNotes, closing] = await Promise.all([
     getPhaseState(user.id),
-    getJourneyArc(user.id),
     getJourneyYearsPackage(user.id, COVERS_PER_YEAR),
+    // Eşlikçiler paketi (0362): yılı o yılın sanatçı/albüm/şarkılarıyla anlatır.
+    getJourneyEslikcileri(user.id),
     getTasteProfile(user.id),
-    // AI editoryal yıl notları — opsiyonel; okuma hatası boş harita döner.
-    getJourneyYilNotlari(user.id),
+    // AI editoryal yıl notları seçili dilde — opsiyonel; okuma hatası boş harita döner.
+    getJourneyYilNotlari(user.id, locale === 'en' ? 'en' : 'tr'),
     // Kapanış metni (AI, opsiyonel): yoksa null → eski iki satırlık kapanış.
     getJourneyKapanisi(user.id),
   ])
@@ -68,7 +69,7 @@ export default async function JourneyPage() {
 
   const { years, covers } = pkg
 
-  if (!arc || years.length === 0) {
+  if (years.length === 0) {
     return (
       <div className={styles.emptyPage}>
         <h1 className={styles.emptyTitle}>{t('journey.page.notEnoughTitle')}</h1>
@@ -80,12 +81,11 @@ export default async function JourneyPage() {
 
   return (
     <JourneyView
-      arc={arc}
       years={years}
       covers={covers}
+      eslikci={eslikci}
       vibeCardId={matchVibeCard(tasteProfile, user.id)}
       userId={user.id}
-      hasL3={tasteProfile.hasL3}
       yearNotes={yearNotes}
       closing={closing}
       carSessionsNode={

@@ -35,7 +35,15 @@ export interface TrackIdentity {
   album?: string | null
 }
 
-/** `spotify_id` → yoksa `isrc` → yoksa yeni satır. UUID döner. */
+/**
+ * `spotify_id` → alias → `isrc` → anahtar (başlık + ilk sanatçı + süre ±3 sn) → yeni satır.
+ *
+ * Anahtar adımı (0360, 2026-10-04): canlı dinleme ISRC taşımıyor; aynı şarkının single'ı
+ * ile albüm sürümü (ya da "Remastered", "[From …]" ekli hâli) başka spotify_id ile gelince
+ * eskiden yeni satır açılıyor, dinleme sayısı bölünüyordu. Sürüm etiketleri (Akustik, Live,
+ * Remix, Sped up) anahtarda korunur — onlar ayrı şarkı kalır. Saatlik
+ * `sarki_butunlugu_bakimi` işi diğer yollardan (ZIP) gelen kopyaları da birleştirir.
+ */
 export async function resolveOrCreateTrackByIdentity(
   supabase: SupabaseClient,
   identity: TrackIdentity,
@@ -84,6 +92,21 @@ export async function resolveOrCreateTrackByIdentity(
         )
       return byIsrc.id as string
     }
+  }
+
+  const { data: byKey } = await supabase.rpc('kanonik_sarki_bul', {
+    p_title: identity.title,
+    p_artists: identity.artists,
+    p_duration_ms: identity.durationMs ?? null,
+  })
+  if (typeof byKey === 'string') {
+    await supabase
+      .from('track_spotify_alias')
+      .upsert(
+        { spotify_id: identity.spotifyId, track_id: byKey, kaynak: 'anahtar' },
+        { onConflict: 'spotify_id', ignoreDuplicates: true },
+      )
+    return byKey
   }
 
   const { data: inserted, error } = await supabase

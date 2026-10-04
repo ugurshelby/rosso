@@ -36,6 +36,7 @@ Hepsi Supabase `pg_cron`'da yaşar — GitHub reposuna hiç dokunulmasa bile (60
 |---|---|
 | **AI kapanışı** | 17 Aralık 2026 00:00 UTC'de Vertex/Gemini çağrıları kendiliğinden durur (`web/src/lib/ai/ai-kapanis.ts`); anahtar Vercel'de kalsa bile kullanılmaz, fatura oluşmaz. Uygulama AI'sız (SQL fallback) çalışır. Yeniden açmak için Vercel'de `AI_KAPANIS_TARIHI`. |
 | **Hesap purge** | Silinmek üzere işaretlenen hesaplar 30 gün sonra `account-purge` cron'uyla kalıcı silinir. |
+| **Şarkı bütünlüğü** | Saatlik (`rosso-sarki-butunlugu-cron`): aynı şarkının farklı kimlikleri birleşir, ZIP↔ZIP ve canlı↔ZIP çift dinlemeler `play_events_cift_arsiv`'e taşınır. Sonuç `pipeline_runs` (`sarki_butunlugu`) satırında. |
 | **Kayıt kapısı** | Yeni kayıt yalnız davet listesindekilere açık (`izinli_eposta`); ilk kayıt sahip olur. |
 
 ## 2. ASLA otomatikleşmeyen, sizin elle yapmanız gereken 2 adım

@@ -2,18 +2,16 @@
 
 import { useCallback, useMemo } from 'react'
 import Link from 'next/link'
+import { getJourneyYearColors, applyYearCharacter } from '@/lib/journey/palette'
+import { yilSahnesi, yolculukUclari } from '@/lib/journey/yil-sahnesi'
 import {
-  getJourneyYearColors,
-  applyYearCharacter,
-} from '@/lib/journey/palette'
-import {
-  yilSahnesi,
-  yolculukUclari,
-} from '@/lib/journey/yil-sahnesi'
-import { displayTrackTitle } from '@/lib/journey/display-title'
+  doluYilMi,
+  DOLU_YIL_EN_AZ_DINLEME,
+  type EslikciYil,
+  type JourneyEslikcileri,
+} from '@/lib/journey/eslikciler'
 import {
   getYearPalette,
-  type JourneyArc,
   type JourneyCover,
   type JourneyYear,
   type YearPalette,
@@ -23,118 +21,114 @@ import type { JourneyKapanisi, JourneyYilHikayesi } from '@/lib/analytics/editor
 import { useT } from '@/lib/i18n/provider'
 import { TectonicSplit } from './tectonic-split'
 import { JourneyHero } from './journey-hero'
-import { JourneyOrigin } from './journey-origin'
+import { JourneyCompanions } from './journey-companions'
 import { YearRail } from './year-rail'
-import { JourneyArtwork } from './journey-artwork'
-import { YearScene } from './scenes/year-scene'
+import { YearChapter } from './year-chapter'
 import { JourneyFinale } from './journey-finale'
 import styles from './journey-view.module.css'
 
 interface JourneyViewProps {
-  arc: JourneyArc
   years: JourneyYear[]
   covers: Record<number, JourneyCover[]>
+  /** Eşlikçiler paketi (0362). Yoksa yıllar kapaklardan kurulan sade eşlikçilerle çizilir. */
+  eslikci: JourneyEslikcileri | null
   vibeCardId: VibeCardId
   userId: string
-  hasL3: boolean
   carSessionsNode?: React.ReactNode
-  /** Editoryal yıl notu + hikâye satırları (Katman D). Boş = AI üretmedi; yedek/gizleme devreye girer. */
+  /** Seçili dildeki AI yıl notları. Boş = AI üretmedi; bölüm notsuz da tamdır. */
   yearNotes?: Record<number, JourneyYilHikayesi>
-  /** "Yolculuk devam ediyor" kapanış metni (Katman D). Yoksa eski iki satır. */
+  /** AI kapanış metni (iki dil). Yoksa sade kapanış. */
   closing?: JourneyKapanisi | null
 }
 
-function formatPlayedAt(iso: string): string {
-  if (!iso) return ''
-  try {
-    return new Date(iso).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })
-  } catch {
-    return ''
+/** Paket yoksa yılın eşlikçilerini kapaklardan kur (ay akışı olmadan). */
+function kapaktanEslikci(y: JourneyYear, covers: JourneyCover[]): EslikciYil {
+  return {
+    year: y.year,
+    plays: y.playCount,
+    minutes: y.totalMinutes,
+    activeMonths: 12,
+    topArtists: [],
+    topAlbums: [],
+    topTracks: covers.slice(0, 5).map((c) => ({
+      trackId: c.trackId,
+      title: c.title,
+      artist: c.artist,
+      imageUrl: c.imageUrl,
+      plays: c.plays,
+    })),
+    months: [],
+    yogunAy: null,
   }
 }
 
 /**
- * JourneyView — Bağımsız Sinematik Ritüel (recap-journey-design.md §0)
- * Dikey zaman nehrinde her yıl veriye dayalı 5 kompozisyondan biriyle açılır.
- * Scroll hijacking ve kesintisiz döngü animasyonları yasaktır.
+ * JourneyView — Bağımsız Sinematik Ritüel (recap-journey-design.md §0).
+ *
+ * 2026-10-04 yeniden kurgu (Sahip): ilk/son dinlenen şarkı kaldırıldı; akış
+ * Hero → "Yanında kimler vardı" (ömür boyu eşlikçiler) → her DOLU yıl için bir
+ * bölüm (o yılın şarkısı, sanatçısı, albümü, ay ay akışı) → kapanış.
+ * Kullanımdan önceki kırıntı yıllar (ör. 10 dinlemelik bir yıl) bölüm olmaz.
+ * Açılır-kapanır öğe yok; scroll hijacking ve sürekli döngü animasyonu yok.
  */
 export function JourneyView({
-  arc,
   years,
   covers,
+  eslikci,
   vibeCardId,
   userId,
-  hasL3: _hasL3,
   carSessionsNode,
-  yearNotes: _yearNotes,
+  yearNotes,
   closing,
 }: JourneyViewProps) {
   const { t } = useT()
 
-  const uclar = useMemo(() => yolculukUclari(years), [years])
+  const eslikciYil = useMemo(() => new Map((eslikci?.years ?? []).map((y) => [y.year, y])), [eslikci])
 
-  const sahneler = useMemo(() => {
-    const m = new Map<number, ReturnType<typeof yilSahnesi>>()
-    years.forEach((y) => m.set(y.year, yilSahnesi(y, uclar)))
-    return m
-  }, [years, uclar])
+  const doluYillar = useMemo(
+    () =>
+      years.filter((y) => {
+        const e = eslikciYil.get(y.year)
+        return e ? doluYilMi(e) : y.playCount >= DOLU_YIL_EN_AZ_DINLEME
+      }),
+    [years, eslikciYil],
+  )
 
-  const palette = useMemo(() => {
-    const m = new Map<number, ReturnType<typeof getJourneyYearColors>>()
-    years.forEach((y, i) => {
-      const temel = getJourneyYearColors(i, years.length)
-      m.set(
-        y.year,
-        applyYearCharacter(temel, {
+  const uclar = useMemo(() => yolculukUclari(doluYillar), [doluYillar])
+
+  const bolumler = useMemo(
+    () =>
+      doluYillar.map((y, i) => {
+        const temel = getJourneyYearColors(i, doluYillar.length)
+        const karakter = applyYearCharacter(temel, {
           intensity: uclar.enYuksekCalma > 0 ? y.playCount / uclar.enYuksekCalma : 0.5,
           discovery: y.discoveryRate,
           spread: uclar.enYuksekCesitlilik > 0 ? y.genreVariety / uclar.enYuksekCesitlilik : 0.5,
-        }),
-      )
-    })
-    return m
-  }, [years, uclar])
+        })
+        const paket = getYearPalette(y)
+        const palette: YearPalette =
+          y.palette && paket.primary !== '#1e1b4b'
+            ? paket
+            : { primary: karakter.from, deep: karakter.to, accent: karakter.accent, glow: karakter.accent }
+        return {
+          y,
+          palette,
+          sahne: yilSahnesi(y, uclar),
+          eslikci: eslikciYil.get(y.year) ?? kapaktanEslikci(y, covers[y.year] ?? []),
+        }
+      }),
+    [doluYillar, uclar, eslikciYil, covers],
+  )
 
-  const totalPlays = years.reduce((s, y) => s + y.playCount, 0)
-  const parsedFirstListenYear = new Date(arc.firstTrack.playedAt).getFullYear()
-  const journeyStartYear = Number.isFinite(parsedFirstListenYear)
-    ? parsedFirstListenYear
-    : (years[0]?.year ?? new Date().getFullYear())
-  const journeyEndYear = years[years.length - 1]?.year ?? new Date().getFullYear()
-
-  const originArc = useMemo(() => {
-    if (arc.firstTrack.trackId) return arc
-    const norm = (value: string) => value.trim().toLowerCase()
-    const match =
-      Object.values(covers)
-        .flat()
-        .find(
-          (cover) =>
-            norm(cover.title) === norm(arc.firstTrack.title) &&
-            norm(cover.artist) === norm(arc.firstTrack.artist),
-        ) ?? null
-
-    if (!match) return arc
-    return {
-      ...arc,
-      firstTrack: {
-        ...arc.firstTrack,
-        trackId: match.trackId,
-        imageUrl: match.imageUrl,
-      },
-    }
-  }, [arc, covers])
+  const ilkYil = doluYillar[0]?.year ?? null
+  const sonYil = doluYillar[doluYillar.length - 1]?.year ?? null
 
   const handleScrollToId = useCallback((id: string) => {
-    const el = document.getElementById(id)
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }, [])
 
   return (
     <div className={styles.odysseyRoot}>
-      {/* Sabit Minimal Çıkış Butonu */}
       <div className={styles.deckExitFixed}>
         <Link href="/recap" className={styles.deckExit} aria-label={t('journey.view.exitAriaLabel')}>
           <span className={styles.deckExitArrow} aria-hidden>←</span>
@@ -142,130 +136,58 @@ export function JourneyView({
         </Link>
       </div>
 
-      {/* Sessiz Yıl Göstergesi (Re-render korumalı bağımsız gözlemci) */}
-      <YearRail years={years} />
+      <YearRail years={doluYillar} />
 
       <main className={styles.odysseyStream}>
-        {/* ══ Bölüm 0: Başlangıç (Hero) ══════════════════════════ */}
         <section id="hero" data-journey-section className={styles.heroSection}>
-          <JourneyHero
-            vibeCardId={vibeCardId}
-            userSeed={userId}
-            hideExit
-            hideScrollCue={false}
+          <JourneyHero vibeCardId={vibeCardId} userSeed={userId} hideExit hideScrollCue={false} />
+        </section>
+
+        {eslikci && (eslikci.lifetime.artists.length > 0 || eslikci.lifetime.enduring.length > 0) ? (
+          <JourneyCompanions
+            lifetime={eslikci.lifetime}
+            firstYear={ilkYil}
+            onBegin={() => ilkYil && handleScrollToId(`year-${ilkYil}`)}
           />
-        </section>
+        ) : (
+          <span id="companions" data-journey-section aria-hidden />
+        )}
 
-        {/* ══ İlk Dinlenen Şarkı (Origin) ════════════════════════ */}
-        <section id="origin" data-journey-section className={styles.originSection}>
-          <div className={styles.originContainer}>
-            <JourneyOrigin
-              arc={originArc}
-              totalPlays={totalPlays}
-              journeyStartYear={journeyStartYear}
-              journeyEndYear={journeyEndYear}
-            />
-            <div className={styles.originActionRow}>
-              <button
-                type="button"
-                className={styles.startJourneyCta}
-                onClick={() => handleScrollToId(`year-${years[0]?.year}`)}
-                aria-label={t('journey.view.beginJourney')}
-              >
-                <span className={styles.startJourneyText}>{t('journey.view.beginJourney')}</span>
-                <span className={styles.startJourneyArrow} aria-hidden>↓</span>
-              </button>
-            </div>
-          </div>
-        </section>
-
-        {/* ══ Yıllar Arşivi (Veri-güdümlü 5 Kompozisyon) ═════════ */}
-        {years.map((y, yearIdx) => {
-          const sahne = sahneler.get(y.year)!
-          const yearCovers = covers[y.year] ?? []
-          const isBreak = y.isBreakpoint
-          const prevYearObj = isBreak && yearIdx > 0 ? years[yearIdx - 1] ?? null : null
-
-          // Karakter-güdümlü zengin renk türetimi
-          const charColor = palette.get(y.year)
-          const basePal = getYearPalette(y)
-          const yearPalette: YearPalette = (basePal.primary && basePal.primary !== '#1e1b4b')
-            ? basePal
-            : charColor
-            ? {
-                primary: charColor.from,
-                deep: charColor.to,
-                accent: charColor.accent,
-                glow: charColor.accent,
-              }
-            : basePal
-
+        {bolumler.map(({ y, palette, sahne, eslikci: e }, i) => {
+          const onceki = i > 0 ? bolumler[i - 1] : null
           return (
-            <div key={`wrap-${y.year}`} className={styles.yearWrapper}>
-              {/* Kırılma yılıysa Tektonik Kanyon köprüsü */}
-              {isBreak && prevYearObj && (
+            <div key={y.year} className={styles.yearWrapper}>
+              {y.isBreakpoint && onceki ? (
                 <div className={styles.tectonicRift}>
                   <TectonicSplit
-                    prevYear={prevYearObj}
+                    prevYear={onceki.y}
                     breakpointYear={y}
-                    prevPalette={getYearPalette(prevYearObj)}
-                    breakPalette={yearPalette}
+                    prevPalette={onceki.palette}
+                    breakPalette={palette}
                   />
                 </div>
-              )}
-
-              {/* 5 Farklı Veri Kompozisyonundan Biri */}
-              <YearScene
+              ) : null}
+              <YearChapter
+                index={i + 1}
                 year={y}
+                eslikci={e}
                 sahne={sahne}
-                covers={yearCovers}
-                palette={yearPalette}
-                isBreak={isBreak}
-                isFirstYear={yearIdx === 0}
+                palette={palette}
+                hikaye={yearNotes?.[y.year]}
+                isBreak={y.isBreakpoint}
+                isFirst={i === 0}
               />
             </div>
           )
         })}
 
-        {/* ══ Kapanış: Bugün & Yolculuk Devam Ediyor ══════════════ */}
         <section id="today" data-journey-section className={styles.odysseySection}>
           <div className={styles.todayStage}>
-            <div className={styles.todayTopRow}>
-              {arc.lastTrack.trackId ? (
-                <div className={styles.todayCoverFrame}>
-                  <JourneyArtwork
-                    id={arc.lastTrack.trackId}
-                    src={arc.lastTrack.imageUrl}
-                    size={160}
-                    priority={false}
-                    alt={`${arc.lastTrack.artist} — ${arc.lastTrack.title}`}
-                  />
-                  <span className={styles.todayCoverGlow} aria-hidden />
-                </div>
-              ) : null}
-
-              <div className={styles.todayPlaque}>
-                <span className={styles.todayEyebrow}>{t('journey.view.latestListen')}</span>
-                <p className={styles.todayArtist}>{arc.lastTrack.artist}</p>
-                <p className={styles.todayTrack} title={arc.lastTrack.title}>
-                  {displayTrackTitle(arc.lastTrack.title)}
-                </p>
-                {arc.lastTrack.playedAt ? (
-                  <span className={styles.todayStamp}>{formatPlayedAt(arc.lastTrack.playedAt)}</span>
-                ) : null}
-              </div>
-            </div>
-
-            {carSessionsNode && (
-              <div className={styles.carBentoContainer}>
-                {carSessionsNode}
-              </div>
-            )}
-
+            {carSessionsNode ? <div className={styles.carBentoContainer}>{carSessionsNode}</div> : null}
             <JourneyFinale
               closing={closing}
-              startYear={journeyStartYear}
-              endYear={journeyEndYear}
+              startYear={ilkYil ?? undefined}
+              endYear={sonYil ?? undefined}
               onRestart={() => handleScrollToId('hero')}
             />
           </div>

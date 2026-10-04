@@ -138,12 +138,21 @@ export async function kuratorNotunuKaydet(
   supabase: SupabaseClient,
   userId: string,
   moodKey: string,
-  not: string | null,
+  not: { tr?: string; en?: string } | null,
   trackIds: string[] = [],
 ): Promise<void> {
   try {
-    if (not) {
-      await notuYaz(supabase, userId, 'liner_note', moodKey, { note: not }, ozet(trackIds), 'mood-v3-not')
+    if (not && (not.tr || not.en)) {
+      // İki dil (2026-10-04): arayüz seçili dili gösterir. `note` = Türkçe (eski okuyucularla uyum).
+      await notuYaz(
+        supabase,
+        userId,
+        'liner_note',
+        moodKey,
+        { ...(not.tr ? { note: not.tr } : {}), ...(not.en ? { note_en: not.en } : {}) },
+        ozet(trackIds),
+        'mood-v4-not-iki-dil',
+      )
       return
     }
     await notuSil(supabase, userId, 'liner_note', moodKey)

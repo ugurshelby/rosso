@@ -94,7 +94,7 @@ export async function POST(req: NextRequest, { params }: RouteParams): Promise<N
 
   let snapshotId: string
   try {
-    const resp = await fetchWithRetry(`https://api.spotify.com/v1/playlists/${row.platform_id}/tracks`, {
+    const resp = await fetchWithRetry(`https://api.spotify.com/v1/playlists/${row.platform_id}/items`, {
       method: 'PUT',
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({

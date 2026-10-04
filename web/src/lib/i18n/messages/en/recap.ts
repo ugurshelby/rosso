@@ -77,6 +77,9 @@ export const recap = {
     month: 'Monthly',
     year: 'Yearly',
     alltime: 'All time',
+    lastWeek: 'Last 7 days',
+    lastMonth: 'Last month',
+    lastYear: 'Last 12 months',
     alltimeSubLabel: 'From the beginning to now',
   },
 } as const

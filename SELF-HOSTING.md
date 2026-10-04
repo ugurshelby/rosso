@@ -60,7 +60,7 @@ Everything else is optional (see comments in `.env.example`).
 npm run kur
 ```
 
-This applies the whole schema (67 tables, RLS, functions, storage buckets, the sign-up gate), stores `app_url` and `cron_secret` in Supabase Vault, and schedules the background jobs with `pg_cron` (Spotify sync, recap refresh, mood playlists, catalog upkeep, log cleanup). It refuses to run on a database that already has Rosso, so it is safe to re-run after a failure on a fresh project.
+This applies the whole schema (69 tables, RLS, functions, storage buckets, the sign-up gate), stores `app_url` and `cron_secret` in Supabase Vault, and schedules the background jobs with `pg_cron` (Spotify sync, recap refresh, mood playlists, catalog upkeep, log cleanup). It refuses to run on a database that already has Rosso, so it is safe to re-run after a failure on a fresh project.
 
 > If the connection fails, make sure you used the **Session pooler** string, not "Direct connection" (IPv6-only). Some corporate networks block Postgres ports — try from home or a phone hotspot.
 

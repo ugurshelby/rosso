@@ -7,7 +7,7 @@ import { moodByKey, getMoodPackage, getMoodWorkspace, getMoodEtiketleri } from '
 import { getKuratorNotu } from '@/lib/analytics/editorial-read'
 import { MoodWorkspace } from '@/components/mood/mood-workspace'
 import { MoodHero } from '@/components/mood/mood-hero'
-import { getT } from '@/lib/i18n/server'
+import { getLocale, getT } from '@/lib/i18n/server'
 import playlistDetailStyles from '@/components/playlists/playlist-detail.module.css'
 import styles from '@/components/mood/mood.module.css'
 
@@ -48,7 +48,7 @@ export default async function MoodDetailPage({ params }: PageProps) {
     getMoodPackage(user.id, mood.key),
     getMoodWorkspace(mood.key),
     // Liner Notes (AI, opsiyonel): yoksa null → sayfa notsuz, eksiksiz.
-    getKuratorNotu(user.id, mood.key),
+    getLocale().then((l) => getKuratorNotu(user.id, mood.key, l === 'en' ? 'en' : 'tr')),
     // Uygunluk etiketleri (migration 0338): yoksa boş → etiketsiz liste.
     getMoodEtiketleri(mood.key),
     getT(),

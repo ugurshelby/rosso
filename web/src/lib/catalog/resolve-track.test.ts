@@ -20,10 +20,14 @@ type Durum = {
   alias: Record<string, string>
   inserts: unknown[]
   aliasUpserts: unknown[]
+  /** kanonik_sarki_bul (0360): başlık → kanonik id. */
+  anahtar?: Record<string, string>
 }
 
 function sahteSupabase(d: Durum) {
   return {
+    rpc: (_fn: string, args: { p_title: string }) =>
+      Promise.resolve({ data: d.anahtar?.[args.p_title] ?? null, error: null }),
     from: (table: string) => {
       if (table === 'track_spotify_alias') {
         return {
@@ -66,6 +70,21 @@ function sahteSupabase(d: Durum) {
 function durum(over: Partial<Durum> = {}): Durum {
   return { tracksBySpotify: {}, tracksByIsrc: {}, alias: {}, inserts: [], aliasUpserts: [], ...over }
 }
+
+describe('resolveOrCreateTrackByIdentity — anahtar (0360)', () => {
+  it("ISRC'siz gelen single/albüm varyantı anahtarla kanoniğe bağlanır ve alias yazılır", async () => {
+    const d = durum({ anahtar: { 'Lose My Mind (feat. Doja Cat) [From F1® The Movie]': 'A_uuid' } })
+    const id = await resolveOrCreateTrackByIdentity(sahteSupabase(d), {
+      spotifyId: 'YENI_SP',
+      title: 'Lose My Mind (feat. Doja Cat) [From F1® The Movie]',
+      artists: ['Don Toliver'],
+      durationMs: 209000,
+    })
+    expect(id).toBe('A_uuid')
+    expect(d.inserts).toHaveLength(0)
+    expect(d.aliasUpserts).toEqual([{ spotify_id: 'YENI_SP', track_id: 'A_uuid', kaynak: 'anahtar' }])
+  })
+})
 
 describe('resolveOrCreateTrackByIdentity — alias (0335)', () => {
   it('birleştirilmiş eski ID kanonik şarkıya çözülür, yeni satır AÇILMAZ', async () => {

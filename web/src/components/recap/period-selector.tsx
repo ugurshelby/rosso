@@ -3,7 +3,7 @@
 import { useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { SegmentedControl } from '@/components/ui/segmented-control'
-import type { Period } from '@/lib/analytics/engine'
+import { getDateRange, type Period } from '@/lib/analytics/period'
 import { useT } from '@/lib/i18n/provider'
 import styles from '@/app/(dashboard)/recap/recap.module.css'
 
@@ -29,7 +29,7 @@ export function PeriodSelector({
   periods = ALL_PERIODS,
 }: PeriodSelectorProps) {
   const router = useRouter()
-  const { t } = useT()
+  const { t, locale } = useT()
 
   const PERIOD_LABELS: Record<Period, string> = {
     week: t('recap.periodSelector.week'),
@@ -38,28 +38,26 @@ export function PeriodSelector({
     alltime: t('recap.periodSelector.alltime'),
   }
 
+  // Dönemler TAKVİM değil KAYAN penceredir (engine.getDateRange): "Aylık" = bugünden
+  // geriye 1 ay. Eskiden alt etikette "October 2026" / "2026" yazıyordu — takvim ayı
+  // sanılıyordu (2026-10-04 Sahip bulgusu). Etiket artık aralığı ve kapsamı söyler,
+  // seçili dilde.
   function getPeriodSubLabel(period: Period): string | null {
-    const now = new Date()
-    if (period === 'month') {
-      return now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-    }
-    if (period === 'year') {
-      return String(now.getFullYear())
-    }
-    if (period === 'week') {
-      const from = new Date(now)
-      from.setDate(from.getDate() - 7)
-      const fromStr = from.toLocaleDateString('en-US', { day: 'numeric', month: 'short' })
-      const toStr = now.toLocaleDateString('en-US', { day: 'numeric', month: 'short' })
-      return `${fromStr} – ${toStr}`
-    }
-    // `alltime` eskiden null dönüyordu: diğer üç sekmede tarih yazarken bu sekme
-    // seçilince alan tamamen boşalıyor, şerit "eksik" görünüyordu (2026-08-14
-    // kullanıcı testi, Ş-12). Kapsamı söyleyen sabit bir etiket veriliyor.
-    if (period === 'alltime') {
-      return t('recap.periodSelector.alltimeSubLabel')
-    }
-    return null
+    if (period === 'alltime') return t('recap.periodSelector.alltimeSubLabel')
+    const { from, to } = getDateRange(period)
+    if (!from) return null
+    const dil = locale === 'tr' ? 'tr-TR' : 'en-US'
+    const gunAy: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' }
+    const ayYil: Intl.DateTimeFormatOptions = { month: 'short', year: 'numeric' }
+    const bicim = period === 'year' ? ayYil : gunAy
+    const aralik = `${from.toLocaleDateString(dil, bicim)} – ${to.toLocaleDateString(dil, bicim)}`
+    const kapsam =
+      period === 'week'
+        ? t('recap.periodSelector.lastWeek')
+        : period === 'month'
+          ? t('recap.periodSelector.lastMonth')
+          : t('recap.periodSelector.lastYear')
+    return `${kapsam} · ${aralik}`
   }
 
   const subLabel = getPeriodSubLabel(value)

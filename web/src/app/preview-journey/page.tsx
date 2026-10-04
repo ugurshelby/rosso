@@ -1,5 +1,6 @@
 import { JourneyView } from '@/components/journey/journey-view'
-import type { JourneyArc, JourneyYear, JourneyCover } from '@/lib/journey/types'
+import type { JourneyYear, JourneyCover } from '@/lib/journey/types'
+import type { JourneyEslikcileri } from '@/lib/journey/eslikciler'
 
 export const metadata = {
   title: 'Journey Visual Preview | Rosso',
@@ -381,45 +382,33 @@ const mockCovers: Record<number, JourneyCover[]> = {
   2024: makeCovers(2024),
 }
 
-const mockArc: JourneyArc = {
-  firstTrack: {
-    title: 'Midnight City',
-    artist: 'M83',
-    imageUrl: null,
-    playedAt: '2021-02-14T21:40:00Z',
-    trackId: 'first-1',
-  },
-  lastTrack: {
-    title: 'The Less I Know The Better',
-    artist: 'Tame Impala',
-    imageUrl: null,
-    playedAt: '2024-12-31T23:55:00Z',
-    trackId: 'last-1',
-  },
-  eras: [
-    {
-      label: 'Golden Exploration',
-      startYear: 2021,
-      endYear: 2022,
-      title: 'Neon Odyssey',
-      obsession: { title: 'Starboy', artist: 'The Weeknd', plays: 188 },
-    },
-    {
-      label: 'Deep Frequency',
-      startYear: 2023,
-      endYear: 2024,
-      title: 'Atmospheric Radiance',
-      obsession: { title: 'Resonance', artist: 'HOME', plays: 245 },
-    },
-  ],
-  car: {
-    sessions: 420,
-    hours: 184,
-  },
-  biggestShift: {
-    from: 'Synthwave',
-    to: 'Psychedelic Rock',
-    year: '2023',
+/** Önizleme eşlikçileri: kapaklardan türetilir (ay akışı dahil) — gerçek paketle aynı biçim. */
+const mockEslikci: JourneyEslikcileri = {
+  years: mockYears.map((y) => {
+    const covers = mockCovers[y.year] ?? []
+    const tracks = covers.slice(0, 5).map((c) => ({ ...c, album: null }))
+    return {
+      year: y.year,
+      plays: y.playCount,
+      minutes: y.totalMinutes,
+      activeMonths: 12,
+      topArtists: covers.slice(0, 5).map((c) => ({ name: c.artist, plays: c.plays, imageUrl: c.imageUrl })),
+      topAlbums: covers.slice(0, 3).map((c) => ({ album: c.title, artist: c.artist, plays: c.plays, imageUrl: c.imageUrl })),
+      topTracks: tracks,
+      months: Array.from({ length: 12 }, (_, i) => {
+        const c = covers[Math.floor(i / 3) % Math.max(covers.length, 1)]!
+        return { month: i + 1, plays: 120 + i * 7, track: { ...c, album: null } }
+      }),
+      yogunAy: tracks[0] ? { ...tracks[0], month: 3 } : null,
+    }
+  }),
+  lifetime: {
+    artists: [
+      { name: 'The Weeknd', plays: 2140, imageUrl: null, firstYear: 2020, lastYear: 2024, yearsActive: 5 },
+      { name: 'Tame Impala', plays: 1310, imageUrl: null, firstYear: 2021, lastYear: 2024, yearsActive: 4 },
+      { name: 'Kavinsky', plays: 640, imageUrl: null, firstYear: 2020, lastYear: 2023, yearsActive: 4 },
+    ],
+    enduring: (mockCovers[mockYears[0]!.year] ?? []).slice(0, 4).map((c) => ({ ...c, album: null, years: [2020, 2021, 2022] })),
   },
 }
 
@@ -427,13 +416,12 @@ export default function PreviewJourneyPage() {
   return (
     <main style={{ minHeight: '100vh', background: '#050508' }}>
       <JourneyView
-        arc={mockArc}
         years={mockYears}
         covers={mockCovers}
+        eslikci={mockEslikci}
         vibeCardId="neon-drifter"
         userId="preview-user"
         carSessionsNode={null}
-        hasL3={false}
       />
     </main>
   )

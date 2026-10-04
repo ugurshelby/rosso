@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { systemLog } from '@/lib/observability/logger'
 
 export * from './types'
+import { eslikcileriCoz, type JourneyEslikcileri } from './eslikciler'
 import {
   type JourneyArc,
   type JourneyYear,
@@ -622,5 +623,39 @@ function mapArc(p: Record<string, unknown>): JourneyArc | null {
         ? { from: shift.from, to: shift.to, year: shift.year ?? '' }
         : null,
     car,
+  }
+}
+
+/**
+ * Eşlikçiler paketi (migration 0362): yıl başına sanatçı/albüm/şarkı, aylık baskın
+ * şarkılar, en yoğun ay ve ömür boyu eşlikçiler. Paket yoksa/okunamazsa null —
+ * Journey yıl paketinin kapaklarıyla yine de çizilir.
+ */
+export async function getJourneyEslikcileri(userId: string): Promise<JourneyEslikcileri | null> {
+  try {
+    const supabase = await createClient()
+    const { data, error } = await (
+      supabase.from as unknown as (t: string) => {
+        select: (c: string) => {
+          eq: (c: string, v: unknown) => {
+            maybeSingle: () => Promise<{ data: { payload: unknown } | null; error: unknown }>
+          }
+        }
+      }
+    )('journey_eslikci_pkg')
+      .select('payload')
+      .eq('user_id', userId)
+      .maybeSingle()
+    if (error) throw error
+    return eslikcileriCoz(data?.payload)
+  } catch (err) {
+    void systemLog({
+      operation: 'journey_eslikci_pkg_read',
+      userId,
+      severity: 'warn',
+      errorCode: 'pkg_read_failed',
+      errorMessage: err instanceof Error ? err.message : String(err),
+    })
+    return null
   }
 }

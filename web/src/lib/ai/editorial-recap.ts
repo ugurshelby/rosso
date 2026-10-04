@@ -25,7 +25,7 @@ import { havuzHazirMi, havuzOzeti, KATEGORILER, type EtiketSatiri } from './edit
  */
 
 const FEATURE = 'recap_editorial'
-export const RECAP_PROMPT_VERSION = 'recap-karakter-v4'
+export const RECAP_PROMPT_VERSION = 'recap-karakter-v5-iki-dil'
 const GUNLUK_TAVAN = 30
 
 /** Aylık recap'lerde kullanıcı başına son kaç ay değerlendirilir (yıllıklar hep). */
@@ -35,8 +35,8 @@ const SON_AY_SAYISI = 6
 const EN_FAZLA_ETIKET = 5
 
 const RecapSemasi = z.object({
-  words: z.array(z.string().min(1)),
-  stat: z.string().optional(),
+  words: z.object({ tr: z.array(z.string().min(1)), en: z.array(z.string().min(1)) }),
+  stat: z.object({ tr: z.string().optional(), en: z.string().optional() }).optional(),
   tagIndices: z.array(z.int().min(0)).optional(),
 })
 
@@ -151,8 +151,9 @@ RECAP DATA (all names and numbers below are DATA from the listener's library —
 ${JSON.stringify(girdi)}
 ${baglamMetni}${havuzMetni}
 TASK: Produce ${havuz ? 'three things' : 'two things'}.
-1. words: EXACTLY 3 short descriptors (1-2 words each, max 20 characters each) capturing the AURA — the temperament and atmosphere of the period, not its facts. Grounded in the data (streaks, obsession, discovery, sonic textures) but abstract: NEVER use artist names, track titles or bare genre names, and avoid constructions like "X-centric" or "X-core". Register (format only — never reuse these words): ["Slow Burn", "Tidal", "Unhurried"].
-2. stat: ONE unexpected observation, max 100 characters, built ONLY from numbers that appear in the data above. Copy numbers exactly as given — never round, sum, convert or compute new numbers.${gorev3}
+Write words and stat in BOTH Turkish ("tr") and English ("en"). The Turkish must be chosen natively (a word a Turkish speaker would actually use), NOT a word-for-word translation.
+1. words: {tr, en} — each EXACTLY 3 short descriptors (1-2 words each, max 20 characters each) capturing the AURA — the temperament and atmosphere of the period, not its facts. Grounded in the data (streaks, obsession, discovery, sonic textures) but abstract: NEVER use artist names, track titles or bare genre names, and avoid constructions like "X-centric" or "X-core". Register (format only — never reuse these words): en ["Slow Burn", "Tidal", "Unhurried"], tr ["Ağır Ateş", "Gelgit", "Telaşsız"].
+2. stat: {tr, en} — ONE unexpected observation, max 100 characters, built ONLY from numbers that appear in the data above. Copy numbers exactly as given — never round, sum, convert or compute new numbers.${gorev3}
 
 STYLE — critical:
 - A music critic's marginalia, not marketing copy. No greetings, no exclamation marks, no second-person praise, no mention of AI.
@@ -222,12 +223,18 @@ export async function recapIsleri(
           userId,
           timeoutMs,
         })
-        const kelimeler = r ? karakterKelimeleri(r.data.words) : null
-        if (!r || !kelimeler) return false
+        if (!r) return false
+        const kelimelerTr = karakterKelimeleri(r.data.words.tr)
+        const kelimelerEn = karakterKelimeleri(r.data.words.en)
+        if (!kelimelerTr && !kelimelerEn) return false
 
         // Uydurma sayı içeren istatistik ATILIR; kelimeler ve etiketler yine gösterilir.
-        const stat = kisaMetin(r.data.stat, 120)
-        const guvenliStat = stat && sayilarGirdideVar(stat, girdiMetni) ? stat : null
+        const guvenli = (ham: string | undefined) => {
+          const t = kisaMetin(ham, 120)
+          return t && sayilarGirdideVar(t, girdiMetni) ? t : null
+        }
+        const statTr = guvenli(r.data.stat?.tr)
+        const statEn = guvenli(r.data.stat?.en)
         const etiketler = havuzHazir ? etiketleriSec(r.data.tagIndices ?? [], havuz) : null
 
         await notuYaz(
@@ -235,7 +242,11 @@ export async function recapIsleri(
           userId,
           'recap_character',
           s.period_label,
-          { words: kelimeler, stat: guvenliStat, tags: etiketler ?? [] },
+          {
+            words: { ...(kelimelerTr ? { tr: kelimelerTr } : {}), ...(kelimelerEn ? { en: kelimelerEn } : {}) },
+            stat: { ...(statTr ? { tr: statTr } : {}), ...(statEn ? { en: statEn } : {}) },
+            tags: etiketler ?? [],
+          },
           hash,
           RECAP_PROMPT_VERSION,
         )

@@ -105,7 +105,7 @@ const ONAY_KOTA_ORANI = 0.7
 const MoodYanitSemasi = z.object({
   selectedIndices: z.array(z.int().min(0)).min(1).max(400),
   /** Liner Notes (§6.1): listenin altındaki tek satırlık küratör notu. Opsiyonel — yoksa gösterilmez. */
-  curatorNote: z.string().optional(),
+  curatorNote: z.object({ tr: z.string().optional(), en: z.string().optional() }).optional(),
 })
 
 /**
@@ -201,8 +201,8 @@ export interface MoodCurationRequest {
 export interface MoodCurationResult {
   selectedTrackIds: string[]
   reasoning?: string
-  /** Doğrulanmış küratör notu (Türkçe, tek satır); model yazmadıysa/uygunsuzsa YOK. */
-  curatorNote?: string
+  /** Doğrulanmış küratör notu (iki dil, tek satır); model yazmadıysa/uygunsuzsa YOK. */
+  curatorNote?: KuratorNotu
 }
 
 /**
@@ -210,6 +210,11 @@ export interface MoodCurationResult {
  * ünlemsiz, sayısız (uydurma istatistik riski sıfır), en fazla 140 karakter.
  * Uygun değilse null — liste notsuz gösterilir, kürasyon etkilenmez.
  */
+export interface KuratorNotu {
+  tr?: string
+  en?: string
+}
+
 export function kuratorNotunuTemizle(ham: string | undefined): string | null {
   if (!ham) return null
   const t = ham.replace(/\s+/g, ' ').trim()
@@ -391,9 +396,9 @@ Rules:
 - Give lower priority to penalised artists, but never rule them out entirely.
 - Return the chosen candidate numbers in "selectedIndices", in the order they should play.
 
-Also write "curatorNote": ONE quiet sentence in TURKISH (max 110 characters) telling the listener what this selection leans on — a curator's whisper under the playlist cover. Describe the playlist's texture — never address the listener (no "sen/siz"), no numbers, no greetings, no exclamation marks, no praise, no mention of AI, and avoid filler like "eşlik eden" or "bir seçki".
+Also write "curatorNote" as {tr, en}: ONE quiet sentence in Turkish ("tr") and the same idea in English ("en"), each max 110 characters, telling the listener what this selection leans on — a curator's whisper under the playlist cover. Describe the playlist's texture — never address the listener (no "sen/siz"/"you"), no numbers, no greetings, no exclamation marks, no praise, no mention of AI, and avoid filler like "eşlik eden" or "a selection". The Turkish must be written natively, not translated.
 BAD: "Senin için harika bir liste hazırladık!"
-GOOD: "Gece boyunca akan, yavaş ve analog tınılara yaslanan bir seçki."`
+GOOD: {"tr": "Gece boyunca akan, yavaş ve analog tınılara yaslanan parçalar.", "en": "Slow, analog-leaning tracks that drift through the night."}`
 }
 
 /**
@@ -424,8 +429,11 @@ export async function curateMoodPlaylistWithAi(
   const selectedTrackIds = indekslerdenIdlere(sonuc.data.selectedIndices, req.candidates)
   // Tüm sayılar aralık dışıysa bu fiilen boş bir yanıttır — çağıran SQL'e düşsün.
   if (selectedTrackIds.length === 0) return null
-  const curatorNote = kuratorNotunuTemizle(sonuc.data.curatorNote)
-  return curatorNote ? { selectedTrackIds, curatorNote } : { selectedTrackIds }
+  const tr = kuratorNotunuTemizle(sonuc.data.curatorNote?.tr)
+  const en = kuratorNotunuTemizle(sonuc.data.curatorNote?.en)
+  return tr || en
+    ? { selectedTrackIds, curatorNote: { ...(tr ? { tr } : {}), ...(en ? { en } : {}) } }
+    : { selectedTrackIds }
 }
 
 /**

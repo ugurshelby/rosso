@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
 import Link from 'next/link'
 import { requireAuth } from '@/lib/auth'
-import { getT } from '@/lib/i18n/server'
+import { getLocale, getT } from '@/lib/i18n/server'
 import type { MessageKey } from '@/lib/i18n'
 import { gosterimKaynagi } from '@/lib/demo/read'
 import { LockedShell } from '@/components/phase/locked-shell'
@@ -184,7 +184,7 @@ export default async function TastePage() {
   const dominantGenreColor = getDominantGenreColor(genre)
   const vibeCardId = matchVibeCard(tasteProfile, veriKullanicisi)
   // Kişiye özel kimlik/vibe yorumları (Katman D, AI) — yoksa null, elle küratlı metinler çizilir.
-  const tasteYorumlari = await getTasteYorumlari(veriKullanicisi, vibeCardId)
+  const tasteYorumlari = await getTasteYorumlari(veriKullanicisi, vibeCardId, (await getLocale()) === 'en' ? 'en' : 'tr')
 
   const mainContent = (
     <>

@@ -283,7 +283,12 @@ def test_export_spotify_lookup_yapmaz(monkeypatch):
 
 import pytest
 
-from app.pipeline.export_runner import NEARBY_WINDOW_SECONDS, _epoch, drop_near_realtime
+from app.pipeline.export_runner import (
+    REALTIME_AFTER_SECONDS,
+    REALTIME_BEFORE_SECONDS,
+    _epoch,
+    drop_near_realtime,
+)
 
 
 def _row(track_id: str, played_at: str) -> dict:
@@ -304,13 +309,22 @@ def test_ayni_calma_milisaniye_farkiyla_atilir():
 
 
 def test_pencere_sinirinda_atilir_disinda_kalir():
+    # Canlı zaman ZIP ts'inden 0–60 sn SONRA düşer (ölçüldü 2026-10-04):
+    # ZIP satırı t için canlı ∈ [t − 20 sn, t + 70 sn] → aynı dinleme.
     base = _epoch("2026-07-02T10:18:00Z")
     rt = {"t1": [base]}
-    icinde = _row("t1", "2026-07-02T10:18:05Z")   # tam +5 sn
-    disinda = _row("t1", "2026-07-02T10:18:06Z")  # +6 sn
+    icinde = _row("t1", "2026-07-02T10:18:20Z")   # canlı, ZIP'ten tam 20 sn önce
+    disinda = _row("t1", "2026-07-02T10:18:21Z")  # 21 sn önce → ayrı dinleme
     kalan, atilan = drop_near_realtime([icinde, disinda], rt)
-    assert NEARBY_WINDOW_SECONDS == 5
+    assert REALTIME_BEFORE_SECONDS == 20 and REALTIME_AFTER_SECONDS == 70
     assert atilan == 1 and kalan == [disinda]
+
+
+def test_canli_zipten_60_sn_sonra_dusse_de_atilir():
+    rt = {"t1": [_epoch("2026-07-02T10:19:01Z")]}
+    satir = _row("t1", "2026-07-02T10:18:03Z")  # canlı 58 sn sonra
+    kalan, atilan = drop_near_realtime([satir], rt)
+    assert kalan == [] and atilan == 1
 
 
 def test_farkli_sarki_ayni_an_atilmaz():

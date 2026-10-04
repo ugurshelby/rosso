@@ -69,6 +69,9 @@ export const recap: Catalog['recap'] = {
     month: 'Aylık',
     year: 'Yıllık',
     alltime: 'Tüm zamanlar',
+    lastWeek: 'Son 7 gün',
+    lastMonth: 'Son 1 ay',
+    lastYear: 'Son 12 ay',
     alltimeSubLabel: 'Başlangıçtan bugüne',
   },
 }

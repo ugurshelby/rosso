@@ -7,4 +7,5 @@ SELECT cron.schedule('rosso-log-cleanup-cron', '0 5 * * 0', 'SELECT public.clean
 SELECT cron.schedule('rosso-mood-pkg-cron', '4-59/10 * * * *', 'SELECT public.invoke_cron_rota(''/api/cron/mood-pkg'');');
 SELECT cron.schedule('rosso-playlist-refresh-cron', '9-59/15 * * * *', 'SELECT public.invoke_cron_rota(''/api/cron/playlist-refresh'');');
 SELECT cron.schedule('rosso-recap-cron', '7,37 * * * *', 'SELECT public.invoke_cron_rota(''/api/cron/recap'');');
+SELECT cron.schedule('rosso-sarki-butunlugu-cron', '50 * * * *', 'SELECT public.sarki_butunlugu_bakimi();');
 SELECT cron.schedule('rosso-sync-spotify-cron', '0-59/5 * * * *', 'SELECT public.invoke_cron_rota(''/api/cron/sync-spotify'');');

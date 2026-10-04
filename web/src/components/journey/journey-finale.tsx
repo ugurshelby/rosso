@@ -31,7 +31,7 @@ export function JourneyFinale({ closing, startYear, endYear, onRestart }: Journe
   const reduced = usePrefersReducedMotion()
   const kokRef = useRef<HTMLDivElement>(null)
   const [gorundu, setGorundu] = useState(false)
-  const { t } = useT()
+  const { t, locale } = useT()
 
   useEffect(() => {
     const el = kokRef.current
@@ -54,16 +54,17 @@ export function JourneyFinale({ closing, startYear, endYear, onRestart }: Journe
     return () => io.disconnect()
   }, [reduced])
 
-  const metin = closing?.tr ?? null
+  // Seçili dildeki metin; o dilde yoksa sade kapanış (yanlış dilde metin gösterilmez).
+  const metin = closing?.[locale] ?? null
   const gorunur = reduced || gorundu
 
   return (
     <section className={styles.finale} aria-label={t('journey.finale.ariaLabel')}>
       <div className={styles.horizon} aria-hidden />
       <div className={styles.body}>
-        <span className={styles.eyebrow}>Yolculuk devam ediyor</span>
+        <span className={styles.eyebrow}>{t('journey.finale.eyebrow')}</span>
         {startYear && endYear && startYear !== endYear ? (
-          <span className={styles.span} aria-label={`${startYear} ile ${endYear} arası`}>
+          <span className={styles.span} aria-label={t('journey.finale.spanAriaLabel', { from: startYear, to: endYear })}>
             {startYear} <span aria-hidden>—</span> {endYear}
           </span>
         ) : null}
@@ -81,9 +82,9 @@ export function JourneyFinale({ closing, startYear, endYear, onRestart }: Journe
           </div>
         ) : (
           <p className={styles.fallbackLine}>
-            Every listen is a new line —
+            {t('journey.finale.fallbackLine1')}
             <br />
-            the story doesn’t end here.
+            {t('journey.finale.fallbackLine2')}
           </p>
         )}
 

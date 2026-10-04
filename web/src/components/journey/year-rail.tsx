@@ -2,6 +2,7 @@
 
 import { memo, useEffect, useState, useTransition } from 'react'
 import type { JourneyYear } from '@/lib/journey/types'
+import { useT } from '@/lib/i18n/provider'
 import styles from './year-rail.module.css'
 
 interface YearRailProps {
@@ -14,7 +15,8 @@ interface YearRailProps {
  * Cam kapsül, haptik titreşim ve 55Hz ses butonu kaldırılmıştır.
  */
 export const YearRail = memo(function YearRail({ years }: YearRailProps) {
-  const [activeId, setActiveId] = useState<string>('origin')
+  const { t } = useT()
+  const [activeId, setActiveId] = useState<string>('companions')
   const [, startTransition] = useTransition()
 
   useEffect(() => {
@@ -52,17 +54,17 @@ export const YearRail = memo(function YearRail({ years }: YearRailProps) {
   }
 
   const items = [
-    { id: 'origin', label: 'İlk Ses' },
+    { id: 'companions', label: t('journey.chapterRail.companionsLabel') },
     ...years.map((y) => ({ id: `year-${y.year}`, label: String(y.year) })),
-    { id: 'today', label: 'Bugün' },
+    { id: 'today', label: t('journey.chapterRail.todayLabel') },
   ]
 
-  const currentLabel = items.find((i) => i.id === activeId)?.label ?? 'Yolculuk'
+  const currentLabel = items.find((i) => i.id === activeId)?.label ?? t('journey.chapterRail.fallbackLabel')
 
   return (
     <>
       {/* Masaüstü: İnce dikey liste */}
-      <nav className={styles.desktopRail} aria-label="Yıl gezintisi">
+      <nav className={styles.desktopRail} aria-label={t('journey.chapterRail.navAriaLabel')}>
         {items.map((item) => {
           const isActive = activeId === item.id
           return (
@@ -81,10 +83,10 @@ export const YearRail = memo(function YearRail({ years }: YearRailProps) {
       </nav>
 
       {/* Mobil: Sticky minimal yıl göstergesi */}
-      <div className={styles.mobileRail} role="status" aria-label="Mevcut bölüm">
+      <div className={styles.mobileRail} role="status" aria-label={t('journey.chapterRail.currentAriaLabel')}>
         <span className={styles.mobileActiveLabel}>{currentLabel}</span>
         <select
-          aria-label="Yıla atla"
+          aria-label={t('journey.chapterRail.jumpAriaLabel')}
           className={styles.mobileYearSelect}
           value={activeId}
           onChange={(e) => scrollToId(e.target.value)}

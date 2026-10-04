@@ -8,6 +8,8 @@ import styles from './journey-artwork.module.css'
 
 export interface JourneyArtworkProps {
   id: string
+  /** Görsel yoksa nereden aransın: şarkı kapağı (varsayılan) ya da sanatçı görseli (id = sanatçı adı). */
+  kind?: 'track' | 'artist'
   src?: string | null
   size?: number
   priority?: boolean
@@ -26,6 +28,7 @@ export interface JourneyArtworkProps {
  */
 export const JourneyArtwork = memo(function JourneyArtwork({
   id,
+  kind = 'track',
   src,
   size = 640,
   priority = false,
@@ -47,7 +50,7 @@ export const JourneyArtwork = memo(function JourneyArtwork({
       aria-label={alt}
     >
       <CoverArt
-        kind="track"
+        kind={kind}
         id={id}
         src={resolvedSrc}
         size={size}

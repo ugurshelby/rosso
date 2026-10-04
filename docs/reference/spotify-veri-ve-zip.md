@@ -1951,3 +1951,22 @@ Explicit:           %18,0 · Popularity: 0,57
 Dinleme yaşı (Sp):  41 (2000'ler early) — Rosso metaforu farklı olacak
 Multilinguist:      6,45
 ```
+
+---
+
+## Şarkı kimliği ve çift dinleme — 2026-10-04 (migration 0360/0361)
+
+**Ölçüldü (sahip hesabı, 148.160 çalma):**
+
+| Sorun | Ölçüm | Kural (DB, tek yer) |
+|---|---|---|
+| Aynı kayıt farklı kimlikle (single/albüm, "Remastered", "[From …]", "(feat. …)") | katalogda 490 kopya çifti, 417 birleşti | `sarki_baslik_anahtari` + `sarki_sanatci_anahtari` + süre ±3 sn → `kopya_sarkilari_birlestir` (en çok çalınan kanonik). Akustik/Live/Remix/Sped up/V1-V2 AYRI kalır. |
+| Account Data (`StreamingHistory_*.json`, dakika hassasiyeti, reason/country/shuffle yok) ↔ Extended History aynı dinlemeyi iki kez yazdı | 15.866 çift | aynı şarkı + aynı `ms_played` (±1 sn) + zaman farkı [−5, +65 sn] → Account Data satırı arşive |
+| Canlı senkron ↔ ZIP: canlı `played_at` ZIP'ten 0–60 sn SONRA düşer (60 sn'de keskin kesim) | 3.264 çift | aynı şarkı + ZIP zamanı ∈ [canlı − 70 sn, canlı + 20 sn] → canlı satır arşive |
+
+- Silinen satırlar **`play_events_cift_arsiv`**'e taşınır (geri alınabilir; hesap silinince CASCADE).
+- Saatlik `rosso-sarki-butunlugu-cron` (`sarki_butunlugu_bakimi()`): son 26 saatte gelen kopyaları birleştirir + çiftleri temizler. Worker ZIP işleminin sonunda da iki RPC'yi hemen çağırır.
+- Canlı yol (`resolve-track.ts`): spotify_id → alias → ISRC → **anahtar** (`kanonik_sarki_bul`) → yeni satır. Canlı ↔ ZIP çakışma penceresi kodda da [−70, +20 sn] (`CANLI_ZIP_ONCE_MS/SONRA_MS`; worker `REALTIME_BEFORE/AFTER_SECONDS`).
+
+**Spotify playlist uçları:** `/v1/playlists/{id}/tracks` KAPALI (403). Okuma/ekleme/çıkarma/sıra/değiştirme hepsi **`/items`**. 2026-10-04'te mood haftalık senkronu, sıralama, playlist değiştirme ve mood'dan çıkarma `/items`'a taşındı.
+

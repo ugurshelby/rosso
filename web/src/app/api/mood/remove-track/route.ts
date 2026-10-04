@@ -91,11 +91,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ success: true, spotifySynced: false, warning: 'no_spotify_token' })
   }
 
-  const resp = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
+  const resp = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/items`, {
     method: 'DELETE',
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      // Spotify DELETE /playlists/{id}/tracks: "items" alanı bekler
+      // Spotify DELETE /playlists/{id}/items (eski /tracks ucu kapandı): "items" alanı bekler
       // ("tracks" deprecated endpoint şemasına ait — playlists/[id]/tracks
       // route'undaki 2026-07-02 doğrulamasıyla aynı).
       items: [{ uri: `spotify:track:${spotifyTrackId}` }],

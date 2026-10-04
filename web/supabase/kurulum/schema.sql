@@ -1,10 +1,11 @@
 -- Rosso — tam veritabanı şeması (public + gerekli storage/cron tanımları)
 --
--- Üretim: canlı Rosso veritabanından (pg_catalog) 2026-09-29'da türetildi; 358 migration'ın son hâlidir.
--- Boş bir Supabase projesine TEK SEFERDE uygulanır (bkz. SELF-HOSTING.md — `node scripts/kur.mjs`).
+-- Üretim: canlı Rosso veritabanından (pg_catalog) türetildi; migration geçmişinin son hâlidir
+-- (son: 0362 — şarkı bütünlüğü, çift dinleme arşivi, Journey eşlikçiler paketi).
+-- Boş bir Supabase projesine TEK SEFERDE uygulanır (bkz. SELF-HOSTING.md — `npm run kur`).
 --
 -- NOT: Sosyal katman (takip/mesaj/keşfet) bilerek YOKTUR — ürün kişisel Rosso'dur.
--- Cron tanımları bu dosyada DEĞİL, supabase/cron.sql.tmpl içindedir (kurulum betiği doldurur).
+-- Cron tanımları bu dosyada DEĞİL, cron.sql içindedir (kurulum betiği uygular).
 
 SET statement_timeout = 0;
 SET check_function_bodies = off;
@@ -238,6 +239,12 @@ CREATE TABLE public.journey_arc (
   generated_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
+CREATE TABLE public.journey_eslikci_pkg (
+  user_id uuid NOT NULL,
+  payload jsonb NOT NULL,
+  generated_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
 CREATE TABLE public.journey_ritual_answers (
   user_id uuid NOT NULL,
   question_key text NOT NULL,
@@ -443,6 +450,25 @@ CREATE TABLE public.play_events (
   skipped boolean DEFAULT false,
   offline boolean DEFAULT false,
   incognito_mode boolean DEFAULT false
+);
+
+CREATE TABLE public.play_events_cift_arsiv (
+  id uuid DEFAULT uuid_generate_v4() NOT NULL,
+  played_at timestamp with time zone NOT NULL,
+  user_id uuid NOT NULL,
+  track_id uuid NOT NULL,
+  platform text DEFAULT 'spotify'::text NOT NULL,
+  source text DEFAULT 'spotify_export'::text NOT NULL,
+  ms_played integer NOT NULL,
+  conn_country text,
+  reason_start text,
+  reason_end text,
+  shuffle boolean,
+  skipped boolean DEFAULT false,
+  offline boolean DEFAULT false,
+  incognito_mode boolean DEFAULT false,
+  arsivlendi_at timestamp with time zone DEFAULT now() NOT NULL,
+  sebep text DEFAULT 'bilinmiyor'::text NOT NULL
 );
 
 CREATE TABLE public.playlist_track_events (
@@ -891,6 +917,8 @@ ALTER TABLE ONLY public.izinli_eposta ADD CONSTRAINT izinli_eposta_pkey PRIMARY 
 
 ALTER TABLE ONLY public.journey_arc ADD CONSTRAINT journey_arc_pkey PRIMARY KEY (user_id);
 
+ALTER TABLE ONLY public.journey_eslikci_pkg ADD CONSTRAINT journey_eslikci_pkg_pkey PRIMARY KEY (user_id);
+
 ALTER TABLE ONLY public.journey_ritual_answers ADD CONSTRAINT journey_ritual_answers_pkey PRIMARY KEY (user_id, question_key, year);
 
 ALTER TABLE ONLY public.journey_ritual_answers ADD CONSTRAINT journey_ritual_answers_question_key_check CHECK ((question_key = ANY (ARRAY['career_peak'::text, 'lost_year'::text, 'found_year'::text, 'love_year'::text, 'inward_year'::text])));
@@ -971,7 +999,7 @@ ALTER TABLE ONLY public.pipeline_runs ADD CONSTRAINT pipeline_runs_outcome_check
 
 ALTER TABLE ONLY public.pipeline_runs ADD CONSTRAINT pipeline_runs_pkey PRIMARY KEY (id);
 
-ALTER TABLE ONLY public.pipeline_runs ADD CONSTRAINT pipeline_runs_run_type_check CHECK ((run_type = ANY (ARRAY['export'::text, 'enrichment'::text, 'spotify_recently_played'::text, 'playlist_refresh'::text, 'nightly_sync'::text, 'ytmusic_liked'::text, 'ytmusic_history'::text, 'taste_refresh'::text, 'recap_refresh'::text, 'auto_playlist'::text, 'catalog_backfill'::text, 'migration_queue'::text, 'match_batch'::text, 'isrc_backfill'::text, 'cover_backfill'::text, 'account_purge'::text, 'artist_image_backfill'::text, 'journey_pkg'::text, 'taste_pkg'::text, 'pattern_pkg'::text, 'stats_pkg'::text, 'period_pkg'::text, 'mood_pkg'::text, 'playlist_reco_pkg'::text, 'log_cleanup'::text, 'deezer_cover_backfill'::text])));
+ALTER TABLE ONLY public.pipeline_runs ADD CONSTRAINT pipeline_runs_run_type_check CHECK ((run_type = ANY (ARRAY['export'::text, 'enrichment'::text, 'spotify_recently_played'::text, 'playlist_refresh'::text, 'nightly_sync'::text, 'ytmusic_liked'::text, 'ytmusic_history'::text, 'taste_refresh'::text, 'recap_refresh'::text, 'auto_playlist'::text, 'catalog_backfill'::text, 'migration_queue'::text, 'match_batch'::text, 'isrc_backfill'::text, 'cover_backfill'::text, 'account_purge'::text, 'artist_image_backfill'::text, 'journey_pkg'::text, 'taste_pkg'::text, 'pattern_pkg'::text, 'stats_pkg'::text, 'period_pkg'::text, 'mood_pkg'::text, 'playlist_reco_pkg'::text, 'log_cleanup'::text, 'deezer_cover_backfill'::text, 'sarki_butunlugu'::text, 'sarki_butunlugu_ilk'::text])));
 
 ALTER TABLE ONLY public.platform_connections ADD CONSTRAINT platform_connections_pkey PRIMARY KEY (id);
 
@@ -1984,6 +2012,163 @@ end;
 $function$
 ;
 
+CREATE OR REPLACE FUNCTION public.build_journey_eslikci_pkg(p_user_id uuid)
+ RETURNS void
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+  v_payload jsonb;
+BEGIN
+  IF p_user_id IS DISTINCT FROM auth.uid() AND auth.role() IS DISTINCT FROM 'service_role' THEN
+    RAISE EXCEPTION 'forbidden';
+  END IF;
+
+  CREATE TEMP TABLE IF NOT EXISTS _je_pt (
+    y int, m int, track_id uuid, title text, artist text, album text, img text, ms int
+  ) ON COMMIT DROP;
+  TRUNCATE _je_pt;
+
+  INSERT INTO _je_pt
+  SELECT extract(year FROM p.played_at)::int,
+         extract(month FROM p.played_at)::int,
+         p.track_id, t.title, coalesce(t.artists[1], ''), t.album,
+         coalesce(t.image_url, t.deezer_image_url),
+         p.ms_played
+  FROM public.play_events p
+  JOIN public.tracks t ON t.id = p.track_id
+  WHERE p.user_id = p_user_id
+    AND p.ms_played >= 30000
+    AND t.title <> 'Unknown Track';
+
+  WITH
+  yt AS (
+    SELECT y, track_id, title, artist, album, img, count(*) AS n,
+           row_number() OVER (PARTITION BY y ORDER BY count(*) DESC, title) AS r
+    FROM _je_pt GROUP BY y, track_id, title, artist, album, img
+  ),
+  ya AS (
+    SELECT y, artist, count(*) AS n, round(sum(ms) / 60000.0)::int AS dk,
+           row_number() OVER (PARTITION BY y ORDER BY count(*) DESC, artist) AS r
+    FROM _je_pt WHERE artist <> '' GROUP BY y, artist
+  ),
+  ya_img AS (  -- sanatçının o yılki en çok çalınan şarkısının kapağı (yedek görsel)
+    SELECT DISTINCT ON (y, artist) y, artist, img
+    FROM yt WHERE img IS NOT NULL ORDER BY y, artist, n DESC
+  ),
+  yal AS (
+    SELECT y, album, artist, count(*) AS n,
+           row_number() OVER (PARTITION BY y ORDER BY count(*) DESC, album) AS r
+    FROM _je_pt WHERE album IS NOT NULL AND album <> '' GROUP BY y, album, artist
+  ),
+  yal_img AS (
+    SELECT DISTINCT ON (y, album, artist) y, album, artist, img
+    FROM yt WHERE img IS NOT NULL AND album IS NOT NULL ORDER BY y, album, artist, n DESC
+  ),
+  ym_toplam AS (SELECT y, m, count(*) AS n FROM _je_pt GROUP BY y, m),
+  ym AS (
+    SELECT y, m, track_id, title, artist, img, count(*) AS n,
+           row_number() OVER (PARTITION BY y, m ORDER BY count(*) DESC, title) AS r
+    FROM _je_pt GROUP BY y, m, track_id, title, artist, img
+  ),
+  yogun AS (
+    SELECT DISTINCT ON (y) y, m, track_id, title, artist, img, n
+    FROM ym ORDER BY y, n DESC, m
+  ),
+  yil AS (
+    SELECT y, count(*) AS n, round(sum(ms) / 60000.0)::int AS dk, count(DISTINCT m) AS aylar
+    FROM _je_pt GROUP BY y
+  ),
+  yillar AS (
+    SELECT yil.y,
+      jsonb_build_object(
+        'year', yil.y,
+        'plays', yil.n,
+        'minutes', yil.dk,
+        'active_months', yil.aylar,
+        'top_artists', coalesce((
+          SELECT jsonb_agg(jsonb_build_object(
+                   'name', ya.artist, 'plays', ya.n, 'minutes', ya.dk,
+                   'image_url', coalesce(
+                     (SELECT coalesce(a.image_url, a.deezer_image_url) FROM public.artists a
+                       WHERE a.name_normalized = lower(ya.artist) LIMIT 1),
+                     (SELECT i.img FROM ya_img i WHERE i.y = ya.y AND i.artist = ya.artist))
+                 ) ORDER BY ya.r)
+          FROM ya WHERE ya.y = yil.y AND ya.r <= 5), '[]'::jsonb),
+        'top_albums', coalesce((
+          SELECT jsonb_agg(jsonb_build_object(
+                   'album', yal.album, 'artist', yal.artist, 'plays', yal.n,
+                   'image_url', (SELECT i.img FROM yal_img i WHERE i.y = yal.y AND i.album = yal.album AND i.artist = yal.artist)
+                 ) ORDER BY yal.r)
+          FROM yal WHERE yal.y = yil.y AND yal.r <= 3), '[]'::jsonb),
+        'top_tracks', coalesce((
+          SELECT jsonb_agg(jsonb_build_object(
+                   'track_id', yt.track_id, 'title', yt.title, 'artist', yt.artist,
+                   'album', yt.album, 'image_url', yt.img, 'plays', yt.n
+                 ) ORDER BY yt.r)
+          FROM yt WHERE yt.y = yil.y AND yt.r <= 5), '[]'::jsonb),
+        'months', coalesce((
+          SELECT jsonb_agg(jsonb_build_object(
+                   'month', t.m, 'plays', t.n,
+                   'track_id', ym.track_id, 'title', ym.title, 'artist', ym.artist,
+                   'image_url', ym.img, 'track_plays', ym.n
+                 ) ORDER BY t.m)
+          FROM ym_toplam t JOIN ym ON ym.y = t.y AND ym.m = t.m AND ym.r = 1
+          WHERE t.y = yil.y), '[]'::jsonb),
+        'yogun_ay', (
+          SELECT jsonb_build_object('month', g.m, 'track_id', g.track_id, 'title', g.title,
+                                    'artist', g.artist, 'image_url', g.img, 'plays', g.n)
+          FROM yogun g WHERE g.y = yil.y)
+      ) AS yj
+    FROM yil
+  ),
+  la AS (
+    SELECT artist, count(*) AS n, min(y) AS ilk, max(y) AS son, count(DISTINCT y) AS yil_sayisi,
+           row_number() OVER (ORDER BY count(*) DESC, artist) AS r
+    FROM _je_pt WHERE artist <> '' GROUP BY artist
+  ),
+  lt AS (
+    SELECT track_id, title, artist, img, count(*) AS n, count(DISTINCT y) AS yil_sayisi,
+           array_agg(DISTINCT y ORDER BY y) AS yillar
+    FROM _je_pt GROUP BY track_id, title, artist, img
+  ),
+  la_img AS (
+    SELECT DISTINCT ON (artist) artist, img FROM lt WHERE img IS NOT NULL ORDER BY artist, n DESC
+  )
+  SELECT jsonb_build_object(
+    'years', coalesce((SELECT jsonb_agg(yj ORDER BY y) FROM yillar), '[]'::jsonb),
+    'lifetime', jsonb_build_object(
+      'artists', coalesce((
+        SELECT jsonb_agg(jsonb_build_object(
+                 'name', la.artist, 'plays', la.n, 'first_year', la.ilk, 'last_year', la.son,
+                 'years_active', la.yil_sayisi,
+                 'image_url', coalesce(
+                   (SELECT coalesce(a.image_url, a.deezer_image_url) FROM public.artists a
+                     WHERE a.name_normalized = lower(la.artist) LIMIT 1),
+                   (SELECT i.img FROM la_img i WHERE i.artist = la.artist))
+               ) ORDER BY la.r)
+        FROM la WHERE la.r <= 5), '[]'::jsonb),
+      'enduring', coalesce((
+        SELECT jsonb_agg(e.j ORDER BY e.yil_sayisi DESC, e.n DESC)
+        FROM (
+          SELECT lt.yil_sayisi, lt.n,
+                 jsonb_build_object('track_id', lt.track_id, 'title', lt.title, 'artist', lt.artist,
+                                    'image_url', lt.img, 'plays', lt.n, 'years', to_jsonb(lt.yillar)) AS j
+          FROM lt WHERE lt.yil_sayisi >= 3
+          ORDER BY lt.yil_sayisi DESC, lt.n DESC
+          LIMIT 6
+        ) e), '[]'::jsonb)
+    )
+  ) INTO v_payload;
+
+  INSERT INTO public.journey_eslikci_pkg (user_id, payload, generated_at)
+  VALUES (p_user_id, v_payload, now())
+  ON CONFLICT (user_id) DO UPDATE SET payload = EXCLUDED.payload, generated_at = EXCLUDED.generated_at;
+END;
+$function$
+;
+
 CREATE OR REPLACE FUNCTION public.build_journey_year_pkg(p_user_id uuid, p_covers integer DEFAULT 20)
  RETURNS integer
  LANGUAGE plpgsql
@@ -2590,6 +2775,75 @@ AS $function$
     WHEN p_item_type = 'artist' THEN 'name:artist:' || regexp_replace(lower(btrim(p_key)), '\s+', ' ', 'g')
     ELSE NULL
   END;
+$function$
+;
+
+CREATE OR REPLACE FUNCTION public.cift_dinlemeleri_temizle(p_user uuid DEFAULT NULL::uuid)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+  v_ad    integer;
+  v_canli integer;
+BEGIN
+  CREATE TEMP TABLE IF NOT EXISTS _cift_sil (id uuid PRIMARY KEY, sebep text) ON COMMIT DROP;
+  TRUNCATE _cift_sil;
+
+  INSERT INTO _cift_sil (id, sebep)
+  SELECT ad.id, 'account_data_extended_cakismasi'
+  FROM public.play_events ad
+  JOIN public.tracks ta ON ta.id = ad.track_id
+  WHERE ad.source = 'spotify_export'
+    AND ad.reason_end IS NULL AND ad.conn_country IS NULL AND ad.shuffle IS NULL
+    AND (p_user IS NULL OR ad.user_id = p_user)
+    AND EXISTS (
+      SELECT 1
+      FROM public.play_events ex
+      JOIN public.tracks te ON te.id = ex.track_id
+      WHERE ex.user_id = ad.user_id
+        AND ex.source = 'spotify_export'
+        AND ex.conn_country IS NOT NULL
+        AND ex.played_at BETWEEN ad.played_at - interval '5 seconds' AND ad.played_at + interval '65 seconds'
+        AND abs(ex.ms_played - ad.ms_played) <= 1000
+        AND (ex.track_id = ad.track_id
+             OR (public.sarki_baslik_anahtari(te.title) = public.sarki_baslik_anahtari(ta.title)
+                 AND public.sarki_sanatci_anahtari(te.artists) = public.sarki_sanatci_anahtari(ta.artists)))
+    )
+  ON CONFLICT (id) DO NOTHING;
+  GET DIAGNOSTICS v_ad = ROW_COUNT;
+
+  INSERT INTO _cift_sil (id, sebep)
+  SELECT rt.id, 'canli_zip_cakismasi'
+  FROM public.play_events rt
+  JOIN public.tracks tr ON tr.id = rt.track_id
+  WHERE rt.source = 'api_realtime'
+    AND (p_user IS NULL OR rt.user_id = p_user)
+    AND EXISTS (
+      SELECT 1
+      FROM public.play_events ex
+      JOIN public.tracks te ON te.id = ex.track_id
+      WHERE ex.user_id = rt.user_id
+        AND ex.source <> 'api_realtime'
+        AND ex.id NOT IN (SELECT id FROM _cift_sil)
+        AND ex.played_at BETWEEN rt.played_at - interval '70 seconds' AND rt.played_at + interval '20 seconds'
+        AND (ex.track_id = rt.track_id
+             OR (public.sarki_baslik_anahtari(te.title) = public.sarki_baslik_anahtari(tr.title)
+                 AND public.sarki_sanatci_anahtari(te.artists) = public.sarki_sanatci_anahtari(tr.artists)))
+    )
+  ON CONFLICT (id) DO NOTHING;
+  GET DIAGNOSTICS v_canli = ROW_COUNT;
+
+  INSERT INTO public.play_events_cift_arsiv
+  SELECT pe.*, now(), s.sebep
+  FROM public.play_events pe
+  JOIN _cift_sil s ON s.id = pe.id;
+
+  DELETE FROM public.play_events pe USING _cift_sil s WHERE pe.id = s.id;
+
+  RETURN jsonb_build_object('account_data', v_ad, 'canli', v_canli);
+END;
 $function$
 ;
 
@@ -5374,6 +5628,25 @@ AS $function$
 $function$
 ;
 
+CREATE OR REPLACE FUNCTION public.kanonik_sarki_bul(p_title text, p_artists text[], p_duration_ms integer)
+ RETURNS uuid
+ LANGUAGE sql
+ STABLE
+ SET search_path TO 'public'
+AS $function$
+  SELECT t.id
+  FROM public.tracks t
+  WHERE public.sarki_baslik_anahtari(t.title) = public.sarki_baslik_anahtari(p_title)
+    AND public.sarki_sanatci_anahtari(t.artists) = public.sarki_sanatci_anahtari(p_artists)
+    AND public.sarki_baslik_anahtari(p_title) <> ''
+    AND public.sarki_sanatci_anahtari(p_artists) <> ''
+    AND t.title <> 'Unknown Track'
+    AND (p_duration_ms IS NULL OR t.duration_ms IS NULL OR abs(t.duration_ms - p_duration_ms) <= 3000)
+  ORDER BY (t.spotify_id IS NOT NULL) DESC, (t.duration_ms IS NOT NULL) DESC, t.created_at, t.id
+  LIMIT 1
+$function$
+;
+
 CREATE OR REPLACE FUNCTION public.kapak_kaynagi_kurali()
  RETURNS trigger
  LANGUAGE plpgsql
@@ -5422,6 +5695,69 @@ AS $function$
     )
   ORDER BY t.created_at
   LIMIT GREATEST(1, LEAST(500, p_limit));
+$function$
+;
+
+CREATE OR REPLACE FUNCTION public.kopya_sarkilari_birlestir(p_son_saat integer DEFAULT NULL::integer)
+ RETURNS integer
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+  v_toplam integer := 0;
+  v_tur    integer := 0;
+  v_bu_tur integer;
+  r        record;
+BEGIN
+  LOOP
+    v_tur := v_tur + 1;
+    v_bu_tur := 0;
+
+    FOR r IN
+      WITH k AS (
+        SELECT t.id,
+               public.sarki_baslik_anahtari(t.title)    AS bk,
+               public.sarki_sanatci_anahtari(t.artists) AS sk,
+               t.duration_ms, t.spotify_id, t.album, t.created_at
+        FROM public.tracks t
+        WHERE t.title <> 'Unknown Track'
+          AND (p_son_saat IS NULL
+               OR (public.sarki_baslik_anahtari(t.title), public.sarki_sanatci_anahtari(t.artists)) IN (
+                    SELECT public.sarki_baslik_anahtari(y.title), public.sarki_sanatci_anahtari(y.artists)
+                    FROM public.tracks y
+                    WHERE y.created_at > now() - make_interval(hours => p_son_saat)))
+      ),
+      g AS (
+        SELECT bk, sk FROM k WHERE bk <> '' AND sk <> '' GROUP BY bk, sk HAVING count(*) > 1
+      ),
+      m AS (
+        SELECT k.*, (SELECT count(*) FROM public.play_events pe WHERE pe.track_id = k.id) AS calma
+        FROM k JOIN g USING (bk, sk)
+      ),
+      s AS (
+        SELECT m.*, row_number() OVER (
+                 PARTITION BY bk, sk
+                 ORDER BY calma DESC, (spotify_id IS NOT NULL) DESC, (duration_ms IS NOT NULL) DESC,
+                          (album IS NOT NULL) DESC, created_at, id) AS sira
+        FROM m
+      )
+      SELECT s.id AS kaybeden, kan.id AS kanonik
+      FROM s
+      JOIN s kan ON kan.bk = s.bk AND kan.sk = s.sk AND kan.sira = 1
+      WHERE s.sira > 1
+        AND (s.duration_ms IS NULL OR kan.duration_ms IS NULL OR abs(s.duration_ms - kan.duration_ms) <= 3000)
+    LOOP
+      PERFORM public.merge_track_into(r.kaybeden, r.kanonik);
+      v_bu_tur := v_bu_tur + 1;
+    END LOOP;
+
+    v_toplam := v_toplam + v_bu_tur;
+    EXIT WHEN v_bu_tur = 0 OR v_tur >= 4;
+  END LOOP;
+
+  RETURN v_toplam;
+END;
 $function$
 ;
 
@@ -5727,6 +6063,107 @@ BEGIN
   WHERE w.user_id = p_user_id AND w.is_evergreen
   ORDER BY w.final_weight DESC
   LIMIT p_limit;
+END;
+$function$
+;
+
+CREATE OR REPLACE FUNCTION public.merge_track_into(p_loser_id uuid, p_canonical_id uuid)
+ RETURNS void
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+BEGIN
+  IF p_loser_id = p_canonical_id THEN
+    RETURN;
+  END IF;
+
+  -- play_events: UNIQUE(user_id, played_at, track_id) — aynı an için iki satır
+  -- varsa (aynı çalma iki kez yazılmış) kaybeden silinir, aksi halde taşınır.
+  DELETE FROM public.play_events pe_loser
+   WHERE pe_loser.track_id = p_loser_id
+     AND EXISTS (
+       SELECT 1 FROM public.play_events pe_win
+       WHERE pe_win.user_id   = pe_loser.user_id
+         AND pe_win.played_at = pe_loser.played_at
+         AND pe_win.track_id  = p_canonical_id
+     );
+
+  UPDATE public.play_events SET track_id = p_canonical_id WHERE track_id = p_loser_id;
+
+  DELETE FROM public.playlist_tracks pt_loser
+   WHERE pt_loser.track_id = p_loser_id
+     AND EXISTS (
+       SELECT 1 FROM public.playlist_tracks pt_win
+       WHERE pt_win.playlist_id = pt_loser.playlist_id
+         AND pt_win.track_id    = p_canonical_id
+     );
+
+  UPDATE public.playlist_tracks SET track_id = p_canonical_id WHERE track_id = p_loser_id;
+
+  UPDATE public.user_top_strips    SET track_id = p_canonical_id                WHERE track_id = p_loser_id;
+  UPDATE public.user_track_weights SET representative_track_id = p_canonical_id WHERE representative_track_id = p_loser_id;
+
+  -- Mood çalışma alanı dizileri (FK yok; elle taşınır, tekrar oluşmaz).
+  UPDATE public.mood_workspace
+     SET hidden_track_ids = ARRAY(SELECT DISTINCT unnest(array_replace(hidden_track_ids, p_loser_id, p_canonical_id))),
+         updated_at = now()
+   WHERE p_loser_id = ANY (hidden_track_ids);
+  UPDATE public.mood_workspace
+     SET approved_track_ids = ARRAY(SELECT DISTINCT unnest(array_replace(approved_track_ids, p_loser_id, p_canonical_id))),
+         updated_at = now()
+   WHERE p_loser_id = ANY (approved_track_ids);
+
+  -- Mood uygunluk etiketleri (0338): çakışırsa kanoniğinki kalır.
+  DELETE FROM public.mood_track_feedback f_loser
+   WHERE f_loser.track_id = p_loser_id
+     AND EXISTS (
+       SELECT 1 FROM public.mood_track_feedback f_win
+       WHERE f_win.user_id  = f_loser.user_id
+         AND f_win.mood_key = f_loser.mood_key
+         AND f_win.track_id = p_canonical_id
+     );
+
+  UPDATE public.mood_track_feedback
+     SET track_id = p_canonical_id, updated_at = now()
+   WHERE track_id = p_loser_id;
+
+  DELETE FROM public.mood_kural k_loser
+   WHERE k_loser.hedef_tur = 'track' AND k_loser.hedef = p_loser_id::text
+     AND (k_loser.kaynak = 'geri_bildirim'
+          OR EXISTS (
+            SELECT 1 FROM public.mood_kural k_win
+            WHERE k_win.mood_key  = k_loser.mood_key
+              AND k_win.hedef_tur = 'track'
+              AND k_win.hedef     = p_canonical_id::text));
+
+  UPDATE public.mood_kural SET hedef = p_canonical_id::text
+   WHERE hedef_tur = 'track' AND hedef = p_loser_id::text;
+
+  UPDATE public.tracks c
+     SET image_url    = COALESCE(c.image_url, l.image_url),
+         album        = COALESCE(c.album, l.album),
+         genres       = COALESCE(c.genres, l.genres),
+         release_year = COALESCE(c.release_year, l.release_year),
+         duration_ms  = COALESCE(c.duration_ms, l.duration_ms),
+         isrc         = COALESCE(c.isrc, l.isrc)
+    FROM public.tracks l
+   WHERE c.id = p_canonical_id AND l.id = p_loser_id;
+
+  -- "B aslında A'dır" notu: kaybedene işaret eden alias'lar kanoniğe taşınır,
+  -- sonra kaybedenin kendi spotify_id'si alias olarak yazılır.
+  UPDATE public.track_spotify_alias SET track_id = p_canonical_id WHERE track_id = p_loser_id;
+
+  INSERT INTO public.track_spotify_alias (spotify_id, track_id, kaynak)
+  SELECT l.spotify_id, p_canonical_id, 'merge'
+    FROM public.tracks l
+    JOIN public.tracks c ON c.id = p_canonical_id
+   WHERE l.id = p_loser_id
+     AND l.spotify_id IS NOT NULL
+     AND l.spotify_id IS DISTINCT FROM c.spotify_id
+  ON CONFLICT (spotify_id) DO UPDATE SET track_id = EXCLUDED.track_id;
+
+  DELETE FROM public.tracks WHERE id = p_loser_id;
 END;
 $function$
 ;
@@ -7465,6 +7902,7 @@ BEGIN
       PERFORM public.build_user_taste_pkg(v_uid);
       PERFORM public.materialize_user_top_strips(v_uid, 20);
       PERFORM public.build_journey_year_pkg(v_uid);
+      PERFORM public.build_journey_eslikci_pkg(v_uid);
       PERFORM public.refresh_user_taste(v_uid);
       PERFORM public.cron_sira_tamamla('gunluk_paket', v_uid, NULL);
       v_n := v_n + 1;
@@ -7710,6 +8148,55 @@ CREATE OR REPLACE FUNCTION public.rosso_bugun()
  SET search_path TO 'pg_catalog', 'public'
 AS $function$
   SELECT (now() AT TIME ZONE 'Europe/Istanbul')::date;
+$function$
+;
+
+CREATE OR REPLACE FUNCTION public.sarki_baslik_anahtari(p_title text)
+ RETURNS text
+ LANGUAGE sql
+ IMMUTABLE PARALLEL SAFE
+ SET search_path TO 'pg_catalog'
+AS $function$
+  SELECT regexp_replace(lower(
+    regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(
+      coalesce(p_title, ''),
+      '\s*[\(\[](feat\.?|ft\.?|with|from|featuring)\s[^\)\]]*[\)\]]', '', 'gi'),
+      '\s+-\s+(feat\.?|ft\.?)\s.*$', '', 'gi'),
+      '\s*-\s*(\d{4}\s+)?(digital(ly)?\s+)?remaster(ed)?(\s+\d{4})?(\s+version)?\s*$', '', 'gi'),
+      '\s*[\(\[](\d{4}\s+)?(digital(ly)?\s+)?remaster(ed)?(\s+\d{4})?(\s+version)?[\)\]]', '', 'gi'),
+      '\s*-\s*(single|album|original)\s+version\s*$', '', 'gi')
+  ), '[^[:alnum:]]+', '', 'g')
+$function$
+;
+
+CREATE OR REPLACE FUNCTION public.sarki_butunlugu_bakimi()
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+  v_birlesen integer;
+  v_cift     jsonb;
+BEGIN
+  v_birlesen := public.kopya_sarkilari_birlestir(26);
+  v_cift     := public.cift_dinlemeleri_temizle(NULL);
+  IF v_birlesen > 0 OR (v_cift->>'account_data')::int > 0 OR (v_cift->>'canli')::int > 0 THEN
+    INSERT INTO public.pipeline_runs (run_type, outcome, stats)
+    VALUES ('sarki_butunlugu', 'success', jsonb_build_object('birlesen', v_birlesen) || v_cift);
+  END IF;
+  RETURN jsonb_build_object('birlesen', v_birlesen) || v_cift;
+END;
+$function$
+;
+
+CREATE OR REPLACE FUNCTION public.sarki_sanatci_anahtari(p_artists text[])
+ RETURNS text
+ LANGUAGE sql
+ IMMUTABLE PARALLEL SAFE
+ SET search_path TO 'pg_catalog'
+AS $function$
+  SELECT regexp_replace(lower(coalesce(p_artists[1], '')), '[^[:alnum:]]+', '', 'g')
 $function$
 ;
 
@@ -8970,6 +9457,8 @@ CREATE INDEX mood_track_feedback_mood_track_idx ON public.mood_track_feedback US
 
 CREATE INDEX mqi_pending_idx ON public.migration_queue_items USING btree (queue_id, status) WHERE (status = 'pending'::text);
 
+CREATE INDEX play_events_cift_arsiv_user_idx ON public.play_events_cift_arsiv USING btree (user_id, played_at);
+
 CREATE UNIQUE INDEX play_events_dedup_idx ON public.play_events USING btree (user_id, played_at, track_id);
 
 CREATE INDEX sync_rules_enabled_idx ON public.sync_rules USING btree (enabled) WHERE (enabled = true);
@@ -8985,6 +9474,8 @@ CREATE INDEX tracks_catalog_backfill_queue_idx ON public.tracks USING btree (cre
 CREATE INDEX tracks_genre_pending_idx ON public.tracks USING btree (created_at) WHERE ((genres IS NULL) AND (genre_lookup_failed_at IS NULL));
 
 CREATE INDEX tracks_genre_pending_reason_idx ON public.tracks USING btree (genre_pending_reason) WHERE (genre_pending_reason IS NOT NULL);
+
+CREATE INDEX tracks_sarki_anahtari_idx ON public.tracks USING btree (sarki_baslik_anahtari(title), sarki_sanatci_anahtari(artists));
 
 CREATE INDEX tracks_yt_video_id_idx ON public.tracks USING btree (yt_video_id) WHERE (yt_video_id IS NOT NULL);
 
@@ -9024,6 +9515,8 @@ ALTER TABLE ONLY public.izinli_eposta ADD CONSTRAINT izinli_eposta_ekleyen_fkey 
 
 ALTER TABLE ONLY public.journey_arc ADD CONSTRAINT journey_arc_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY public.journey_eslikci_pkg ADD CONSTRAINT journey_eslikci_pkg_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY public.journey_ritual_answers ADD CONSTRAINT journey_ritual_answers_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY public.journey_year_milestones ADD CONSTRAINT journey_year_milestones_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
@@ -9059,6 +9552,8 @@ ALTER TABLE ONLY public.mood_workspace ADD CONSTRAINT mood_workspace_user_id_fke
 ALTER TABLE ONLY public.pipeline_runs ADD CONSTRAINT pipeline_runs_job_id_fkey FOREIGN KEY (job_id) REFERENCES export_jobs(id) ON DELETE SET NULL;
 
 ALTER TABLE ONLY public.platform_connections ADD CONSTRAINT platform_connections_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY public.play_events_cift_arsiv ADD CONSTRAINT play_events_cift_arsiv_user_fk FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY public.play_events ADD CONSTRAINT play_events_track_id_fkey FOREIGN KEY (track_id) REFERENCES tracks(id);
 
@@ -9198,6 +9693,8 @@ ALTER TABLE public.izinli_eposta ENABLE ROW LEVEL SECURITY;
 
 ALTER TABLE public.journey_arc ENABLE ROW LEVEL SECURITY;
 
+ALTER TABLE public.journey_eslikci_pkg ENABLE ROW LEVEL SECURITY;
+
 ALTER TABLE public.journey_ritual_answers ENABLE ROW LEVEL SECURITY;
 
 ALTER TABLE public.journey_year_milestones ENABLE ROW LEVEL SECURITY;
@@ -9233,6 +9730,8 @@ ALTER TABLE public.pipeline_runs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.platform_connections ENABLE ROW LEVEL SECURITY;
 
 ALTER TABLE public.play_events ENABLE ROW LEVEL SECURITY;
+
+ALTER TABLE public.play_events_cift_arsiv ENABLE ROW LEVEL SECURITY;
 
 ALTER TABLE public.playlist_track_events ENABLE ROW LEVEL SECURITY;
 
@@ -9456,6 +9955,12 @@ CREATE POLICY editorial_tag_pool_okuma ON public.editorial_tag_pool AS PERMISSIV
 
 CREATE POLICY journey_arc_demo_oku ON public.journey_arc AS PERMISSIVE FOR SELECT TO authenticated
   USING ((user_id = ANY (( SELECT demo_kullanici_idleri() AS demo_kullanici_idleri)::uuid[])));
+
+CREATE POLICY journey_eslikci_pkg_demo_oku ON public.journey_eslikci_pkg AS PERMISSIVE FOR SELECT TO authenticated
+  USING ((user_id = ANY (( SELECT demo_kullanici_idleri() AS demo_kullanici_idleri)::uuid[])));
+
+CREATE POLICY journey_eslikci_pkg_own_read ON public.journey_eslikci_pkg AS PERMISSIVE FOR SELECT TO authenticated
+  USING ((user_id = ( SELECT auth.uid() AS uid)));
 
 CREATE POLICY journey_year_milestones_demo_oku ON public.journey_year_milestones AS PERMISSIVE FOR SELECT TO authenticated
   USING ((user_id = ANY (( SELECT demo_kullanici_idleri() AS demo_kullanici_idleri)::uuid[])));
@@ -9957,6 +10462,17 @@ GRANT REFERENCES ON TABLE public.journey_arc TO service_role;
 GRANT TRIGGER ON TABLE public.journey_arc TO service_role;
 GRANT MAINTAIN ON TABLE public.journey_arc TO service_role;
 
+REVOKE ALL ON TABLE public.journey_eslikci_pkg FROM PUBLIC, anon, authenticated, service_role;
+GRANT INSERT ON TABLE public.journey_eslikci_pkg TO service_role;
+GRANT SELECT ON TABLE public.journey_eslikci_pkg TO service_role;
+GRANT UPDATE ON TABLE public.journey_eslikci_pkg TO service_role;
+GRANT DELETE ON TABLE public.journey_eslikci_pkg TO service_role;
+GRANT TRUNCATE ON TABLE public.journey_eslikci_pkg TO service_role;
+GRANT REFERENCES ON TABLE public.journey_eslikci_pkg TO service_role;
+GRANT TRIGGER ON TABLE public.journey_eslikci_pkg TO service_role;
+GRANT MAINTAIN ON TABLE public.journey_eslikci_pkg TO service_role;
+GRANT SELECT ON TABLE public.journey_eslikci_pkg TO authenticated;
+
 REVOKE ALL ON TABLE public.journey_ritual_answers FROM PUBLIC, anon, authenticated, service_role;
 GRANT SELECT ON TABLE public.journey_ritual_answers TO anon;
 GRANT MAINTAIN ON TABLE public.journey_ritual_answers TO anon;
@@ -10292,6 +10808,16 @@ GRANT TRUNCATE ON TABLE public.play_events TO service_role;
 GRANT REFERENCES ON TABLE public.play_events TO service_role;
 GRANT TRIGGER ON TABLE public.play_events TO service_role;
 GRANT MAINTAIN ON TABLE public.play_events TO service_role;
+
+REVOKE ALL ON TABLE public.play_events_cift_arsiv FROM PUBLIC, anon, authenticated, service_role;
+GRANT INSERT ON TABLE public.play_events_cift_arsiv TO service_role;
+GRANT SELECT ON TABLE public.play_events_cift_arsiv TO service_role;
+GRANT UPDATE ON TABLE public.play_events_cift_arsiv TO service_role;
+GRANT DELETE ON TABLE public.play_events_cift_arsiv TO service_role;
+GRANT TRUNCATE ON TABLE public.play_events_cift_arsiv TO service_role;
+GRANT REFERENCES ON TABLE public.play_events_cift_arsiv TO service_role;
+GRANT TRIGGER ON TABLE public.play_events_cift_arsiv TO service_role;
+GRANT MAINTAIN ON TABLE public.play_events_cift_arsiv TO service_role;
 
 REVOKE ALL ON TABLE public.playlist_track_events FROM PUBLIC, anon, authenticated, service_role;
 GRANT SELECT ON TABLE public.playlist_track_events TO anon;
@@ -10955,6 +11481,9 @@ REVOKE ALL ON FUNCTION public.build_journey_arc(p_user_id uuid) FROM PUBLIC, ano
 GRANT EXECUTE ON FUNCTION public.build_journey_arc(p_user_id uuid) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.build_journey_arc(p_user_id uuid) TO service_role;
 
+REVOKE ALL ON FUNCTION public.build_journey_eslikci_pkg(p_user_id uuid) FROM PUBLIC, anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.build_journey_eslikci_pkg(p_user_id uuid) TO service_role;
+
 REVOKE ALL ON FUNCTION public.build_journey_year_pkg(p_user_id uuid, p_covers integer) FROM PUBLIC, anon, authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.build_journey_year_pkg(p_user_id uuid, p_covers integer) TO service_role;
 
@@ -10996,6 +11525,9 @@ GRANT EXECUTE ON FUNCTION public.catalog_enrichment_track_adaylari(p_limit integ
 REVOKE ALL ON FUNCTION public.catalog_item_id(p_item_type text, p_key text) FROM PUBLIC, anon, authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.catalog_item_id(p_item_type text, p_key text) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.catalog_item_id(p_item_type text, p_key text) TO service_role;
+
+REVOKE ALL ON FUNCTION public.cift_dinlemeleri_temizle(p_user uuid) FROM PUBLIC, anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.cift_dinlemeleri_temizle(p_user uuid) TO service_role;
 
 REVOKE ALL ON FUNCTION public.cleanup_old_logs(p_days_to_keep integer) FROM PUBLIC, anon, authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.cleanup_old_logs(p_days_to_keep integer) TO service_role;
@@ -11255,12 +11787,18 @@ GRANT EXECUTE ON FUNCTION public.journey_car_top_tracks(p_user_id uuid, p_limit 
 REVOKE ALL ON FUNCTION public.journey_year_facts(p_user_id uuid) FROM PUBLIC, anon, authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.journey_year_facts(p_user_id uuid) TO service_role;
 
+REVOKE ALL ON FUNCTION public.kanonik_sarki_bul(p_title text, p_artists text[], p_duration_ms integer) FROM PUBLIC, anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.kanonik_sarki_bul(p_title text, p_artists text[], p_duration_ms integer) TO service_role;
+
 REVOKE ALL ON FUNCTION public.kapak_kaynagi_kurali() FROM PUBLIC, anon, authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.kapak_kaynagi_kurali() TO authenticated;
 GRANT EXECUTE ON FUNCTION public.kapak_kaynagi_kurali() TO service_role;
 
 REVOKE ALL ON FUNCTION public.katalog_dolgu_adaylari_kullanicilar(p_user_ids uuid[], p_limit integer) FROM PUBLIC, anon, authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.katalog_dolgu_adaylari_kullanicilar(p_user_ids uuid[], p_limit integer) TO service_role;
+
+REVOKE ALL ON FUNCTION public.kopya_sarkilari_birlestir(p_son_saat integer) FROM PUBLIC, anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.kopya_sarkilari_birlestir(p_son_saat integer) TO service_role;
 
 REVOKE ALL ON FUNCTION public.kullanici_sanatcilari(p_user_id uuid) FROM PUBLIC, anon, authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.kullanici_sanatcilari(p_user_id uuid) TO authenticated;
@@ -11292,6 +11830,9 @@ GRANT EXECUTE ON FUNCTION public.mark_phase_announcement(p_phase smallint, p_act
 REVOKE ALL ON FUNCTION public.materialize_user_top_strips(p_user_id uuid, p_limit integer) FROM PUBLIC, anon, authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.materialize_user_top_strips(p_user_id uuid, p_limit integer) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.materialize_user_top_strips(p_user_id uuid, p_limit integer) TO service_role;
+
+REVOKE ALL ON FUNCTION public.merge_track_into(p_loser_id uuid, p_canonical_id uuid) FROM PUBLIC, anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.merge_track_into(p_loser_id uuid, p_canonical_id uuid) TO service_role;
 
 REVOKE ALL ON FUNCTION public.mood_approved_tracks(p_user_id uuid, p_mood_key text) FROM PUBLIC, anon, authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.mood_approved_tracks(p_user_id uuid, p_mood_key text) TO service_role;
@@ -11471,6 +12012,17 @@ REVOKE ALL ON FUNCTION public.rosso_bugun() FROM PUBLIC, anon, authenticated, se
 GRANT EXECUTE ON FUNCTION public.rosso_bugun() TO authenticated;
 GRANT EXECUTE ON FUNCTION public.rosso_bugun() TO service_role;
 
+REVOKE ALL ON FUNCTION public.sarki_baslik_anahtari(p_title text) FROM PUBLIC, anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.sarki_baslik_anahtari(p_title text) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.sarki_baslik_anahtari(p_title text) TO service_role;
+
+REVOKE ALL ON FUNCTION public.sarki_butunlugu_bakimi() FROM PUBLIC, anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.sarki_butunlugu_bakimi() TO service_role;
+
+REVOKE ALL ON FUNCTION public.sarki_sanatci_anahtari(p_artists text[]) FROM PUBLIC, anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.sarki_sanatci_anahtari(p_artists text[]) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.sarki_sanatci_anahtari(p_artists text[]) TO service_role;
+
 REVOKE ALL ON FUNCTION public.save_catalog_enrichment(p_item_type text, p_model text, p_items jsonb) FROM PUBLIC, anon, authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.save_catalog_enrichment(p_item_type text, p_model text, p_items jsonb) TO service_role;
 
@@ -11643,7 +12195,7 @@ INSERT INTO public.ai_model_pricing SELECT * FROM jsonb_populate_recordset(NULL:
 
 INSERT INTO public.algo_params SELECT * FROM jsonb_populate_recordset(NULL::public.algo_params, '[{"key": "affinity_min", "note": "gosterilen en dusuk yuzde", "value": 1, "measured_at": "2026-08-06T09:17:16.989145+00:00"}, {"key": "affinity_max", "note": "gosterilen en yuksek yuzde", "value": 99, "measured_at": "2026-08-06T09:17:16.989145+00:00"}, {"key": "affinity_x0", "note": "pair_raw medyani (561 cift, 2026-08-06) — TEK gosterim kaynagi", "value": 0.01333, "measured_at": "2026-08-06T09:19:26.635392+00:00"}, {"key": "affinity_k", "note": "4/IQR — pair_raw IQR=0,1244", "value": 55.61, "measured_at": "2026-08-06T09:19:26.635392+00:00"}, {"key": "match_w_music", "note": null, "value": 0.6, "measured_at": "2026-08-10T12:00:30.073867+00:00"}, {"key": "match_w_genre", "note": null, "value": 0.25, "measured_at": "2026-08-10T12:00:30.073867+00:00"}, {"key": "match_w_behavior", "note": null, "value": 0.15, "measured_at": "2026-08-10T12:00:30.073867+00:00"}, {"key": "affinity_v2_x0", "note": null, "value": 0.36, "measured_at": "2026-08-10T12:06:17.637008+00:00"}, {"key": "affinity_v2_k", "note": null, "value": 4.5, "measured_at": "2026-08-10T12:06:17.637008+00:00"}, {"key": "affinity_v2_min", "note": null, "value": 5, "measured_at": "2026-08-10T12:06:17.637008+00:00"}, {"key": "affinity_v2_max", "note": null, "value": 95, "measured_at": "2026-08-10T12:06:17.637008+00:00"}, {"key": "sugg_w_degree2", "note": null, "value": 1, "measured_at": "2026-08-10T17:27:43.055442+00:00"}, {"key": "sugg_w_degree3", "note": null, "value": 0.6, "measured_at": "2026-08-10T17:27:43.055442+00:00"}]'::jsonb) ON CONFLICT DO NOTHING;
 
-INSERT INTO public.api_budgets SELECT * FROM jsonb_populate_recordset(NULL::public.api_budgets, '[{"used": 0, "scope": "spotify:user", "budget": 300, "updated_at": "2026-09-29T00:54:01.093376+00:00", "window_start": "2026-09-28T13:39:01.184771+00:00", "window_seconds": 86400}, {"used": 0, "scope": "spotify:search", "budget": 200, "updated_at": "2026-08-04T23:41:11.360242+00:00", "window_start": "2026-08-04T23:35:47.5577+00:00", "window_seconds": 86400}, {"used": 0, "scope": "spotify:catalog", "budget": 300, "updated_at": "2026-08-04T23:41:11.360242+00:00", "window_start": "2026-08-04T23:35:47.5577+00:00", "window_seconds": 86400}]'::jsonb) ON CONFLICT DO NOTHING;
+INSERT INTO public.api_budgets SELECT * FROM jsonb_populate_recordset(NULL::public.api_budgets, '[{"used": 0, "scope": "spotify:search", "budget": 200, "updated_at": "2026-08-04T23:41:11.360242+00:00", "window_start": "2026-08-04T23:35:47.5577+00:00", "window_seconds": 86400}, {"used": 0, "scope": "spotify:catalog", "budget": 300, "updated_at": "2026-08-04T23:41:11.360242+00:00", "window_start": "2026-08-04T23:35:47.5577+00:00", "window_seconds": 86400}, {"used": 0, "scope": "spotify:user", "budget": 300, "updated_at": "2026-10-04T14:24:02.199754+00:00", "window_start": "2026-10-04T04:39:01.022822+00:00", "window_seconds": 86400}]'::jsonb) ON CONFLICT DO NOTHING;
 
 INSERT INTO public.editorial_tag_pool SELECT * FROM jsonb_populate_recordset(NULL::public.editorial_tag_pool, '[{"slug": "hip-hop", "model": "gemini-2.5-flash", "category": "genre", "label_en": "Hip-Hop", "label_tr": "Hip-Hop", "created_at": "2026-09-19T17:56:58.956567+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "indie-rock", "model": "gemini-2.5-flash", "category": "genre", "label_en": "Indie Rock", "label_tr": "Indie Rock", "created_at": "2026-09-19T17:56:58.956567+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "synth-pop", "model": "gemini-2.5-flash", "category": "genre", "label_en": "Synth-Pop", "label_tr": "Synth-Pop", "created_at": "2026-09-19T17:56:58.956567+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "arabesk", "model": "gemini-2.5-flash", "category": "genre", "label_en": "Arabesk", "label_tr": "Arabesk", "created_at": "2026-09-19T17:56:58.956567+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "trap", "model": "gemini-2.5-flash", "category": "genre", "label_en": "Trap", "label_tr": "Trap", "created_at": "2026-09-19T17:56:58.956567+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "lo-fi", "model": "gemini-2.5-flash", "category": "genre", "label_en": "Lo-Fi", "label_tr": "Lo-Fi", "created_at": "2026-09-19T17:56:58.956567+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "shoegaze", "model": "gemini-2.5-flash", "category": "genre", "label_en": "Shoegaze", "label_tr": "Shoegaze", "created_at": "2026-09-19T17:56:58.956567+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "dream-pop", "model": "gemini-2.5-flash", "category": "genre", "label_en": "Dream Pop", "label_tr": "Dream Pop", "created_at": "2026-09-19T17:56:58.956567+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "country", "model": "gemini-2.5-flash", "category": "genre", "label_en": "Country", "label_tr": "Country", "created_at": "2026-09-19T17:56:58.956567+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "disco", "model": "gemini-2.5-flash", "category": "genre", "label_en": "Disco", "label_tr": "Disco", "created_at": "2026-09-19T17:56:58.956567+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "drum-and-bass", "model": "gemini-2.5-flash", "category": "genre", "label_en": "Drum & Bass", "label_tr": "Drum & Bass", "created_at": "2026-09-19T17:56:58.956567+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "r-and-b", "model": "gemini-2.5-flash", "category": "genre", "label_en": "R&B", "label_tr": "R&B", "created_at": "2026-09-19T17:56:58.956567+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "soul", "model": "gemini-2.5-flash", "category": "genre", "label_en": "Soul", "label_tr": "Soul", "created_at": "2026-09-19T17:56:58.956567+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "jazz-fusion", "model": "gemini-2.5-flash", "category": "genre", "label_en": "Jazz Fusion", "label_tr": "Caz Füzyon", "created_at": "2026-09-19T17:56:58.956567+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "psychedelic-rock", "model": "gemini-2.5-flash", "category": "genre", "label_en": "Psychedelic Rock", "label_tr": "Psikedelik Rock", "created_at": "2026-09-19T17:56:58.956567+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "alternative-rock", "model": "gemini-2.5-flash", "category": "genre", "label_en": "Alternative Rock", "label_tr": "Alternatif Rock", "created_at": "2026-09-19T17:56:58.956567+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "electronic-pop", "model": "gemini-2.5-flash", "category": "genre", "label_en": "Electronic Pop", "label_tr": "Elektronik Pop", "created_at": "2026-09-19T17:56:58.956567+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "techno", "model": "gemini-2.5-flash", "category": "genre", "label_en": "Techno", "label_tr": "Tekno", "created_at": "2026-09-19T17:56:58.956567+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "house", "model": "gemini-2.5-flash", "category": "genre", "label_en": "House", "label_tr": "House", "created_at": "2026-09-19T17:56:58.956567+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "funk", "model": "gemini-2.5-flash", "category": "genre", "label_en": "Funk", "label_tr": "Funk", "created_at": "2026-09-19T17:56:58.956567+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "blues", "model": "gemini-2.5-flash", "category": "genre", "label_en": "Blues", "label_tr": "Blues", "created_at": "2026-09-19T17:56:58.956567+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "folk", "model": "gemini-2.5-flash", "category": "genre", "label_en": "Folk", "label_tr": "Folk", "created_at": "2026-09-19T17:56:58.956567+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "metal", "model": "gemini-2.5-flash", "category": "genre", "label_en": "Metal", "label_tr": "Metal", "created_at": "2026-09-19T17:56:58.956567+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "classical", "model": "gemini-2.5-flash", "category": "genre", "label_en": "Classical", "label_tr": "Klasik", "created_at": "2026-09-19T17:56:58.956567+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "ambient", "model": "gemini-2.5-flash", "category": "genre", "label_en": "Ambient", "label_tr": "Ambient", "created_at": "2026-09-19T17:56:58.956567+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "gospel", "model": "gemini-2.5-flash", "category": "genre", "label_en": "Gospel", "label_tr": "Gospel", "created_at": "2026-09-19T17:56:58.956567+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "reggae", "model": "gemini-2.5-flash", "category": "genre", "label_en": "Reggae", "label_tr": "Reggae", "created_at": "2026-09-19T17:56:58.956567+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "salsa", "model": "gemini-2.5-flash", "category": "genre", "label_en": "Salsa", "label_tr": "Salsa", "created_at": "2026-09-19T17:56:58.956567+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "latin-pop", "model": "gemini-2.5-flash", "category": "genre", "label_en": "Latin Pop", "label_tr": "Latin Pop", "created_at": "2026-09-19T17:56:58.956567+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "k-pop", "model": "gemini-2.5-flash", "category": "genre", "label_en": "K-Pop", "label_tr": "K-Pop", "created_at": "2026-09-19T17:56:58.956567+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "j-pop", "model": "gemini-2.5-flash", "category": "genre", "label_en": "J-Pop", "label_tr": "J-Pop", "created_at": "2026-09-19T17:56:58.956567+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "punk-rock", "model": "gemini-2.5-flash", "category": "genre", "label_en": "Punk Rock", "label_tr": "Punk Rock", "created_at": "2026-09-19T17:56:58.956567+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "grunge", "model": "gemini-2.5-flash", "category": "genre", "label_en": "Grunge", "label_tr": "Grunge", "created_at": "2026-09-19T17:56:58.956567+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "gothic-rock", "model": "gemini-2.5-flash", "category": "genre", "label_en": "Gothic Rock", "label_tr": "Gotik Rock", "created_at": "2026-09-19T17:56:58.956567+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "new-wave", "model": "gemini-2.5-flash", "category": "genre", "label_en": "New Wave", "label_tr": "New Wave", "created_at": "2026-09-19T17:56:58.956567+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "electro", "model": "gemini-2.5-flash", "category": "genre", "label_en": "Electro", "label_tr": "Elektro", "created_at": "2026-09-19T17:56:58.956567+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "melancholic", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Melancholic", "label_tr": "Melankolik", "created_at": "2026-09-19T17:57:03.909687+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "euphoric", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Euphoric", "label_tr": "Keyifli", "created_at": "2026-09-19T17:57:03.909687+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "restless", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Restless", "label_tr": "Huzursuz", "created_at": "2026-09-19T17:57:03.909687+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "tender", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Tender", "label_tr": "Şefkatli", "created_at": "2026-09-19T17:57:03.909687+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "defiant", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Defiant", "label_tr": "Asi Ruh", "created_at": "2026-09-19T17:57:03.909687+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "nostalgic", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Nostalgic", "label_tr": "Özlem Dolu", "created_at": "2026-09-19T17:57:03.909687+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "hazy", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Hazy", "label_tr": "Bulanık", "created_at": "2026-09-19T17:57:03.909687+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "dreamy", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Dreamy", "label_tr": "Hayalperest", "created_at": "2026-09-19T17:57:03.909687+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "intense", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Intense", "label_tr": "Yoğun", "created_at": "2026-09-19T17:57:03.909687+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "calm", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Calm", "label_tr": "Sakin", "created_at": "2026-09-19T17:57:03.909687+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "energetic", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Energetic", "label_tr": "Dinamik", "created_at": "2026-09-19T17:57:03.909687+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "reflective", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Reflective", "label_tr": "Düşünceli", "created_at": "2026-09-19T17:57:03.909687+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "mysterious", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Mysterious", "label_tr": "Gizemli", "created_at": "2026-09-19T17:57:03.909687+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "joyful", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Joyful", "label_tr": "Neşeli", "created_at": "2026-09-19T17:57:03.909687+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "angsty", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Angsty", "label_tr": "Kaygılı", "created_at": "2026-09-19T17:57:03.909687+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "serene", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Serene", "label_tr": "Huzurlu", "created_at": "2026-09-19T17:57:03.909687+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "aggressive", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Aggressive", "label_tr": "Agresif", "created_at": "2026-09-19T17:57:03.909687+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "uplifting", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Uplifting", "label_tr": "Moral Veren", "created_at": "2026-09-19T17:57:03.909687+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "contemplative", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Contemplative", "label_tr": "Derin Düşünce", "created_at": "2026-09-19T17:57:03.909687+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "ethereal", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Ethereal", "label_tr": "Ruhani", "created_at": "2026-09-19T17:57:03.909687+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "dark", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Dark", "label_tr": "Karanlık", "created_at": "2026-09-19T17:57:03.909687+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "playful", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Playful", "label_tr": "Oyunbaz", "created_at": "2026-09-19T17:57:03.909687+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "wistful", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Wistful", "label_tr": "Hasretli", "created_at": "2026-09-19T17:57:03.909687+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "pensive", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Pensive", "label_tr": "Dalgin", "created_at": "2026-09-19T17:57:03.909687+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "spirited", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Spirited", "label_tr": "Coşkulu", "created_at": "2026-09-19T17:57:03.909687+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "solemn", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Solemn", "label_tr": "Ağırbaşlı", "created_at": "2026-09-19T17:57:03.909687+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "vibrant", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Vibrant", "label_tr": "Canlı", "created_at": "2026-09-19T17:57:03.909687+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "yearning", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Yearning", "label_tr": "Özlem Duymak", "created_at": "2026-09-19T17:57:03.909687+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "haunting", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Haunting", "label_tr": "Akılda Kalan", "created_at": "2026-09-19T17:57:03.909687+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "lush", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Lush", "label_tr": "Görkemli", "created_at": "2026-09-19T17:57:03.909687+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "hypnotic", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Hypnotic", "label_tr": "Hipnotik", "created_at": "2026-09-19T17:57:03.909687+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "bittersweet", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Bittersweet", "label_tr": "Acı Tatlı", "created_at": "2026-09-19T17:57:03.909687+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "meditative", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Meditative", "label_tr": "Meditatif", "created_at": "2026-09-19T17:57:03.909687+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "wanderlust", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Wanderlust", "label_tr": "Gezi İsteği", "created_at": "2026-09-19T17:57:03.909687+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "hopeful", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Hopeful", "label_tr": "Umut Dolu", "created_at": "2026-09-19T17:57:03.909687+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "bleak", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Bleak", "label_tr": "Kasvetli", "created_at": "2026-09-19T17:57:03.909687+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "slow-burn", "model": "gemini-2.5-flash", "category": "tempo", "label_en": "Slow Burn", "label_tr": "Yavaş Akış", "created_at": "2026-09-19T17:57:06.18249+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "mid-tempo", "model": "gemini-2.5-flash", "category": "tempo", "label_en": "Mid-Tempo", "label_tr": "Orta Tempo", "created_at": "2026-09-19T17:57:06.18249+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "driving-rhythms", "model": "gemini-2.5-flash", "category": "tempo", "label_en": "Driving Rhythms", "label_tr": "Sürükleyici Ritimler", "created_at": "2026-09-19T17:57:06.18249+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "frantic-pace", "model": "gemini-2.5-flash", "category": "tempo", "label_en": "Frantic Pace", "label_tr": "Hızlı Tempoda", "created_at": "2026-09-19T17:57:06.18249+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "steady-pulse", "model": "gemini-2.5-flash", "category": "tempo", "label_en": "Steady Pulse", "label_tr": "Sabit Nabız", "created_at": "2026-09-19T17:57:06.18249+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "downtempo-grooves", "model": "gemini-2.5-flash", "category": "tempo", "label_en": "Downtempo Grooves", "label_tr": "Yavaş Ritimler", "created_at": "2026-09-19T17:57:06.18249+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "upbeat-energy", "model": "gemini-2.5-flash", "category": "tempo", "label_en": "Upbeat Energy", "label_tr": "Neşeli Enerji", "created_at": "2026-09-19T17:57:06.18249+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "chill-vibes", "model": "gemini-2.5-flash", "category": "tempo", "label_en": "Chill Vibes", "label_tr": "Rahatlatıcı Havası", "created_at": "2026-09-19T17:57:06.18249+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "mellow-flow", "model": "gemini-2.5-flash", "category": "tempo", "label_en": "Mellow Flow", "label_tr": "Sakin Akış", "created_at": "2026-09-19T17:57:06.18249+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "energetic-beats", "model": "gemini-2.5-flash", "category": "tempo", "label_en": "Energetic Beats", "label_tr": "Enerjik Vuruşlar", "created_at": "2026-09-19T17:57:06.18249+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "fast-lane", "model": "gemini-2.5-flash", "category": "tempo", "label_en": "Fast Lane", "label_tr": "Hızlı Şerit", "created_at": "2026-09-19T17:57:06.18249+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "relaxed-rhythm", "model": "gemini-2.5-flash", "category": "tempo", "label_en": "Relaxed Rhythm", "label_tr": "Rahat Ritim", "created_at": "2026-09-19T17:57:06.18249+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "night-owl", "model": "gemini-2.5-flash", "category": "character", "label_en": "Night Owl", "label_tr": "Gece Kuşu", "created_at": "2026-09-19T17:57:21.894809+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "early-bird", "model": "gemini-2.5-flash", "category": "character", "label_en": "Early Bird", "label_tr": "Sabah İnsanı", "created_at": "2026-09-19T17:57:21.894809+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "loyalist", "model": "gemini-2.5-flash", "category": "character", "label_en": "Loyalist", "label_tr": "Sadık Dinleyici", "created_at": "2026-09-19T17:57:21.894809+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "wanderer", "model": "gemini-2.5-flash", "category": "character", "label_en": "Wanderer", "label_tr": "Müzik Gezgini", "created_at": "2026-09-19T17:57:21.894809+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "completionist", "model": "gemini-2.5-flash", "category": "character", "label_en": "Completionist", "label_tr": "Tamamlayıcı", "created_at": "2026-09-19T17:57:21.894809+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "obsessive", "model": "gemini-2.5-flash", "category": "character", "label_en": "Obsessive", "label_tr": "Takıntılı", "created_at": "2026-09-19T17:57:21.894809+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "explorer", "model": "gemini-2.5-flash", "category": "character", "label_en": "Explorer", "label_tr": "Kaşif Ruhlu", "created_at": "2026-09-19T17:57:21.894809+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "creature-of-habit", "model": "gemini-2.5-flash", "category": "character", "label_en": "Creature Of Habit", "label_tr": "Alışkanlık Kölesi", "created_at": "2026-09-19T17:57:21.894809+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "genre-bender", "model": "gemini-2.5-flash", "category": "character", "label_en": "Genre Bender", "label_tr": "Tür Bükücü", "created_at": "2026-09-19T17:57:21.894809+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "nostalgic-soul", "model": "gemini-2.5-flash", "category": "character", "label_en": "Nostalgic Soul", "label_tr": "Nostaljik Ruh", "created_at": "2026-09-19T17:57:21.894809+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "trendsetter", "model": "gemini-2.5-flash", "category": "character", "label_en": "Trendsetter", "label_tr": "Trend Belirleyici", "created_at": "2026-09-19T17:57:21.894809+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "relaxed-listener", "model": "gemini-2.5-flash", "category": "character", "label_en": "Relaxed Listener", "label_tr": "Rahat Dinleyici", "created_at": "2026-09-19T17:57:21.894809+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "high-energy", "model": "gemini-2.5-flash", "category": "character", "label_en": "High Energy", "label_tr": "Yüksek Enerji", "created_at": "2026-09-19T17:57:21.894809+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "chill-seeker", "model": "gemini-2.5-flash", "category": "character", "label_en": "Chill Seeker", "label_tr": "Sakinlik Arayan", "created_at": "2026-09-19T17:57:21.894809+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "deep-diver", "model": "gemini-2.5-flash", "category": "character", "label_en": "Deep Diver", "label_tr": "Derinlere Dalış", "created_at": "2026-09-19T17:57:21.894809+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "mood-swinger", "model": "gemini-2.5-flash", "category": "character", "label_en": "Mood Swinger", "label_tr": "Ruh Hali Değişken", "created_at": "2026-09-19T17:57:21.894809+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "storyteller", "model": "gemini-2.5-flash", "category": "character", "label_en": "Storyteller", "label_tr": "Hikaye Anlatıcısı", "created_at": "2026-09-19T17:57:21.894809+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "beat-chaser", "model": "gemini-2.5-flash", "category": "character", "label_en": "Beat Chaser", "label_tr": "Ritim Avcısı", "created_at": "2026-09-19T17:57:21.894809+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "lyric-lover", "model": "gemini-2.5-flash", "category": "character", "label_en": "Lyric Lover", "label_tr": "Şarkı Sözü Aşığı", "created_at": "2026-09-19T17:57:21.894809+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "instrumentalist", "model": "gemini-2.5-flash", "category": "character", "label_en": "Instrumentalist", "label_tr": "Enstrüman Odaklı", "created_at": "2026-09-19T17:57:21.894809+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "eclectic-ear", "model": "gemini-2.5-flash", "category": "character", "label_en": "Eclectic Ear", "label_tr": "Eklektik Kulak", "created_at": "2026-09-19T17:57:21.894809+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "underground-fan", "model": "gemini-2.5-flash", "category": "character", "label_en": "Underground Fan", "label_tr": "Yeraltı Hayranı", "created_at": "2026-09-19T17:57:21.894809+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "mainstreamer", "model": "gemini-2.5-flash", "category": "character", "label_en": "Mainstreamer", "label_tr": "Popüler Takipçi", "created_at": "2026-09-19T17:57:21.894809+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "discoverer", "model": "gemini-2.5-flash", "category": "character", "label_en": "Discoverer", "label_tr": "Yeni Keşifçi", "created_at": "2026-09-19T17:57:21.894809+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "replayer", "model": "gemini-2.5-flash", "category": "character", "label_en": "Replayer", "label_tr": "Tekrar Tekrar", "created_at": "2026-09-19T17:57:21.894809+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "mix-master", "model": "gemini-2.5-flash", "category": "character", "label_en": "Mix Master", "label_tr": "Karışım Ustası", "created_at": "2026-09-19T17:57:21.894809+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "groove-finder", "model": "gemini-2.5-flash", "category": "character", "label_en": "Groove Finder", "label_tr": "Groove Avcısı", "created_at": "2026-09-19T17:57:21.894809+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "melody-maker", "model": "gemini-2.5-flash", "category": "character", "label_en": "Melody Maker", "label_tr": "Melodi Yaratıcısı", "created_at": "2026-09-19T17:57:21.894809+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "sound-scaper", "model": "gemini-2.5-flash", "category": "character", "label_en": "Sound Scaper", "label_tr": "Ses Manzaracı", "created_at": "2026-09-19T17:57:21.894809+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "vibe-curator", "model": "gemini-2.5-flash", "category": "character", "label_en": "Vibe Curator", "label_tr": "Vibe Küratörü", "created_at": "2026-09-19T17:57:21.894809+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "new-beginnings", "model": "gemini-2.5-flash", "category": "period", "label_en": "New Beginnings", "label_tr": "Yeni Başlangıçlar", "created_at": "2026-09-19T17:57:27.648012+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "quiet-reflection", "model": "gemini-2.5-flash", "category": "period", "label_en": "Quiet Reflection", "label_tr": "Sakin Düşünceler", "created_at": "2026-09-19T17:57:27.648012+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "growth-spurt", "model": "gemini-2.5-flash", "category": "period", "label_en": "Growth Spurt", "label_tr": "Büyüme Sancısı", "created_at": "2026-09-19T17:57:27.648012+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "steady-pace", "model": "gemini-2.5-flash", "category": "period", "label_en": "Steady Pace", "label_tr": "Dengeli Tempo", "created_at": "2026-09-19T17:57:27.648012+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "wild-ride", "model": "gemini-2.5-flash", "category": "period", "label_en": "Wild Ride", "label_tr": "Vahşi Yolculuk", "created_at": "2026-09-19T17:57:27.648012+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "calm-waters", "model": "gemini-2.5-flash", "category": "period", "label_en": "Calm Waters", "label_tr": "Sakin Sular", "created_at": "2026-09-19T17:57:27.648012+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "shifting-sands", "model": "gemini-2.5-flash", "category": "period", "label_en": "Shifting Sands", "label_tr": "Değişen Kumlar", "created_at": "2026-09-19T17:57:27.648012+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "finding-focus", "model": "gemini-2.5-flash", "category": "period", "label_en": "Finding Focus", "label_tr": "Odaklanma Zamanı", "created_at": "2026-09-19T17:57:27.648012+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "uncharted-territory", "model": "gemini-2.5-flash", "category": "period", "label_en": "Uncharted Territory", "label_tr": "Bilinmeyen Topraklar", "created_at": "2026-09-19T17:57:27.648012+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "deep-dive-era", "model": "gemini-2.5-flash", "category": "period", "label_en": "Deep Dive Era", "label_tr": "Derin Dalış Dönemi", "created_at": "2026-09-19T17:57:27.648012+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "comeback-season", "model": "gemini-2.5-flash", "category": "period", "label_en": "Comeback Season", "label_tr": "Geri Dönüş Sezonu", "created_at": "2026-09-19T17:57:27.648012+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "reset-button", "model": "gemini-2.5-flash", "category": "period", "label_en": "Reset Button", "label_tr": "Sıfırlama Tuşu", "created_at": "2026-09-19T17:57:27.648012+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "creative-bloom", "model": "gemini-2.5-flash", "category": "period", "label_en": "Creative Bloom", "label_tr": "Yaratıcı Patlama", "created_at": "2026-09-19T17:57:27.648012+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "healing-journey", "model": "gemini-2.5-flash", "category": "period", "label_en": "Healing Journey", "label_tr": "İyileşme Yolculuğu", "created_at": "2026-09-19T17:57:27.648012+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "bold-moves", "model": "gemini-2.5-flash", "category": "period", "label_en": "Bold Moves", "label_tr": "Cesur Adımlar", "created_at": "2026-09-19T17:57:27.648012+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "learning-curve", "model": "gemini-2.5-flash", "category": "period", "label_en": "Learning Curve", "label_tr": "Öğrenme Eğrisi", "created_at": "2026-09-19T17:57:27.648012+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "comfort-zone", "model": "gemini-2.5-flash", "category": "period", "label_en": "Comfort Zone", "label_tr": "Konfor Alanı", "created_at": "2026-09-19T17:57:27.648012+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "building-blocks", "model": "gemini-2.5-flash", "category": "period", "label_en": "Building Blocks", "label_tr": "Yapı Taşları", "created_at": "2026-09-19T17:57:27.648012+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "dream-chasing", "model": "gemini-2.5-flash", "category": "period", "label_en": "Dream Chasing", "label_tr": "Hayal Peşinde", "created_at": "2026-09-19T17:57:27.648012+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "inner-peace", "model": "gemini-2.5-flash", "category": "period", "label_en": "Inner Peace", "label_tr": "İç Huzur", "created_at": "2026-09-19T17:57:27.648012+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "exploration-mode", "model": "gemini-2.5-flash", "category": "period", "label_en": "Exploration Mode", "label_tr": "Keşif Modu", "created_at": "2026-09-19T17:57:27.648012+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "sweet-surrender", "model": "gemini-2.5-flash", "category": "period", "label_en": "Sweet Surrender", "label_tr": "Tatlı Teslimiyet", "created_at": "2026-09-19T17:57:27.648012+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "rising-tide", "model": "gemini-2.5-flash", "category": "period", "label_en": "Rising Tide", "label_tr": "Yükselen Dalga", "created_at": "2026-09-19T17:57:27.648012+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "steady-ascent", "model": "gemini-2.5-flash", "category": "period", "label_en": "Steady Ascent", "label_tr": "İstikrarlı Yükseliş", "created_at": "2026-09-19T17:57:27.648012+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "momentum-shift", "model": "gemini-2.5-flash", "category": "period", "label_en": "Momentum Shift", "label_tr": "İvme Değişimi", "created_at": "2026-09-19T17:57:27.648012+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "reinvention-period", "model": "gemini-2.5-flash", "category": "period", "label_en": "Reinvention Period", "label_tr": "Yeniden Keşif", "created_at": "2026-09-19T17:57:27.648012+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "reflection-point", "model": "gemini-2.5-flash", "category": "period", "label_en": "Reflection Point", "label_tr": "Dönüm Noktası", "created_at": "2026-09-19T17:57:27.648012+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "open-road", "model": "gemini-2.5-flash", "category": "period", "label_en": "Open Road", "label_tr": "Açık Yol", "created_at": "2026-09-19T17:57:27.648012+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "bright-horizon", "model": "gemini-2.5-flash", "category": "period", "label_en": "Bright Horizon", "label_tr": "Parlak Ufuk", "created_at": "2026-09-19T17:57:27.648012+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "soul-searching", "model": "gemini-2.5-flash", "category": "period", "label_en": "Soul Searching", "label_tr": "Kendini Arama", "created_at": "2026-09-19T17:57:27.648012+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "indie-pop", "model": "gemini-2.5-flash", "category": "genre", "label_en": "Indie Pop", "label_tr": "Indie Pop", "created_at": "2026-09-22T02:34:02.237575+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "electronic", "model": "gemini-2.5-flash", "category": "genre", "label_en": "Electronic", "label_tr": "Elektronik", "created_at": "2026-09-22T02:34:02.237575+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "rock", "model": "gemini-2.5-flash", "category": "genre", "label_en": "Rock", "label_tr": "Rock", "created_at": "2026-09-22T02:34:02.237575+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "pop", "model": "gemini-2.5-flash", "category": "genre", "label_en": "Pop", "label_tr": "Pop", "created_at": "2026-09-22T02:34:02.237575+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "jazz", "model": "gemini-2.5-flash", "category": "genre", "label_en": "Jazz", "label_tr": "Jazz", "created_at": "2026-09-22T02:34:02.237575+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "punk", "model": "gemini-2.5-flash", "category": "genre", "label_en": "Punk", "label_tr": "Punk", "created_at": "2026-09-22T02:34:02.237575+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "boom-bap", "model": "gemini-2.5-flash", "category": "genre", "label_en": "Boom Bap", "label_tr": "Boom Bap", "created_at": "2026-09-22T02:34:02.237575+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "dubstep", "model": "gemini-2.5-flash", "category": "genre", "label_en": "Dubstep", "label_tr": "Dubstep", "created_at": "2026-09-22T02:34:02.237575+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "blues-rock", "model": "gemini-2.5-flash", "category": "genre", "label_en": "Blues Rock", "label_tr": "Blues Rock", "created_at": "2026-09-22T02:34:02.237575+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "art-pop", "model": "gemini-2.5-flash", "category": "genre", "label_en": "Art Pop", "label_tr": "Art Pop", "created_at": "2026-09-22T02:34:02.237575+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "moody", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Moody", "label_tr": "Ruh Hali", "created_at": "2026-09-22T02:34:07.653623+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "empowering", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Empowering", "label_tr": "Güç Veren", "created_at": "2026-09-22T02:34:07.653623+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "soothing", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Soothing", "label_tr": "Dinlendirici", "created_at": "2026-09-22T02:34:07.653623+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "brooding", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Brooding", "label_tr": "Kederli", "created_at": "2026-09-22T02:34:07.653623+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "enigmatic", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Enigmatic", "label_tr": "Anlaşılmaz", "created_at": "2026-09-22T02:34:07.653623+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "passionate", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Passionate", "label_tr": "Tutkulu", "created_at": "2026-09-22T02:34:07.653623+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "upbeat", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Upbeat", "label_tr": "Pozitif", "created_at": "2026-09-22T02:34:07.653623+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "whimsical", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Whimsical", "label_tr": "Değişken", "created_at": "2026-09-22T02:34:07.653623+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "mellow", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Mellow", "label_tr": "Yatıştırıcı", "created_at": "2026-09-22T02:34:07.653623+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "epic", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Epic", "label_tr": "Destansı", "created_at": "2026-09-22T02:34:07.653623+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "gentle", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Gentle", "label_tr": "Nazik", "created_at": "2026-09-22T02:34:07.653623+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "deep", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Deep", "label_tr": "Derin Hisler", "created_at": "2026-09-22T02:34:07.653623+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "awakening", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Awakening", "label_tr": "Uyanış", "created_at": "2026-09-22T02:34:07.653623+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "shadowy", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Shadowy", "label_tr": "Gölgeli", "created_at": "2026-09-22T02:34:07.653623+00:00", "prompt_version": "etiket-havuzu-v2"}, {"slug": "triumphant", "model": "gemini-2.5-flash", "category": "mood", "label_en": "Triumphant", "label_tr": "Muzaffer", "created_at": "2026-09-22T02:34:07.653623+00:00", "prompt_version": "etiket-havuzu-v2"}]'::jsonb) ON CONFLICT DO NOTHING;
 

@@ -8,7 +8,9 @@ import { normalizeArtistName } from '@/lib/catalog/normalize-artist-name'
 // Period types & date range helper
 // ---------------------------------------------------------------------------
 
-export type Period = 'week' | 'month' | 'year' | 'alltime'
+export type { Period } from './period'
+export { getDateRange } from './period'
+import { getDateRange, type Period } from './period'
 
 /**
  * P0.6 — Dinleme kaynağı süzgeci (`play_events.source`).
@@ -26,23 +28,6 @@ export type SourceFilter = 'api_realtime'
 export interface DateRange {
   from: Date | null
   to: Date
-}
-
-export function getDateRange(period: Period): DateRange {
-  const to = new Date()
-  if (period === 'alltime') {
-    return { from: null, to }
-  }
-  const from = new Date(to)
-  if (period === 'week') {
-    from.setUTCDate(from.getUTCDate() - 7)
-  } else if (period === 'month') {
-    from.setUTCMonth(from.getUTCMonth() - 1)
-  } else {
-    // year
-    from.setUTCFullYear(from.getUTCFullYear() - 1)
-  }
-  return { from, to }
 }
 
 // ---------------------------------------------------------------------------

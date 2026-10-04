@@ -15,6 +15,9 @@ import { createClient } from '@/lib/supabase/server'
 
 type Tur = 'recap_character' | 'journey_years' | 'liner_note' | 'taste_identity' | 'journey_finale'
 
+/** Arayüz dili — AI metinleri bu dilde okunur. */
+export type Dil = 'tr' | 'en'
+
 async function govde(kind: Tur, userId: string, scope: string): Promise<unknown> {
   try {
     const supabase = await createClient()
@@ -45,9 +48,11 @@ async function govde(kind: Tur, userId: string, scope: string): Promise<unknown>
 
 // ── Recap ───────────────────────────────────────────────────────────────────
 
+const UcKelime = z.array(z.string()).min(3).max(3)
+/** v5+ (2026-10-04): kelime ve istatistik iki dilli. Eski biçim (düz dizi/metin) İngilizceydi. */
 const RecapKarakteri = z.object({
-  words: z.array(z.string()).min(3).max(3),
-  stat: z.string().nullable().optional(),
+  words: z.union([UcKelime, z.object({ tr: UcKelime.optional(), en: UcKelime.optional() })]),
+  stat: z.union([z.string(), z.object({ tr: z.string().optional(), en: z.string().optional() })]).nullable().optional(),
   tags: z.array(z.string()).max(8).optional(),
 })
 
@@ -92,40 +97,46 @@ async function etiketleriCoz(slugs: string[]): Promise<RecapEtiketi[]> {
   }
 }
 
-export async function getRecapKarakteri(userId: string, periodLabel: string): Promise<RecapKarakteriData | null> {
+export async function getRecapKarakteri(
+  userId: string,
+  periodLabel: string,
+  locale: Dil = 'tr',
+): Promise<RecapKarakteriData | null> {
   const s = RecapKarakteri.safeParse(await govde('recap_character', userId, periodLabel))
   if (!s.success) return null
-  return { words: s.data.words, stat: s.data.stat ?? null, tags: await etiketleriCoz(s.data.tags ?? []) }
+  const words = Array.isArray(s.data.words) ? (locale === 'en' ? s.data.words : null) : (s.data.words[locale] ?? null)
+  // Seçili dilde kelime yoksa karakter hiç gösterilmez (kapanış kartı eskisi gibi).
+  if (!words) return null
+  const st = s.data.stat
+  const stat = st == null ? null : typeof st === 'string' ? (locale === 'en' ? st : null) : (st[locale] ?? null)
+  return { words, stat, tags: await etiketleriCoz(s.data.tags ?? []) }
 }
 
 // ── Journey ─────────────────────────────────────────────────────────────────
 
+const YilDili = z.object({ note: z.string().optional(), story: z.string().optional() })
+/** v6+ (2026-10-04): yıl → { tr?, en? }. Eski biçimler (tek cümle / note+circadian…) İngilizceydi. */
 const YilSatiri = z.union([
-  z.string().transform((note) => ({ note })), // 0321 biçimi: yıl → tek cümle
-  z.object({
-    note: z.string().optional(),
-    circadian: z.string().optional(),
-    comet: z.string().optional(),
-    pillar: z.string().optional(),
-  }),
+  z.object({ tr: YilDili.optional(), en: YilDili.optional() }).refine((v) => v.tr || v.en),
+  z.string().transform((note) => ({ en: { note } })),
+  z.object({ note: z.string().optional() }).passthrough().transform((v) => ({ en: { note: v.note } })),
 ])
 const YilNotlari = z.object({ years: z.record(z.string(), YilSatiri) })
 
 export interface JourneyYilHikayesi {
   note?: string
-  circadian?: string
-  comet?: string
-  pillar?: string
+  story?: string
 }
 
-/** yıl → not + üç hikâye satırı. Boş harita = AI üretmedi. */
-export async function getJourneyYilNotlari(userId: string): Promise<Record<number, JourneyYilHikayesi>> {
+/** yıl → seçili dildeki not + eşlikçi hikâyesi. O dilde metin yoksa yıl haritada YOK (yanlış dil gösterilmez). */
+export async function getJourneyYilNotlari(userId: string, locale: Dil = 'tr'): Promise<Record<number, JourneyYilHikayesi>> {
   const s = YilNotlari.safeParse(await govde('journey_years', userId, 'all'))
   if (!s.success) return {}
   const cikti: Record<number, JourneyYilHikayesi> = {}
   for (const [yil, satir] of Object.entries(s.data.years)) {
     const y = Number(yil)
-    if (Number.isInteger(y)) cikti[y] = satir
+    const dil = (satir as { tr?: JourneyYilHikayesi; en?: JourneyYilHikayesi })[locale]
+    if (Number.isInteger(y) && dil && (dil.note || dil.story)) cikti[y] = dil
   }
   return cikti
 }
@@ -134,46 +145,69 @@ const KapanisDili = z.object({
   paragraphs: z.array(z.string()).min(2).max(4),
   last_line: z.string().min(3),
 })
-const Kapanis = z.object({ tr: KapanisDili, en: KapanisDili.optional() })
+const Kapanis = z.object({ tr: KapanisDili.optional(), en: KapanisDili.optional() })
 
 export type JourneyKapanisi = z.infer<typeof Kapanis>
 
-/** Journey "Yolculuk devam ediyor" kapanış metni. Yoksa null → eski iki satır. */
+/** Journey kapanış metni (iki dil). Yoksa null → eski iki satır. Arayüz seçili dili seçer. */
 export async function getJourneyKapanisi(userId: string): Promise<JourneyKapanisi | null> {
   const s = Kapanis.safeParse(await govde('journey_finale', userId, 'all'))
-  return s.success ? s.data : null
+  return s.success && (s.data.tr || s.data.en) ? s.data : null
 }
 
 // ── Mood ────────────────────────────────────────────────────────────────────
 
-const KuratorNotu = z.object({ note: z.string().min(3).max(200) })
+const KuratorNotu = z.object({
+  /** Türkçe not (v3'ten beri hep Türkçe). */
+  note: z.string().min(3).max(200).optional(),
+  /** İngilizce not (v4, 2026-10-04). */
+  note_en: z.string().min(3).max(200).optional(),
+})
 
-export async function getKuratorNotu(userId: string, moodKey: string): Promise<string | null> {
+/** Mood küratör notu seçili dilde; o dilde yoksa null (yanlış dilde not gösterilmez). */
+export async function getKuratorNotu(userId: string, moodKey: string, locale: Dil = 'tr'): Promise<string | null> {
   const s = KuratorNotu.safeParse(await govde('liner_note', userId, moodKey))
-  return s.success ? s.data.note : null
+  if (!s.success) return null
+  return (locale === 'en' ? s.data.note_en : s.data.note) ?? null
 }
 
 // ── Taste ───────────────────────────────────────────────────────────────────
 
+const IkiDilMetin = z.union([
+  z.object({ tr: z.string().optional(), en: z.string().optional() }),
+  z.string(),
+])
 const TasteYorumu = z.object({
-  axes: z.record(z.string(), z.string()),
-  vibe: z.string().nullable().optional(),
+  axes: z.record(z.string(), IkiDilMetin),
+  vibe: IkiDilMetin.nullable().optional(),
   vibe_card: z.string().optional(),
 })
 
 export interface TasteYorumlari {
-  /** kimlik kelimesi → kişiye özel yorum (Türkçe). */
+  /** kimlik kelimesi → kişiye özel yorum (seçili dilde). */
   axes: Record<string, string>
-  /** Vibe kartı açıklaması (İngilizce) — yalnız yorum HÂLÂ mevcut karta aitse dolu. */
+  /** Vibe kartı açıklaması (seçili dilde) — yalnız yorum HÂLÂ mevcut karta aitse dolu. */
   vibe: string | null
 }
 
-export async function getTasteYorumlari(userId: string, vibeCardId: string): Promise<TasteYorumlari | null> {
+/** İki dilli metinden seçili dili al. Eski (v2) biçimde düz metin: eksenler Türkçe, vibe İngilizceydi. */
+function dildeki(v: z.infer<typeof IkiDilMetin> | null | undefined, locale: Dil, duzMetinDili: Dil): string | null {
+  if (v == null) return null
+  if (typeof v === 'string') return locale === duzMetinDili ? v : null
+  return v[locale] ?? null
+}
+
+export async function getTasteYorumlari(userId: string, vibeCardId: string, locale: Dil = 'tr'): Promise<TasteYorumlari | null> {
   const s = TasteYorumu.safeParse(await govde('taste_identity', userId, 'all'))
   if (!s.success) return null
+  const axes: Record<string, string> = {}
+  for (const [kelime, metin] of Object.entries(s.data.axes)) {
+    const m = dildeki(metin, locale, 'tr')
+    if (m) axes[kelime] = m
+  }
   return {
-    axes: s.data.axes,
+    axes,
     // Kart değiştiyse eski açıklama yeni karta yanlış şeyler söylerdi → atılır.
-    vibe: s.data.vibe_card === vibeCardId ? (s.data.vibe ?? null) : null,
+    vibe: s.data.vibe_card === vibeCardId ? dildeki(s.data.vibe, locale, 'en') : null,
   }
 }

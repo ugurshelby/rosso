@@ -6,6 +6,10 @@ import { refreshUserCorePackages } from '@/lib/services/user-packages-refresh'
 import { resolveOrCreateTrackByIdentity } from '@/lib/catalog/resolve-track'
 import { after } from 'next/server'
 
+/** Canlı dinleme ↔ ZIP çakışma penceresi (bkz. 0360 ölçümü). */
+export const CANLI_ZIP_ONCE_MS = 70_000
+export const CANLI_ZIP_SONRA_MS = 20_000
+
 export interface SyncRecentlyPlayedResult {
   outcome: 'success' | 'no_token' | 'rate_limited' | 'error' | 'skipped_debounced'
   eventsWritten: number
@@ -170,10 +174,12 @@ export async function syncRecentlyPlayed(
       const trackId = await resolveOrCreateTrack(supabase, track)
       if (!trackId) continue
 
-      // ZIP veya önceki akışla çakışmayı önlemek için +-5 saniye kontrolü
+      // ZIP veya önceki akışla çakışma: ÖLÇÜLDÜ (2026-10-04) canlı `played_at`, aynı
+      // dinlemenin ZIP satırından 0–60 sn SONRA düşüyor (60 sn'de keskin kesim). Eski ±5 sn
+      // penceresi bunu kaçırıp ~3.300 dinlemeyi çift saydı. Pencere: [−70 sn, +20 sn].
       const dt = new Date(playedAt)
-      const lo = new Date(dt.getTime() - 5000).toISOString()
-      const hi = new Date(dt.getTime() + 5000).toISOString()
+      const lo = new Date(dt.getTime() - CANLI_ZIP_ONCE_MS).toISOString()
+      const hi = new Date(dt.getTime() + CANLI_ZIP_SONRA_MS).toISOString()
 
       const { data: nearby } = await supabase
         .from('play_events')

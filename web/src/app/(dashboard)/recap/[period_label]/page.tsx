@@ -6,7 +6,7 @@ import { cleanTrackTitle } from '@/lib/recap/clean-title'
 import { pickRecapCoverArt } from '@/lib/recap/cover-art'
 import { donemEtiketiTr } from '@/lib/recap/period-label'
 import type { RecapExtrasPayload } from '@/lib/recap/read'
-import { getT } from '@/lib/i18n/server'
+import { getT, getLocale } from '@/lib/i18n/server'
 import { RecapDeck } from '@/components/recap/recap-deck'
 import type { NumberOneData } from '@/components/recap/cards/number-one-card'
 import type { ObsessionData } from '@/components/recap/cards/obsession-card'
@@ -105,7 +105,7 @@ export default async function RecapDetailPage({
   const recap = await getRecapDetail(user.id, decodeURIComponent(period_label))
   if (recap?.cover) {
     // Editoryal karakter (AI, opsiyonel): yoksa null → kapanış kartı eskisi gibi.
-    const character = await getRecapKarakteri(user.id, recap.periodLabel)
+    const character = await getRecapKarakteri(user.id, recap.periodLabel, (await getLocale()) === 'en' ? 'en' : 'tr')
     const coverArtId = pickRecapCoverArt(`${user.id}:${recap.periodLabel}`)
 
     let placard: import('@/components/recap/recap-deck').RecapDeckData['placard'] = null

@@ -145,10 +145,10 @@ describe('POST /api/mood/remove-track', () => {
     expect(json).toEqual({ success: true, spotifySynced: true })
 
     const call = vi.mocked(global.fetch).mock.calls[0]
-    expect(call[0]).toBe('https://api.spotify.com/v1/playlists/pl-123/tracks')
+    expect(call[0]).toBe('https://api.spotify.com/v1/playlists/pl-123/items')
     const init = call[1] as RequestInit
     expect(init.method).toBe('DELETE')
-    // Spotify'ın DELETE /playlists/{id}/tracks ucu "items" bekler, "tracks" DEĞİL
+    // Spotify'ın DELETE /playlists/{id}/items ucu (eski /tracks kapandı) "items" bekler, "tracks" DEĞİL
     // (playlists/[id]/tracks route'undaki 2026-07-02 doğrulamasıyla aynı desen).
     const body = JSON.parse(init.body as string)
     expect(body).toEqual({ items: [{ uri: `spotify:track:${GECERLI_ID}` }] })

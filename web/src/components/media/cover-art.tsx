@@ -60,7 +60,7 @@ interface CoverArtProps {
    * eager + high priority + sync decoding.
    * - true: loading="eager", fetchPriority="high", decoding="sync"
    * - false: loading="lazy", fetchPriority="auto", decoding="async" (ağ ve main-thread darboğazını önler)
-   * - undefined: geriye dönük uyumluluk (src != null ise eager)
+   * - undefined: false ile aynı (lazy) — 2026-10-04
    */
   priority?: boolean
   /**
@@ -94,6 +94,9 @@ const BATCH_MAX = 50
 
 type ImageResolver = (images: SpotifyImage[] | null) => void
 let pendingTrackBatch: Map<string, ImageResolver[]> | null = null
+/** Katalog şarkı kimliği biçimi — yalnız bunlar `/api/images/track*` uçlarına gider. */
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 let batchTimer: ReturnType<typeof setTimeout> | null = null
 
 async function fetchSingleTrackImages(id: string): Promise<SpotifyImage[] | null> {
@@ -229,6 +232,14 @@ export function CoverArt({
       setResolved(true)
       return
     }
+    // Şarkı kimliği UUID değilse (ör. Journey'nin "sanatci-2022-…" yer tutucu kimlikleri) ağa ÇIKMA:
+    // toplu uç tüm partiyi 400 ile reddediyor, aynı partideki gerçek kapaklar da tekil
+    // isteklere düşüyordu (2026-10-04 ölçümü). Görsel yoksa yer tutucu kalır.
+    if (kind === 'track' && !UUID_RE.test(id)) {
+      setUrl(null)
+      setResolved(true)
+      return
+    }
     // Zaten cache'te (url veya kesin-yok) ise fetch etme. id/kind değiştiğinde
     // state'i cache sonucuna göre eşitlemek gerekir; setState burada bilinçli.
     if (_cache.has(cacheKey)) {
@@ -329,11 +340,15 @@ export function CoverArt({
               src != null ? styles.imgInstant : loaded ? styles.imgLoaded : ''
             }`}
             onLoad={() => setLoaded(true)}
-            // Sayfa başı/LCP (priority=true) anında boyanmalı. Aşağıdaki kapaklar
-            // ise (priority=false) lazy + async decode ile ağ ve CPU'yu rahatlatır.
-            loading={priority !== undefined ? (priority ? 'eager' : 'lazy') : (src != null ? 'eager' : 'lazy')}
-            fetchPriority={priority !== undefined ? (priority ? 'high' : 'auto') : (src != null ? 'high' : 'auto')}
-            decoding={priority !== undefined ? (priority ? 'sync' : 'async') : (src != null ? 'sync' : 'async')}
+            // Yalnız açıkça `priority` verilen (sayfa başı/LCP) kapak eager + high + sync.
+            // Diğer HER kapak lazy + async decode (2026-10-04 ölçümü: 17 kullanım yerinden
+            // 16'sı priority vermiyordu ve eski varsayılan src'li her kapağı eager/high/sync
+            // yüklüyordu — görsel yoğun sayfalarda tüm kapaklar ilk boyamayı kilitliyordu).
+            // Görüş alanındaki lazy görsel tarayıcıda zaten hemen yüklenir; "tak diye gelme"
+            // hissini payload'daki hazır `src` sağlar, eager değil.
+            loading={priority ? 'eager' : 'lazy'}
+            fetchPriority={priority ? 'high' : 'auto'}
+            decoding={priority ? 'sync' : 'async'}
             draggable={false}
           />
           {/* Görsel decode edilene kadar shimmer.

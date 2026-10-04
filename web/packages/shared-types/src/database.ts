@@ -3886,6 +3886,10 @@ export type Database = {
         }[]
       }
       journey_year_facts: { Args: { p_user_id: string }; Returns: Json }
+      kanonik_sarki_bul: {
+        Args: { p_title: string; p_artists: string[]; p_duration_ms: number | null }
+        Returns: string | null
+      }
       kullanici_sanatcilari: {
         Args: { p_user_id: string }
         Returns: {

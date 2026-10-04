@@ -40,7 +40,11 @@ logger = logging.getLogger("rosso.worker.export_runner")
 
 # recently_played_runner._NEARBY_WINDOW_SECONDS ile AYNI pencere: iki yön
 # aynı "aynı çalma" tanımını kullanmalı.
-NEARBY_WINDOW_SECONDS = 5
+# ÖLÇÜLDÜ 2026-10-04: canlı played_at, aynı dinlemenin ZIP ts'inden 0–60 sn SONRA düşüyor.
+# ZIP satırı t için canlı zaman ∈ [t − ÖNCE, t + SONRA] ise aynı dinlemedir.
+REALTIME_BEFORE_SECONDS = 20
+REALTIME_AFTER_SECONDS = 70
+NEARBY_WINDOW_SECONDS = REALTIME_AFTER_SECONDS  # dönem sınırı sorgusu için en geniş pay
 
 
 def _epoch(ts: Any) -> float | None:
@@ -56,7 +60,7 @@ def _epoch(ts: Any) -> float | None:
 def drop_near_realtime(
     rows: list[dict[str, Any]], realtime: dict[str, list[float]],
 ) -> tuple[list[dict[str, Any]], int]:
-    """Canlı dinlemede (api_realtime) ±5 sn içinde zaten olan çalmaları at.
+    """Canlı dinlemede (api_realtime) [t−20 sn, t+70 sn] içinde zaten olan çalmaları at.
 
     ÖLÇÜLDÜ 2026-09-21: ZIP'in `ts`'i tam saniye (`10:18:03`), canlı
     dinlemenin `played_at`'i milisaniyeli (`10:18:03.816`). Aynı çalma iki
@@ -77,8 +81,8 @@ def drop_near_realtime(
         times = realtime.get(row.get("track_id") or "")
         t = _epoch(row.get("played_at")) if times else None
         if times and t is not None:
-            i = bisect_left(times, t - NEARBY_WINDOW_SECONDS)
-            if i < len(times) and times[i] <= t + NEARBY_WINDOW_SECONDS:
+            i = bisect_left(times, t - REALTIME_BEFORE_SECONDS)
+            if i < len(times) and times[i] <= t + REALTIME_AFTER_SECONDS:
                 dropped += 1
                 continue
         kept.append(row)
@@ -448,6 +452,17 @@ def run_one_export(client: Any, settings: Any, job: dict[str, Any]) -> dict[str,
             # ignore_duplicates + return=representation → yalnız GERÇEKTEN
             # eklenen satırlar döner. Önceki ZIP'te olan çalmalar burada sayılmaz.
             inserted_plays += len(getattr(res, "data", None) or [])
+
+    # Aynı şarkının farklı kimlikleri (single/albüm) ve iki ZIP biçiminin
+    # (Account Data + Extended) aynı dinlemeyi iki kez yazması: DB tarafı tek kural
+    # setiyle temizler (0360). Saatlik iş de yapar; burada hemen koşturulur ki
+    # kullanıcı yükleme biter bitmez doğru sayıyı görsün. Hata akışı bozmaz.
+    for rpc, args in (("kopya_sarkilari_birlestir", {"p_son_saat": 2}),
+                      ("cift_dinlemeleri_temizle", {"p_user": user_id})):
+        try:
+            client.rpc(rpc, args).execute()
+        except Exception:  # noqa: BLE001
+            logger.warning("%s düştü: user=%s", rpc, user_id, exc_info=True)
 
     # ── 4. podcast_events ───────────────────────────────────────────────────────
     podcast_rows = [to_podcast_event_row(ev, user_id=user_id) for ev in podcast]

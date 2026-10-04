@@ -12,7 +12,16 @@ vi.mock('./vertex-core', () => ({
 import { karakterKelimeleri, kisaMetin, recapGirdisi, runEditorial, sayilarGirdideVar } from './editorial'
 import { etiketleriSec } from './editorial-recap'
 import { etiketSlug, havuzHazirMi, havuzuTemizle, KATEGORI_ASGARI, type EtiketSatiri } from './editorial-havuz'
-import { finaleGirdisi, gozlemler, hikayeOlguyaAit, journeyGirdisi, kapanisiDogrula } from './editorial-journey'
+import {
+  eslikciAdlari,
+  eslikciAnar,
+  finaleGirdisi,
+  gozlemler,
+  hikayeOlguyaAit,
+  journeyGirdisi,
+  kapanisiDogrula,
+} from './editorial-journey'
+import type { EslikciYil, JourneyEslikcileri } from '@/lib/journey/eslikciler'
 import { yuzdeBicimi } from './editorial-taste'
 
 describe('sayilarGirdideVar — uydurma sayı yasağı', () => {
@@ -152,6 +161,30 @@ describe('etiketleriSec — indeks eşlemesi', () => {
 
 // ── Journey ─────────────────────────────────────────────────────────────────
 
+const eslikciYili = (year: number, plays: number, aylar = 12): EslikciYil => ({
+  year,
+  plays,
+  minutes: plays * 3,
+  activeMonths: aylar,
+  topArtists: [{ name: `Sanatçı ${year}`, plays: 120, imageUrl: null }],
+  topAlbums: [{ album: `Albüm ${year}`, artist: `Sanatçı ${year}`, plays: 80, imageUrl: null }],
+  topTracks: [{ trackId: `t${year}`, title: `Şarkı ${year}`, artist: `Sanatçı ${year}`, imageUrl: null, plays: 64 }],
+  months: [
+    { month: 1, plays: 300, track: { trackId: 'a', title: 'Kış Şarkısı', artist: 'Kış', imageUrl: null, plays: 20 } },
+    { month: 2, plays: 280, track: { trackId: 'b', title: 'Kış Şarkısı 2', artist: 'Kış', imageUrl: null, plays: 25 } },
+    { month: 3, plays: 260, track: { trackId: 'c', title: 'Bahar', artist: 'Bahar Sanatçısı', imageUrl: null, plays: 18 } },
+  ],
+  yogunAy: { trackId: 'b', title: 'Kış Şarkısı 2', artist: 'Kış', imageUrl: null, plays: 25, month: 2 },
+})
+
+const eslikci: JourneyEslikcileri = {
+  years: [eslikciYili(2017, 10, 1), eslikciYili(2020, 8636), eslikciYili(2021, 14925)],
+  lifetime: {
+    artists: [{ name: 'Dedublüman', plays: 900, imageUrl: null, firstYear: 2020, lastYear: 2026, yearsActive: 7 }],
+    enduring: [{ trackId: 'u', title: 'Uyu', artist: 'Dedublüman', imageUrl: null, plays: 300, years: [2020, 2022, 2024] }],
+  },
+}
+
 describe('journeyGirdisi', () => {
   it('yıla göre sıralar; oranlar tam yüzde, dakika saat; gerçek olgular eklenir', () => {
     const girdi = journeyGirdisi(
@@ -159,18 +192,43 @@ describe('journeyGirdisi', () => {
         { year: 2021, payload: { discovery_rate: 0.234, genre_label: 'pop', total_minutes: 600 } },
         { year: 2020, payload: { discovery_rate: 0.95, genre_label: 'hip-hop', total_minutes: 120 } },
       ],
-      [{ year: 2020, night_pct: 11, peak_hour: 14, pillar: { title: 'P', artist: 'A', plays: 86, active_months: 11 } }],
+      [{ year: 2020, pillar: { title: 'P', artist: 'A', plays: 86, active_months: 11 } }],
     )
     expect(girdi.map((g) => g.year)).toEqual([2020, 2021])
-    expect(girdi[0]).toMatchObject({ discovery_pct: 95, hours: 2, night_pct: 11, peak_time: '14:00' })
+    expect(girdi[0]).toMatchObject({ discovery_pct: 95, hours: 2 })
     expect(girdi[0]!.pillar).toMatchObject({ title: 'P', plays: 86 })
     expect(girdi[1]).toMatchObject({ discovery_pct: 23, hours: 10 })
-    expect(girdi[1]!.night_pct).toBeUndefined()
   })
-  it('sahte latent yoksa gece/saat alanları HİÇ yoktur', () => {
-    const girdi = journeyGirdisi([{ year: 2020, payload: { total_minutes: 60 } }])
-    expect(girdi[0]).not.toHaveProperty('peak_time', expect.anything())
-    expect(girdi[0]!.night_pct).toBeUndefined()
+  it('eşlikçiler verilince kırıntı yıllar düşer, her yıl eşlikçileriyle gelir', () => {
+    const girdi = journeyGirdisi(
+      [
+        { year: 2017, payload: { total_minutes: 30 } },
+        { year: 2020, payload: { total_minutes: 600 } },
+        { year: 2021, payload: { total_minutes: 900 } },
+      ],
+      [],
+      eslikci,
+    )
+    expect(girdi.map((g) => g.year)).toEqual([2020, 2021])
+    const c = girdi[0]!.companions as Record<string, unknown>
+    expect(c.artists).toEqual([{ name: 'Sanatçı 2020', plays: 120 }])
+    expect(c.seasons).toEqual([
+      { months: 'Jan–Feb', artist: 'Kış', song: 'Kış Şarkısı 2' },
+      { months: 'Mar', artist: 'Bahar Sanatçısı', song: 'Bahar' },
+    ])
+    expect(c.densest_month).toMatchObject({ month: 'February', title: 'Kış Şarkısı 2', plays: 25 })
+  })
+})
+
+describe('eslikciAnar — yıl metni kendi eşlikçisini anmalı', () => {
+  const girdi = journeyGirdisi([{ year: 2020, payload: { total_minutes: 600 } }], [], eslikci)[0]!
+  const adlar = eslikciAdlari(girdi)
+  it('yılın sanatçısını/şarkısını anan metin geçer (harf ve aksan farkı yok sayılır)', () => {
+    expect(eslikciAnar('Bu yıl SANATCI 2020 hiç susmadı.', adlar)).toBe(true)
+    expect(eslikciAnar('Şubat’ta “Kış Şarkısı 2” 25 kez çaldı.', adlar)).toBe(true)
+  })
+  it('hiçbir eşlikçiyi anmayan genel laf reddedilir', () => {
+    expect(eslikciAnar('Müzikle dolu, güzel bir yıldı.', adlar)).toBe(false)
   })
 })
 
@@ -205,10 +263,14 @@ describe('gozlemler / finaleGirdisi', () => {
     { year: 2026, night_pct: 6, peak_hour: 9 },
   ]
 
-  it('veriden doğrulanabilir gözlemler çıkarır', () => {
-    const g = gozlemler(yillar, arc, olgular)
+  it('veriden doğrulanabilir gözlemler çıkarır; ilk/son dinlenen şarkı ANILMAZ', () => {
+    const g = gozlemler(yillar, arc, olgular, eslikci)
     const metin = g.join(' ')
-    expect(metin).toContain('It started in 2017 with "New Rules" by Dua Lipa.')
+    expect(metin).not.toContain('New Rules')
+    expect(metin).not.toContain('Speak of the Devil')
+    expect(metin).toContain('Dedublüman stayed with them for 7 years, from 2020 to 2026.')
+    expect(metin).toContain('"Uyu" by Dedublüman came back in 3 different years.')
+    expect(metin).toContain('In 2021, the artist they keep returning to is Sanatçı 2021.')
     expect(metin).toContain('Hip-Hop led their listening from 2019 to 2024')
     expect(metin).toContain('from Hip-Hop to Pop in 2025')
     expect(metin).toContain('95%')
@@ -216,13 +278,15 @@ describe('gozlemler / finaleGirdisi', () => {
     expect(metin).toContain('5%') // gece payı düşüşü 11% → 6%
     expect(metin).toContain('from 14:00 in 2020 to 09:00 in 2026')
     expect(metin).toContain('"P2" by A2 in 2023 (137 plays)')
-    expect(metin).toContain('"Speak of the Devil" by Black Pistol Fire')
   })
   it('paket gözlemleri ve ham destek alanlarını taşır; araba oturumu yok (şarkı sayısı sanılıyordu)', () => {
-    const p = finaleGirdisi(yillar, { ...arc, car: { hours: 18.4, sessions: 114 } }, olgular)
+    const p = finaleGirdisi(yillar, { ...arc, car: { hours: 18.4, sessions: 114 } }, olgular, eslikci)
     expect(p.observations).toBeInstanceOf(Array)
     expect(p).not.toHaveProperty('car')
-    expect(p).toHaveProperty('first_listen')
+    expect(p).not.toHaveProperty('first_listen')
+    expect(p).not.toHaveProperty('latest_listen')
+    expect(p.lifetime_companions).toEqual([{ artist: 'Dedublüman', from: 2020, to: 2026, years: 7 }])
+    expect((p.companion_of_each_year as unknown[]).map((c) => (c as { year: number }).year)).toEqual([2020, 2021])
   })
   it('kayma/keşif düşüşü olmayan veride ilgili gözlem üretilmez', () => {
     const g = gozlemler([{ year: 2020, payload: { total_minutes: 600, discovery_rate: 0.5 } }], null, [])
@@ -234,7 +298,7 @@ describe('kapanisiDogrula', () => {
   const girdi = JSON.stringify({ a: 'New Rules', y: 2017, n: 95, m: 2025, o: 2023 })
   const iyi = {
     paragraphs: [
-      "Her şey 2017'de New Rules ile başladı; kulaklıktan çıkan ilk şarkı buydu ve sonrasında yıllarca yeni sanatçılar geldi, bir kapı açıldı ve kimse kapatmadı.",
+      "Her şey 2017'de New Rules ile başladı; o yıl kulaklıkta en çok o vardı ve sonrasında yıllarca yeni sanatçılar geldi, bir kapı açıldı ve kimse kapatmadı.",
       "Sonra yeni sesler geldi, dinlediğin sanatçıların yüzde 95'i yeniydi, ve liste her hafta biraz daha genişledi; o dönemde merak, alışkanlığın önünde yürüyordu.",
       "Bazı şarkılar hep kaldı; 2023 boyunca her ay aynı parçaya döndün, bunu sen de fark etmemiş olabilirsin, çünkü tekrar ettiğin şey artık şarkıdan çok bir huydu.",
     ],
@@ -249,6 +313,10 @@ describe('kapanisiDogrula', () => {
     expect(kapanisiDogrula({ ...iyi, last_line: 'Bugünlerde fonda başka bir şarkı çalıyor.' }, girdi)).toBeNull()
     expect(kapanisiDogrula({ ...iyi, last_line: 'Bir şarkı sana eşlik etmeye devam ediyor.' }, girdi)).toBeNull()
     expect(kapanisiDogrula({ ...iyi, paragraphs: [iyi.paragraphs[0]!.replace('yıllarca', 'nasıl?'), 'Bu bir sorudur, değil mi? Evet öyle olsa gerek ki.', iyi.paragraphs[2]!] }, girdi)).toBeNull()
+  })
+  it('ilk dinlenen şarkıdan söz eden metni reddeder (tesadüfi ilk tıklama kişiyi anlatmaz)', () => {
+    expect(kapanisiDogrula({ ...iyi, last_line: 'Her şey o ilk şarkıyla başlamıştı.' }, girdi)).toBeNull()
+    expect(kapanisiDogrula({ ...iyi, last_line: 'It all began with your first song.' }, girdi)).toBeNull()
   })
   it('girdide olmayan sayıyı reddeder', () => {
     expect(kapanisiDogrula({ ...iyi, last_line: 'Bugüne kadar 4242 saat dinledin sen.' }, girdi)).toBeNull()

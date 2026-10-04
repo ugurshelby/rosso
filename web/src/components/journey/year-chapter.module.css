@@ -1,0 +1,353 @@
+/* Yıl bölümü — recap-journey-design.md §0 (tam viewport, tek kahraman, 1:1 kırpılmayan
+   görsel, yalnız transform/opacity, kaydırmaya bağlı hareket). Kompozisyon `data-tur`'dan. */
+
+.chapter {
+  position: relative;
+  min-height: 100svh;
+  min-height: 100dvh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  scroll-snap-align: start;
+  padding: clamp(var(--space-8), 8vh, var(--space-16)) clamp(var(--space-4), 5vw, var(--space-12));
+  box-sizing: border-box;
+  /* Tek katman zemin: yılın ışığı + koyu derinlik (her karede yeniden boyanmaz). */
+  background:
+    radial-gradient(120% 70% at 50% 0%, color-mix(in srgb, var(--y-glow, #7c3aed) 22%, transparent) 0%, transparent 62%),
+    linear-gradient(180deg, color-mix(in srgb, var(--y-from, #1e1b4b) 70%, #050507) 0%, #050507 55%, var(--y-to, #050507) 100%);
+  /* Uzun akışta ekran dışı bölümler çizilmez (görsel ağırlıklı sayfa için büyük kazanç). */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 100dvh;
+}
+
+.inner {
+  width: 100%;
+  max-width: 1120px;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(var(--space-6), 5vh, var(--space-12));
+}
+
+/* ── Başlık ───────────────────────────────────────────────────────── */
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.eyebrow {
+  margin: 0;
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.titleRow {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.year {
+  margin: 0;
+  font-family: var(--font-journey, 'Bodoni Moda', Georgia, serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(3rem, 9vw, 6.5rem);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  color: color-mix(in srgb, var(--y-accent, #c084fc) 28%, #ffffff);
+}
+
+.breakBadge {
+  padding: 4px 10px;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in srgb, var(--y-accent, #c084fc) 45%, transparent);
+  background: color-mix(in srgb, var(--y-accent, #c084fc) 14%, transparent);
+  color: color-mix(in srgb, var(--y-accent, #c084fc) 30%, #ffffff);
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+
+.manset {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-3);
+  flex-wrap: wrap;
+}
+
+.mansetDeger {
+  font-family: var(--font-social, 'Barlow Semi Condensed', sans-serif);
+  font-weight: 900;
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--y-accent, #c084fc);
+}
+
+.mansetEtiket,
+.mansetYan {
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.mansetYan::before {
+  content: '·';
+  margin-right: var(--space-3);
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.note {
+  margin: var(--space-2) 0 0;
+  max-width: 46ch;
+  font-family: var(--font-journey, 'Bodoni Moda', Georgia, serif);
+  font-style: italic;
+  font-size: clamp(1.15rem, 2.4vw, 1.6rem);
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  color: rgba(255, 255, 255, 0.86);
+  text-wrap: pretty;
+}
+
+/* ── Üçlü: yılın şarkısı · sanatçısı · albümü ───────────────────────── */
+.trio {
+  display: grid;
+  gap: clamp(var(--space-4), 3vw, var(--space-8));
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr);
+  align-items: end;
+}
+
+/* Kompozisyon: kahraman eşlikçi sahne türüne göre değişir — her yıl aynı görünmez. */
+.chapter[data-tur='kesif'] .trio {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 1fr);
+}
+.chapter[data-tur='kesif'] .cardArtist { order: -1; }
+.chapter[data-tur='sakin'] .trio {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.5fr);
+}
+.chapter[data-tur='sakin'] .cardAlbum { order: -1; }
+.chapter[data-tur='dagilma'] .trio {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+}
+.chapter[data-tur='hacim'] .mansetDeger {
+  font-size: clamp(3rem, 10vw, 7rem);
+}
+
+.card {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.art {
+  width: 100%;
+  /* Tek kahraman (§0.3): kahraman kapak büyük, eşlikçiler ona hizmet eder. */
+  max-width: clamp(140px, 20vw, 260px);
+  aspect-ratio: 1 / 1;
+  border-radius: 12px;
+  box-shadow:
+    0 24px 60px -18px rgba(0, 0, 0, 0.85),
+    0 0 48px -14px color-mix(in srgb, var(--y-glow, #7c3aed) 35%, transparent);
+  transition: transform 140ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card[data-hero='true'] .art {
+  max-width: clamp(220px, 32vw, 440px);
+}
+
+.card:active .art {
+  transform: scale(0.97);
+}
+
+.caption {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.label {
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: color-mix(in srgb, var(--y-accent, #c084fc) 55%, #ffffff);
+}
+
+.name {
+  font-family: var(--font-geist-sans, sans-serif);
+  font-size: clamp(1rem, 1.8vw, 1.35rem);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: #ffffff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sub {
+  font-family: var(--font-geist-sans, sans-serif);
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.6);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.story {
+  margin: 0;
+  max-width: 60ch;
+  font-family: var(--font-geist-sans, sans-serif);
+  font-size: clamp(1rem, 1.6vw, 1.15rem);
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.78);
+  text-wrap: pretty;
+}
+
+/* ── Yılın akışı: dönemler ──────────────────────────────────────────── */
+.seasons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.seasonsLabel {
+  margin: 0;
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.seasonList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr));
+  gap: var(--space-3);
+}
+
+.season {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.seasonArt {
+  flex: none;
+  width: 48px;
+  aspect-ratio: 1 / 1;
+  border-radius: 6px;
+}
+
+.seasonText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.seasonWhen {
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: color-mix(in srgb, var(--y-accent, #c084fc) 55%, #ffffff);
+}
+
+.seasonArtist,
+.seasonSong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-geist-sans, sans-serif);
+}
+
+.seasonArtist {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.seasonSong {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.densest {
+  margin: 0;
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* ── Kaydırmaya bağlı giriş (geri sarılabilir; JS yok) ──────────────── */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .head,
+    .trio,
+    .seasons {
+      animation: chapterIn linear both;
+      animation-timeline: view();
+      animation-range: entry 5% cover 28%;
+    }
+    .trio { animation-range: entry 12% cover 34%; }
+    .seasons { animation-range: entry 20% cover 42%; }
+  }
+}
+
+@keyframes chapterIn {
+  from {
+    opacity: 0.001;
+    transform: translateY(28px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ── Dar ekran: tek sütun, kahraman üstte ───────────────────────────── */
+@media (max-width: 760px) {
+  .trio,
+  .chapter[data-tur] .trio {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+  .trio > :first-child,
+  .chapter[data-tur='kesif'] .cardArtist,
+  .chapter[data-tur='sakin'] .cardAlbum {
+    grid-column: 1 / -1;
+  }
+  .chapter[data-tur='kesif'] .cardSong,
+  .chapter[data-tur='sakin'] .cardSong {
+    grid-column: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .art { transition: none; }
+  .card:active .art { transform: none; }
+}

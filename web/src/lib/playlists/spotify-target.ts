@@ -1,5 +1,5 @@
 import 'server-only'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/server'
 import { fetchWithRetry } from './fetch-retry'
 
 /**
@@ -17,7 +17,11 @@ import { fetchWithRetry } from './fetch-retry'
 
 /** Kullanıcının Spotify access token'ı — süresi dolmuşsa yeniler, şifreyi çözer. */
 export async function getSpotifyToken(userId: string): Promise<string> {
-  const supabase = await createClient()
+  // Servis istemcisi ŞART (2026-10-04 bulgusu): bu fonksiyon cron yollarından da (aylık otomatik
+  // playlist, mood haftalık senkron) çağrılıyor; orada kullanıcı oturumu yok, RLS satırı gizliyor
+  // ve her çağrı "Spotify not connected" ile düşüyordu (3 günde 57 başarısız otomatik playlist).
+  // `userId` her zaman çağıran tarafından doğrulanmış kimliktir (route: requireAuth, cron: kuyruk).
+  const supabase = await createServiceClient()
   const { data } = await supabase
     .from('platform_connections')
     .select('is_active')
@@ -199,7 +203,7 @@ export async function replaceTracksOnSpotify(
   const uris = trackIds.map((id) => `spotify:track:${id}`)
   try {
     const res = await fetchWithRetry(
-      `https://api.spotify.com/v1/playlists/${targetPlaylistId}/tracks`,
+      `https://api.spotify.com/v1/playlists/${targetPlaylistId}/items`,
       {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
