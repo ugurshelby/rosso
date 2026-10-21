@@ -11,6 +11,12 @@ jobs:
     defaults:
       run:
         working-directory: web
+    env:
+      # Tests and build use fakes and never reach the network; these only satisfy env validation.
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-fake-anon-key
+      SUPABASE_SERVICE_ROLE_KEY: ci-fake-service-role-key
+      NEXT_PUBLIC_APP_URL: http://localhost:3847
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -25,12 +31,8 @@ jobs:
         run: npm run lint
       - name: Unit tests
         run: npm run test
-        env:
-          # Tests use fakes and never reach the network; these only satisfy env validation.
-          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-fake-anon-key
-          SUPABASE_SERVICE_ROLE_KEY: ci-fake-service-role-key
-          NEXT_PUBLIC_APP_URL: http://localhost:3847
+      - name: Build
+        run: npm run build
 
   worker:
     runs-on: ubuntu-latest
