@@ -14,6 +14,6 @@ describe('DavetEpostaSemasi', () => {
     expect(DavetEpostaSemasi.safeParse('').success).toBe(false)
   })
   it('davet sınırı Spotify Development Mode sınırının altında tutulur', () => {
-    expect(MAX_DAVET).toBeLessThanOrEqual(24)
+    expect(MAX_DAVET).toBe(4)
   })
 })

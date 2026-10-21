@@ -10,9 +10,9 @@ import { createServiceClient } from '@/lib/supabase/server'
  * (auth.users tetikleyicisi) DB'dedir; bu dosya yalnız sahibin listeyi yönetmesi içindir.
  */
 
-/** Spotify Development Mode'da bir uygulamaya eklenebilecek kullanıcı sayısı sınırlıdır
- *  (yaklaşık 25 — güncel değeri Spotify Dashboard'dan doğrula). Davet listesi bunu aşmasın. */
-export const MAX_DAVET = 24
+/** Sahibin ekleyebileceği davetli sayısı. Spotify Development Mode, Client ID başına 5 kullanıcıya
+ *  izin verir (sahip + 4 davetli); sahip kararı: 4 (2026-10-05). */
+export const MAX_DAVET = 4
 
 export const DavetEpostaSemasi = z.string().trim().toLowerCase().min(3).max(254).email()
 
