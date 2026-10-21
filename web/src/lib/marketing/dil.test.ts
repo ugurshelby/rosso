@@ -4,7 +4,7 @@ import { dilAlternatifleri, yerelYol, yolCoz } from './dil'
 describe('yerelYol', () => {
   it('Türkçe öneksiz kalır', () => {
     expect(yerelYol('tr', '/')).toBe('/')
-    expect(yerelYol('tr', '/pricing')).toBe('/pricing')
+    expect(yerelYol('tr', '/help')).toBe('/help')
   })
 
   it('İngilizce /en öneki alır, kökte eğik çizgi bırakmaz', () => {
@@ -17,7 +17,7 @@ describe('yerelYol', () => {
 describe('yolCoz', () => {
   it('İngilizce yolu tabana çevirir', () => {
     expect(yolCoz('/en')).toEqual({ dil: 'en', tabanYol: '/' })
-    expect(yolCoz('/en/pricing')).toEqual({ dil: 'en', tabanYol: '/pricing' })
+    expect(yolCoz('/en/help')).toEqual({ dil: 'en', tabanYol: '/help' })
   })
 
   it('Türkçe yolu olduğu gibi bırakır', () => {
@@ -32,8 +32,8 @@ describe('yolCoz', () => {
 
 describe('dilAlternatifleri', () => {
   it('her dil KENDİ adresini canonical gösterir', () => {
-    expect(dilAlternatifleri('tr', '/pricing').canonical).toBe('/pricing')
-    expect(dilAlternatifleri('en', '/pricing').canonical).toBe('/en/pricing')
+    expect(dilAlternatifleri('tr', '/help').canonical).toBe('/help')
+    expect(dilAlternatifleri('en', '/help').canonical).toBe('/en/help')
   })
 
   it('iki dilin hreflang eşleşmesi + x-default Türkçe', () => {

@@ -172,7 +172,7 @@ describe('isStaticPrerenderedPath', () => {
   it('benzer ADLI dinamik yolları yanlışlıkla yakalamaz', () => {
     // '/login' statik ama '/logins' diye bir yol olsa dinamik olurdu.
     expect(isStaticPrerenderedPath('/loginx')).toBe(false)
-    expect(isStaticPrerenderedPath('/pricing-plans')).toBe(false)
+    expect(isStaticPrerenderedPath('/help-plans')).toBe(false)
   })
 })
 

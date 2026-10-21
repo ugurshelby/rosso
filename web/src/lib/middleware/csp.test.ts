@@ -98,7 +98,7 @@ describe('applyCspNonce — nonce yalnız dinamik rotalara', () => {
    * (2026-08-13 ölçümü: /login 8 inline script, 0 nonce). Onlara
    * nonce'lu + 'strict-dynamic' politika gitmesi = sayfa tamamen ölür.
    */
-  it.each(['/login', '/', '/register', '/pricing', '/privacy', '/help'])(
+  it.each(['/login', '/', '/register', '/privacy', '/help'])(
     '%s için nonce ÜRETMEZ (yoksa sayfa beyaz ekrana düşer)',
     (pathname) => {
       const { nonce, csp } = applyCspNonce(fakeRequest({}, pathname))

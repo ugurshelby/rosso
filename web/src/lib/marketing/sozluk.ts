@@ -23,7 +23,6 @@ const tr = {
     gizlilik: 'Gizlilik',
     blog: 'Blog',
     moduller: 'Modüller',
-    planlar: 'Planlar',
     girisYap: 'Giriş yap',
     footerNotu: '© 2026 Project Rosso — müzik geçmişin, tek yerde',
     footerMenuEtiketi: 'Alt menü',
@@ -86,42 +85,6 @@ const tr = {
   vibe: {
     bolumEtiketi: 'Vibe kartları vitrini',
     kartEtiketi: 'vibe kartı',
-  },
-  fiyat: {
-    metaBaslik: 'Planlar',
-    metaAciklama:
-      'Rosso alfa boyunca tamamen ücretsiz: Spotify geçmişin, recap, journey, ' +
-      'taste ve ruh haline göre çalma listeleri. Kart istenmez.',
-    ustYazi: 'Planlar',
-    baslik: 'Alfa boyunca ücretsiz',
-    giris:
-      'Rosso şu an alfa aşamasında ve her özelliği açık. Kart istenmez. ' +
-      'Kalıcı fiyatlar yayından önce duyurulur; o güne kadar ödeme yok.',
-    plan: {
-      ad: 'Alfa',
-      durum: 'Şimdi kullanılabilir',
-      aciklama: 'Spotify geçmişinle Rosso’nun her köşesi açık.',
-      fiyat: '₺0',
-      birim: 'alfa boyunca',
-      ozellikler: [
-        'Spotify dinleme geçmişini (ZIP) yükleme',
-        'Yeni dinlemelerin kendiliğinden eşitlenmesi',
-        'Aylık ve yıllık Recap',
-        'Journey: yıllara yayılan dinleme yolculuğun',
-        'Taste ve sana özel vibe kartı',
-        'Ruh haline göre çalma listeleri',
-      ],
-      cta: 'Hikâyeni başlat',
-    },
-    kapanisEtiketi: 'Alfaya katıl',
-    kapanisUstYazi: 'Son',
-    kapanisBaslik: 'Alfa boyunca ödeme yok',
-    kapanisAlt:
-      'Kart istenmez. Erken katılanlar Rosso’nun nasıl şekilleneceğine de yön verir.',
-    kapanisCta: 'Hikâyeni başlat',
-    notOnce: 'Verin senin — satılmaz, reklam için kullanılmaz. Ayrıntı ',
-    notLink: 'gizlilik politikasında',
-    notSonra: '.',
   },
   yardim: {
     metaBaslik: 'Yardım ve sık sorulan sorular',
@@ -199,7 +162,6 @@ const en: MarketingSozluk = {
     gizlilik: 'Privacy',
     blog: 'Blog',
     moduller: 'Modules',
-    planlar: 'Plans',
     girisYap: 'Sign in',
     footerNotu: '© 2026 Project Rosso — your music history, in one place',
     footerMenuEtiketi: 'Footer menu',
@@ -255,41 +217,6 @@ const en: MarketingSozluk = {
   vibe: {
     bolumEtiketi: 'Vibe cards showcase',
     kartEtiketi: 'vibe card',
-  },
-  fiyat: {
-    metaBaslik: 'Plans',
-    metaAciklama:
-      'Rosso is completely free during alpha: your Spotify history, recap, journey, ' +
-      'taste and mood-based playlists. No card required.',
-    ustYazi: 'Plans',
-    baslik: 'Free during alpha',
-    giris:
-      'Rosso is in alpha and every feature is open. No card required. ' +
-      'Permanent pricing will be announced before launch; until then, nothing to pay.',
-    plan: {
-      ad: 'Alpha',
-      durum: 'Available now',
-      aciklama: 'Every corner of Rosso, open with your Spotify history.',
-      fiyat: '$0',
-      birim: 'during alpha',
-      ozellikler: [
-        'Upload your Spotify listening history (ZIP)',
-        'New listens sync automatically',
-        'Monthly and yearly Recap',
-        'Journey: your listening story across the years',
-        'Taste and a vibe card of your own',
-        'Mood-based playlists',
-      ],
-      cta: 'Start your story',
-    },
-    kapanisEtiketi: 'Join the alpha',
-    kapanisUstYazi: 'Finale',
-    kapanisBaslik: 'Nothing to pay during alpha',
-    kapanisAlt: 'No card required. Early members help shape where Rosso goes next.',
-    kapanisCta: 'Start your story',
-    notOnce: 'Your data is yours — never sold, never used for ads. Details in our ',
-    notLink: 'privacy policy',
-    notSonra: '.',
   },
   yardim: {
     metaBaslik: 'Help and FAQ',

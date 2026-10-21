@@ -35,10 +35,9 @@ describe('isProtectedPath', () => {
 })
 
 describe('isLoginOnlyPath', () => {
-  it('kök, fiyat, blog artık login’e düşmez (public)', () => {
+  it('kök, blog artık login’e düşmez (public)', () => {
     expect(isLoginOnlyPath('/')).toBe(false)
     expect(isLoginOnlyPath('/register')).toBe(false)
-    expect(isLoginOnlyPath('/pricing')).toBe(false)
     expect(isLoginOnlyPath('/blog')).toBe(false)
     expect(isLoginOnlyPath('/blog/isrc-ile-eslestirme')).toBe(false)
     expect(isLoginOnlyPath('/help')).toBe(false)

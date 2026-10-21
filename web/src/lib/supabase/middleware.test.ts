@@ -75,8 +75,8 @@ describe('middleware çerez kapısı — kazanç', () => {
     }
   })
 
-  it('çerez YOKSA fiyat/blog normal (200) açılır', async () => {
-    for (const path of ['/pricing', '/blog', '/blog/bir-yazi']) {
+  it('çerez YOKSA yardım/blog normal (200) açılır', async () => {
+    for (const path of ['/help', '/blog', '/blog/bir-yazi']) {
       getUserSpy.mockReset()
       const res = await updateSession(makeRequest(path))
       expect(getUserSpy, `${path} için çağrı yapılmamalı`).not.toHaveBeenCalled()

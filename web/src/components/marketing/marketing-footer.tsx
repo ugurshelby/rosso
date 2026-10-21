@@ -27,9 +27,6 @@ export function MarketingFooter() {
           <Link href={yerelYol(dil, '/blog')} className={styles.footerLink}>
             {t.blog}
           </Link>
-          <Link href={yerelYol(dil, '/pricing')} className={styles.footerLink}>
-            {t.planlar}
-          </Link>
           <Link href={yerelYol(dil, '/help')} className={styles.footerLink}>
             {t.yardim}
           </Link>

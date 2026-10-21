@@ -77,7 +77,6 @@ export const STATIC_PRERENDERED_PATHS = [
      link olmasın"). Kullanıcı bomboş siyah ekran görüyordu; kartın kendisi
      gerçek `/recap` destesinde zaten sorunsuz çalışıyor. Girdi de kaldırıldı:
      olmayan rotayı beyaz listede tutmak, listeyi güvenilmez yapar. */
-  '/pricing',
   '/privacy',
   '/register',
   '/update-password',

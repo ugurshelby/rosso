@@ -58,7 +58,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // 1.0 yalnız ana sayfada: öncelik SİTE İÇİ sıralamadır, mutlak bir
     // değer değil. Her sayfaya 1.0 vermek sinyali tamamen anlamsızlaştırır.
     { yol: '/', lastModified: bugun, changeFrequency: 'weekly', priority: 1 },
-    { yol: '/pricing', lastModified: bugun, changeFrequency: 'monthly', priority: 0.8 },
     {
       yol: '/blog',
       // `/blog` listesinin gerçek güncellenme anı: en yeni yazının tarihi.
