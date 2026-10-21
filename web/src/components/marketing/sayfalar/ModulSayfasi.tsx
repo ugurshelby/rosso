@@ -144,8 +144,8 @@ export function ModulSayfasi({ dil, slug }: { dil: Dil; slug: string }) {
             </div>
             <span className={styles.heroTrustText}>
               {dil === 'tr'
-                ? 'Kredi kartı gerekmez · Ücretsiz başla · Saf Spotify'
-                : 'No credit card required · Free start · Pure Spotify'}
+                ? 'Kredi kartı gerekmez · Davetli alfa · Saf Spotify'
+                : 'No credit card required · Invite-only alpha · Pure Spotify'}
             </span>
           </div>
         </div>
@@ -385,7 +385,7 @@ export function ModulMerkezi({ dil }: { dil: Dil }) {
           </h2>
           <p className="mkt-cta-band__sub">{m.giris}</p>
           <Link href="/register" className="mkt-btn-primary">
-            <span>{dil === 'tr' ? 'Ücretsiz Başla' : 'Start for Free'}</span>
+            <span>{dil === 'tr' ? 'Davetinle Katıl' : 'Join with Your Invite'}</span>
             <ArrowRight size={18} aria-hidden />
           </Link>
         </div>

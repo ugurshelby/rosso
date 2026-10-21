@@ -82,16 +82,16 @@ export interface ModulIcerigi {
 const TR: Record<ModulAnahtari, ModulIcerigi> = {
   taste: {
     ad: 'Taste',
-    metaBaslik: 'Spotify müzik zevki analizi ve müzik kimliği',
+    metaBaslik: 'Spotify müzik zevkin ve müzik kimliğin',
     metaAciklama:
-      'Spotify geçmişinden müzik zevki analizi: tür DNA’n, dinleme saatlerin, sadık sanatçıların ve sana özel bir müzik kimliği. Ücretsiz başla.',
+      'Spotify geçmişinden müzik zevkin: tür karışımın, dinleme saatlerin, sadık sanatçıların ve sana özel bir müzik kimliği. Davetli alfa.',
     anahtarKelimeler: ['spotify müzik zevki analizi', 'müzik kimliği', 'spotify tür analizi', 'müzik kişiliği testi', 'spotify dinleme alışkanlıkları'],
     ustYazi: 'TASTE · MÜZİKAL KİMLİK',
-    baslik: 'Spotify müzik zevki analizi: ne dinlediğini değil, nasıl bir dinleyici olduğunu gör',
+    baslik: 'Spotify müzik zevkin: ne dinlediğini değil, nasıl bir dinleyici olduğunu gör',
     giris:
       'Taste, Spotify dinleme geçmişini bir müzik kimliğine çevirir: baskın türlerin, günün hangi saatinde dinlediğin, yıllardır sadık kaldığın sanatçılar ve seni anlatan bir vibe kartı.',
     ozellikler: [
-      'Tür DNA’n: dinlemelerinin türlere göre ağırlıklı dağılımı',
+      'Tür karışımın: dinlemelerinin türlere göre ağırlıklı dağılımı',
       'Gün içi ritmin: saat saat dinleme yoğunluğu ve zirve saatin',
       'Şu An ve Değişmeyenler: son günlerin ruh hali ile yıllardır yanında olan şarkılar',
       'Sadık sanatçılar: zaman içinde bırakmadığın isimler',
@@ -114,14 +114,14 @@ const TR: Record<ModulAnahtari, ModulIcerigi> = {
       },
     ],
     adimlar: [
-      'Rosso’ya ücretsiz kayıt ol.',
+      'Davetinle Rosso’ya kayıt ol.',
       'Kendi Spotify hesabını bağla (kendi geliştirici uygulaman ile, birkaç dakika).',
       'İstersen Spotify’dan indirdiğin geçmiş verini yükle.',
       'Taste sayfan dinleme verinden otomatik oluşur.',
     ],
     sss: [
       {
-        q: 'Spotify müzik zevki analizi nasıl çalışır?',
+        q: 'Taste müzik zevkimi nasıl okuyor?',
         a: 'Rosso, Spotify dinleme geçmişindeki şarkı, sanatçı, tür ve saat bilgilerini işler; türlere göre ağırlıklı bir dağılım, gün içi dinleme ritmi ve sadık sanatçılar çıkarır.',
       },
       {
@@ -129,11 +129,11 @@ const TR: Record<ModulAnahtari, ModulIcerigi> = {
         a: 'Hayır. Rosso’da kullanıcılar birbirini görmez; Taste sayfası yalnız sana aittir.',
       },
       {
-        q: 'Analiz için Spotify verimi indirmem gerekiyor mu?',
-        a: 'Zorunlu değil. Hesabını bağlamak yeni dinlemeleri getirir; Spotify’dan indirdiğin geçmiş veri dosyası ise yıllara yayılan derin analiz için opsiyoneldir.',
+        q: 'Bunun için Spotify verimi indirmem gerekiyor mu?',
+        a: 'Zorunlu değil. Hesabını bağlamak yeni dinlemeleri getirir; Spotify’dan indirdiğin geçmiş veri dosyası ise yıllara yayılan derinlik için isteğe bağlıdır.',
       },
     ],
-    cta: 'Müzik kimliğini ücretsiz keşfet',
+    cta: 'Davetinle müzik kimliğini keşfet',
     ilgili: ['recap', 'journey'],
   },
 
@@ -141,7 +141,7 @@ const TR: Record<ModulAnahtari, ModulIcerigi> = {
     ad: 'Recap',
     metaBaslik: 'Spotify recap: aylık ve yıllık dinleme özeti',
     metaAciklama:
-      'Yılda bir değil, her ay Spotify recap: en çok dinlediğin şarkılar, sanatçılar, albümler ve dönemin hikâyesi. Wrapped’a ücretsiz alternatif.',
+      'Yılda bir değil, her ay Spotify recap: en çok dinlediğin şarkılar, sanatçılar, albümler ve dönemin hikâyesi. Wrapped’ı beklemeden, davetli alfada.',
     anahtarKelimeler: ['spotify recap', 'spotify wrapped alternatifi', 'spotify aylık özet', 'spotify yıllık özet', 'spotify dinleme istatistikleri'],
     ustYazi: 'RECAP · DÖNEMSEL AYNA',
     baslik: 'Spotify recap her ay: Wrapped’ı yılda bir beklemek zorunda değilsin',
@@ -170,7 +170,7 @@ const TR: Record<ModulAnahtari, ModulIcerigi> = {
       },
     ],
     adimlar: [
-      'Ücretsiz kayıt ol ve Spotify hesabını bağla.',
+      'Davetinle kayıt ol ve Spotify hesabını bağla.',
       'Geçmiş aylar için Spotify’dan indirdiğin veri dosyasını yükle (isteğe bağlı).',
       'Aylık ve yıllık Recap’lerin otomatik oluşur.',
     ],
@@ -280,7 +280,7 @@ const TR: Record<ModulAnahtari, ModulIcerigi> = {
       },
     ],
     adimlar: [
-      'Ücretsiz kayıt ol ve Spotify hesabını bağla.',
+      'Davetinle kayıt ol ve Spotify hesabını bağla.',
       'Ruh halini seç ya da bir otomasyon kuralı belirle.',
       'Oluşan listeyi incele, beğendiysen Spotify’a ekle.',
     ],
@@ -295,10 +295,10 @@ const TR: Record<ModulAnahtari, ModulIcerigi> = {
       },
       {
         q: 'Ruh haline göre playlist nasıl seçiliyor?',
-        a: 'Rosso, geçmişindeki şarkılarının türü ve dinleme bağlamı gibi sinyallerle o havaya uyanları öne çıkarır; çıkan liste her zaman senin kendi geçmişinden gelir.',
+        a: 'Rosso, geçmişindeki şarkılarının türü ve dinleme bağlamı gibi izlerle o havaya uyanları öne çıkarır; çıkan liste her zaman senin kendi geçmişinden gelir.',
       },
     ],
-    cta: 'Ücretsiz playlist oluşturmaya başla',
+    cta: 'Davetinle playlist oluşturmaya başla',
     ilgili: ['taste', 'recap'],
   },
 }
@@ -306,16 +306,16 @@ const TR: Record<ModulAnahtari, ModulIcerigi> = {
 const EN: Record<ModulAnahtari, ModulIcerigi> = {
   taste: {
     ad: 'Taste',
-    metaBaslik: 'Spotify taste analysis and your music identity',
+    metaBaslik: 'Spotify taste and your music identity',
     metaAciklama:
-      'Turn your Spotify history into a music taste analysis: genre DNA, listening hours, loyal artists and a personal music identity. Start free.',
+      'Turn your Spotify history into a picture of your taste: genre mix, listening hours, loyal artists and a personal music identity. Invite-only alpha.',
     anahtarKelimeler: ['spotify taste analysis', 'music personality', 'spotify genre analysis', 'music taste profile', 'spotify listening habits'],
     ustYazi: 'TASTE · MUSICAL IDENTITY',
-    baslik: 'Spotify taste analysis: see not what you listen to, but who you are as a listener',
+    baslik: 'Your Spotify taste: see not what you listen to, but who you are as a listener',
     giris:
       'Taste turns your Spotify listening history into a music identity: your dominant genres, the hours you listen, the artists you have stayed loyal to for years, and a vibe card that describes you.',
     ozellikler: [
-      'Your genre DNA: a weighted breakdown of your listening by genre',
+      'Your genre mix: a weighted breakdown of your listening by genre',
       'Your daily rhythm: hour-by-hour listening intensity and your peak hour',
       'Right Now and Constants: your recent mood versus songs that have stayed for years',
       'Loyal artists: names you never left',
@@ -338,14 +338,14 @@ const EN: Record<ModulAnahtari, ModulIcerigi> = {
       },
     ],
     adimlar: [
-      'Sign up for Rosso for free.',
+      'Sign up for Rosso with your invite.',
       'Connect your own Spotify account (through your own developer app, a few minutes).',
       'Optionally upload the listening history you downloaded from Spotify.',
       'Your Taste page builds itself from your listening data.',
     ],
     sss: [
       {
-        q: 'How does Spotify taste analysis work?',
+        q: 'How does Taste read my Spotify history?',
         a: 'Rosso processes the songs, artists, genres and times in your Spotify listening history and builds a weighted genre breakdown, a daily listening rhythm and your loyal artists.',
       },
       {
@@ -354,10 +354,10 @@ const EN: Record<ModulAnahtari, ModulIcerigi> = {
       },
       {
         q: 'Do I need to download my Spotify data?',
-        a: 'Not required. Connecting your account brings in new listening; the history file you download from Spotify is optional and adds deep, multi-year analysis.',
+        a: 'Not required. Connecting your account brings in new listening; the history file you download from Spotify is optional and adds years of depth.',
       },
     ],
-    cta: 'Discover your music identity for free',
+    cta: 'Discover your music identity with your invite',
     ilgili: ['recap', 'journey'],
   },
 
@@ -365,7 +365,7 @@ const EN: Record<ModulAnahtari, ModulIcerigi> = {
     ad: 'Recap',
     metaBaslik: 'Spotify recap: monthly and yearly listening summary',
     metaAciklama:
-      'A Spotify recap every month, not once a year: your top songs, artists, albums and the story of the period. A free Spotify Wrapped alternative.',
+      'A Spotify recap every month, not once a year: your top songs, artists, albums and the story of the period. No waiting for Wrapped, in an invite-only alpha.',
     anahtarKelimeler: ['spotify recap', 'spotify wrapped alternative', 'spotify monthly recap', 'spotify yearly summary', 'spotify listening stats'],
     ustYazi: 'RECAP · A MIRROR FOR EACH PERIOD',
     baslik: 'A Spotify recap every month: you should not have to wait a year for Wrapped',
@@ -394,7 +394,7 @@ const EN: Record<ModulAnahtari, ModulIcerigi> = {
       },
     ],
     adimlar: [
-      'Sign up for free and connect your Spotify account.',
+      'Sign up with your invite and connect your Spotify account.',
       'Optionally upload the data file you downloaded from Spotify for past months.',
       'Your monthly and yearly Recaps build automatically.',
     ],
@@ -504,7 +504,7 @@ const EN: Record<ModulAnahtari, ModulIcerigi> = {
       },
     ],
     adimlar: [
-      'Sign up for free and connect your Spotify account.',
+      'Sign up with your invite and connect your Spotify account.',
       'Pick a mood or set an automation rule.',
       'Review the generated list and add it to Spotify if you like it.',
     ],
@@ -519,10 +519,10 @@ const EN: Record<ModulAnahtari, ModulIcerigi> = {
       },
       {
         q: 'How is a mood playlist chosen?',
-        a: 'Rosso surfaces songs from your own history that fit the feeling using signals like genre and listening context; the result always comes from your own history.',
+        a: 'Rosso surfaces songs from your own history that fit the feeling using cues like genre and listening context; the result always comes from your own history.',
       },
     ],
-    cta: 'Start creating playlists for free',
+    cta: 'Start creating playlists with your invite',
     ilgili: ['taste', 'recap'],
   },
 }
@@ -537,7 +537,7 @@ export const MODUL_MERKEZI: Record<
   tr: {
     metaBaslik: 'Rosso modülleri: Spotify recap, playlist, müzik kimliği',
     metaAciklama:
-      'Rosso’nun modülleri: müzik kimliğin (Taste), aylık Spotify recap, yıllara yayılan Journey ve Spotify playlist oluşturucu. Ücretsiz alfa.',
+      'Rosso’nun modülleri: müzik kimliğin (Taste), aylık Spotify recap, yıllara yayılan Journey ve Spotify playlist oluşturucu. Davetli alfa.',
     baslik: 'İstatistikten öteye: Rosso modülleri',
     giris:
       'Spotify dinleme geçmişini hikâyeye çeviren dört modül: müzik kimliğin, aylık ve yıllık özetlerin, yıllara yayılan yolculuğun ve yaşayan çalma listelerin.',
@@ -547,7 +547,7 @@ export const MODUL_MERKEZI: Record<
   en: {
     metaBaslik: 'Rosso modules: Spotify recap, playlists, music identity',
     metaAciklama:
-      'Rosso’s modules: your music identity (Taste), a monthly Spotify recap, the multi-year Journey and a Spotify playlist creator. Free alpha.',
+      'Rosso’s modules: your music identity (Taste), a monthly Spotify recap, the multi-year Journey and a Spotify playlist creator. Invite-only alpha.',
     baslik: 'Beyond the numbers: Rosso modules',
     giris:
       'Four modules that turn your Spotify listening history into a story: your music identity, monthly and yearly summaries, a journey across the years and living playlists.',
