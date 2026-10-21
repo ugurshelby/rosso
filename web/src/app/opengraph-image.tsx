@@ -17,7 +17,6 @@ import { ROSSO_MARK_DATA_URI } from './opengraph-image-mark'
  * Boyut 1200×630: tüm büyük platformların beklediği oran (1.91:1). Daha
  * küçüğü ölçeklenirken bulanıklaşır.
  */
-export const runtime = 'edge'
 export const alt = 'Rosso — your musical identity'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
