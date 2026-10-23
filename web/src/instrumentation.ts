@@ -1,11 +1,11 @@
 /**
  * Sunucu tarafı hata yakalama — Next.js `onRequestError` hook'u.
  *
- * NEDEN VAR (2026-09-17): `system_logs` altyapısı ve admin panelindeki gruplu
- * hata görünümü zaten vardı, ama yalnızca ELLE `systemLog()` çağıran kod
+ * NEDEN VAR (2026-09-17): `system_logs` altyapısı ve gruplu hata
+ * kaydı zaten vardı, ama yalnızca ELLE `systemLog()` çağıran kod
  * yolları oraya düşüyordu. 48 API route'unda BEKLENMEDİK bir hata fırladığında
  * (null deref, üçüncü parti timeout, Supabase şema uyuşmazlığı…) Next sessizce
- * 500 dönüyor ve admin panelinde hiçbir iz kalmıyordu — yani en çok haberdar
+ * 500 dönüyor ve `system_logs`'ta hiçbir iz kalmıyordu — yani en çok haberdar
  * olmak istediğimiz hata sınıfı, tam olarak görünmeyen sınıftı.
  *
  * `onRequestError` Next'in bu iş için sunduğu resmî kancadır: App Router'daki
@@ -13,8 +13,8 @@
  * tek noktadan yakalar. 48 route'u tek tek try/catch ile sarmaktan hem daha
  * kapsayıcı hem de bakımı olmayan bir çözüm.
  *
- * Admin paneli kayıtları `operation + error_code` ile grupluyor
- * (admin/src/lib/admin/system-logs.ts), bu yüzden:
+ * `system_logs` kayıtları `operation + error_code` ile gruplanır,
+ * bu yüzden:
  *  - `operation` = NEREDE patladı (route yolu)
  *  - `error_code` = NE patladı (Next digest'i; aynı bug = aynı digest)
  * Böylece aynı hatanın 126 tekrarı panelde tek satır olur, 126 satır değil.

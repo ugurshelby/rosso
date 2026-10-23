@@ -126,7 +126,7 @@ export async function recordSpotifyAccess(
     if (error) throw error
   } catch (err) {
     // Allowlist kaydı yan-defterdir; tutulamazsa bağlantı yine de kurulmalı.
-    // Ama sessizce yutmuyoruz (B19) — admin panelinde eksik kayıt görürsek
+    // Ama sessizce yutmuyoruz (B19) — eksik kayıt görürsek
     // nedenini system_logs'ta bulacağız.
     void systemLog({
       operation: 'spotify_allowlist',

@@ -153,7 +153,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
    * uyarı olarak düşer, birleştirme kararını insan verir.
    *
    * Fire-and-forget: kullanıcı bu kontrolü BEKLEMEZ; bağlantı akışı
-   * gecikmemeli. Sonuç admin panelinde görünür.
+   * gecikmemeli. Sonuç `system_logs`/`pipeline_runs`'ta görünür.
    */
   if (identity.spotifyUserId) {
     void spotifyKimlikCakismasi(identity.spotifyUserId)

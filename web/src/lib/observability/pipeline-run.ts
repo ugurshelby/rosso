@@ -2,15 +2,14 @@ import 'server-only'
 import { createServiceClient } from '@/lib/supabase/server'
 
 /**
- * `pipeline_runs`'a tek satır kayıt — admin panelinin cron durumunu okuduğu
- * yer (`worker/app/services/run_log.py`'nin TS karşılığı).
+ * `pipeline_runs`'a tek satır kayıt — cron durumunun okunduğu yer (`worker/app/services/run_log.py`'nin TS karşılığı).
  *
  * ── Neden bu dosya var (2026-09-23, ölçüldü) ──────────────────────────────
  * `mood_pkg` cron'u 2026-09-16'da Python worker'dan TS'e taşındı
  * (`api/cron/mood-pkg/route.ts`) ama `record_run` çağrısı taşıma sırasında
  * unutuldu — iş kusursuz çalışmaya devam etti (bugün 02:30'da üretilen
  * paket bunu kanıtlıyor), yalnız `pipeline_runs`'a 3 Eylül'den beri hiç
- * satır düşmedi. Yani hata YOKTU, görünürlük vardı. "Admin paneli hatasız
+ * satır düşmedi. Yani hata YOKTU, görünürlük vardı. "pipeline_runs hatasız
  * görünüyor" ile "iş gerçekten çalışıyor" farklı iddialar — bu dosya
  * ikisini yeniden aynı şeye bağlıyor.
  *
@@ -54,7 +53,7 @@ export async function recordPipelineRun(args: {
  *
  * Denetim 2026-09-26: recap / playlist_refresh / spotify senkron / account_purge /
  * auto_playlist / katalog zenginleştirme TS'e taşınırken `record_run` çağrısı
- * yalnız `mood_pkg`'de vardı; kalan işler admin panelinde "3 Eylül'den beri
+ * yalnız `mood_pkg`'de vardı; kalan işler `pipeline_runs`'ta "3 Eylül'den beri
  * sessiz" görünüyordu (iş çalışıyordu, kayıt yoktu).
  *
  * Gürültü kontrolü: hiç kullanıcı işlenmediyse ('empty') YAZILMAZ — 5 dakikada

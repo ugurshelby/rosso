@@ -26,7 +26,7 @@ Hepsi Supabase `pg_cron`'da yaşar — GitHub reposuna hiç dokunulmasa bile (60
 **2026-09-16 mimari revizyonu:** `account_purge`, `mood_pkg` ve `playlist_refresh` GitHub Actions/Python'dan TypeScript'e (Vercel) taşındı — bu üçü artık `WORKER_GITHUB_PAT`'e hiç bağımlı değil, doğrudan `pg_cron → pg_net → Vercel` gider (Spotify senkron/recap/auto-playlists ile aynı desen). Yalnızca **katalog bakımı** (ISRC/kapak/sanatçı görseli — Deezer/Last.fm/MusicBrainz, düşük öncelikli/kozmetik) hâlâ GitHub Actions'ta.
 
 > **2026-09-26 denetimi:** TS cron rotaları (recap, playlist_refresh, spotify senkron, account_purge,
-> auto_playlist, katalog zenginleştirme) artık `pipeline_runs`'a yazar (boş turlar yazılmaz). Admin'de
+> auto_playlist, katalog zenginleştirme) artık `pipeline_runs`'a yazar (boş turlar yazılmaz). `pipeline_runs`'ta
 > "3 Eylül'den beri sessiz" görünen ~14 iş, Railway/Python dönemi run_type'larıydı (nightly, fast,
 > ytmusic_*, match_batch…) — iş çalışıyordu, kayıt yoktu ya da iş artık yok. Ayrıntı: `logs/2026-09-26.md`.
 
@@ -44,7 +44,7 @@ Hepsi Supabase `pg_cron`'da yaşar — GitHub reposuna hiç dokunulmasa bile (60
 Yeni bir gerçek kullanıcı (arkadaşınız) Spotify'ı bağlamak istediğinde:
 
 1. **Spotify Developer Dashboard**'a girip o kişinin Spotify hesabını **elle** ekleyin. Spotify'ın bunun için bir API'si yok — bu adım hiçbir şekilde otomatikleştirilemez, Rosso'nun değil Spotify'ın kısıtı.
-2. **Rosso admin panelinde** (`admin/spotify-access-table`) o kullanıcıyı tek tıkla onaylayın.
+2. **Spotify Dashboard'da** o kişinin e-postasını User Management'a elle ekleyin.
 
 Bunun dışında hiçbir gerçek kullanıcı işlemi elle müdahale gerektirmez.
 

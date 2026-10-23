@@ -72,8 +72,8 @@ export async function POST(req: NextRequest) {
     /*
      * 🔴 `pipeline_runs` kaydı (2026-09-23) — bkz. lib/observability/pipeline-run.ts
      * başlık notu. Bu cron 2026-09-16'da Python worker'dan TS'e taşınırken
-     * `record_run` çağrısı unutulmuştu; admin paneli 3 Eylül'den beri bu
-     * işin durumunu göremiyordu (iş kendisi kesintisiz çalışmaya devam etti).
+     * `record_run` çağrısı unutulmuştu; `pipeline_runs` 3 Eylül'den beri bu
+     * işin durumunu göstermiyordu (iş kendisi kesintisiz çalışmaya devam etti).
      * `moodPkg.outcome` zaten hesaplanmış durumda — onu aynen kullanıyoruz.
      */
     await recordPipelineRun({

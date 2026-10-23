@@ -72,7 +72,7 @@ export async function spotifyEpostasiniKaydet(eposta: string): Promise<EpostaSon
     revalidatePath('/settings/platforms')
     return { ok: true }
   } catch (err) {
-    // Sessiz yutma YOK (B19): admin panelde eksik e-posta görülürse sebebi
+    // Sessiz yutma YOK (B19): eksik e-posta görülürse sebebi
     // `system_logs`'ta bulunacak.
     void systemLog({
       operation: 'spotify_allowlist',

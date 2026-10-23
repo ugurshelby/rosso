@@ -28,8 +28,8 @@ export function emailsMatch(
 }
 
 /**
- * Bu kullanıcı sistem sahibi / admin mi?
- * Yalnızca admin paneli / özel sistem işlevleri için kontrol sağlar.
+ * Bu kullanıcı sistem sahibi mi?
+ * Yalnızca özel sistem işlevleri için kontrol sağlar.
  */
 export function isOwner(
   user: { email?: string | null },
