@@ -1,0 +1,55 @@
+name: Health alarm
+
+# Veritabanındaki `saglik_kontrolu()` (web/supabase/kurulum/schema.sql) bir sorun görünce
+# `repository_dispatch` ile bu workflow'u uyandırır. Issue github-actions[bot]
+# olarak açılır ve repo sahibi @ ile anılır: sahibe e-posta bildirimi düşer
+# (sahibin kendi token'ıyla açılan issue bildirim üretmezdi).
+# GitHub `schedule` YOK: bu workflow 60 gün push gelmese de çalışır.
+
+on:
+  repository_dispatch:
+    types: [saglik_alarm, saglik_duzeldi]
+
+permissions:
+  issues: write
+
+concurrency:
+  group: saglik-alarm
+  cancel-in-progress: false
+
+jobs:
+  alarm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      OLAY: ${{ github.event.action }}
+      SAHIP: ${{ github.repository_owner }}
+      PAYLOAD: ${{ toJson(github.event.client_payload) }}
+    steps:
+      - name: Etiketi hazırla
+        run: gh label create saglik --color B60205 --description "Sağlık nöbetçisi alarmı" 2>/dev/null || true
+
+      - name: Issue aç, güncelle ya da kapat
+        run: |
+          set -euo pipefail
+          sorunlar=$(jq -r '(.sorunlar // []) | map("- " + .) | join("\n")' <<<"$PAYLOAD")
+          olcum=$(jq '.olcum // {}' <<<"$PAYLOAD")
+          zaman=$(jq -r '(.zaman // "")[0:16] | sub("T"; " ")' <<<"$PAYLOAD")
+          acik=$(gh issue list --label saglik --state open --limit 1 --json number --jq '.[0].number // empty')
+
+          if [ "$OLAY" = "saglik_alarm" ]; then
+            govde=$(printf '@%s Rosso sağlık nöbetçisi sorun gördü (%s UTC).\n\n%s\n\n<details><summary>Ölçüm</summary>\n\n```json\n%s\n```\n</details>\n\nWhat to do: SELF-HOSTING.md → Troubleshooting.' \
+              "$SAHIP" "$zaman" "$sorunlar" "$olcum")
+            if [ -n "$acik" ]; then
+              gh issue comment "$acik" --body "$govde"
+            else
+              gh issue create --title "Rosso sağlık alarmı" --label saglik --body "$govde"
+            fi
+          elif [ "$OLAY" = "saglik_duzeldi" ] && [ -n "$acik" ]; then
+            gh issue comment "$acik" --body "@$SAHIP Sorun kendiliğinden düzeldi ($zaman UTC). Issue kapatılıyor."
+            gh issue close "$acik"
+          else
+            echo "Açık sağlık issue'su yok; yapılacak bir şey yok."
+          fi

@@ -999,7 +999,7 @@ ALTER TABLE ONLY public.pipeline_runs ADD CONSTRAINT pipeline_runs_outcome_check
 
 ALTER TABLE ONLY public.pipeline_runs ADD CONSTRAINT pipeline_runs_pkey PRIMARY KEY (id);
 
-ALTER TABLE ONLY public.pipeline_runs ADD CONSTRAINT pipeline_runs_run_type_check CHECK ((run_type = ANY (ARRAY['export'::text, 'enrichment'::text, 'spotify_recently_played'::text, 'playlist_refresh'::text, 'nightly_sync'::text, 'ytmusic_liked'::text, 'ytmusic_history'::text, 'taste_refresh'::text, 'recap_refresh'::text, 'auto_playlist'::text, 'catalog_backfill'::text, 'migration_queue'::text, 'match_batch'::text, 'isrc_backfill'::text, 'cover_backfill'::text, 'account_purge'::text, 'artist_image_backfill'::text, 'journey_pkg'::text, 'taste_pkg'::text, 'pattern_pkg'::text, 'stats_pkg'::text, 'period_pkg'::text, 'mood_pkg'::text, 'playlist_reco_pkg'::text, 'log_cleanup'::text, 'deezer_cover_backfill'::text, 'sarki_butunlugu'::text, 'sarki_butunlugu_ilk'::text])));
+ALTER TABLE ONLY public.pipeline_runs ADD CONSTRAINT pipeline_runs_run_type_check CHECK ((run_type = ANY (ARRAY['export'::text, 'enrichment'::text, 'spotify_recently_played'::text, 'playlist_refresh'::text, 'nightly_sync'::text, 'ytmusic_liked'::text, 'ytmusic_history'::text, 'taste_refresh'::text, 'recap_refresh'::text, 'auto_playlist'::text, 'catalog_backfill'::text, 'migration_queue'::text, 'match_batch'::text, 'isrc_backfill'::text, 'cover_backfill'::text, 'account_purge'::text, 'artist_image_backfill'::text, 'journey_pkg'::text, 'taste_pkg'::text, 'pattern_pkg'::text, 'stats_pkg'::text, 'period_pkg'::text, 'mood_pkg'::text, 'playlist_reco_pkg'::text, 'log_cleanup'::text, 'deezer_cover_backfill'::text, 'sarki_butunlugu'::text, 'sarki_butunlugu_ilk'::text, 'saglik'::text])));
 
 ALTER TABLE ONLY public.platform_connections ADD CONSTRAINT platform_connections_pkey PRIMARY KEY (id);
 
@@ -12209,3 +12209,141 @@ CREATE TRIGGER davet_listeli_kayit_kapisi
   BEFORE INSERT ON auth.users
   FOR EACH ROW
   EXECUTE FUNCTION public.davet_listeli_kayit_kapisi();
+
+-- Sağlık nöbetçisi (kişisel Rosso migration 0365). Alarm kanalı isteğe bağlı:
+-- Vault 'saglik_github_token' + 'saglik_github_repo' (bkz. SELF-HOSTING.md).
+CREATE OR REPLACE FUNCTION public.saglik_kontrolu(p_test text DEFAULT NULL)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, vault, net, cron, pg_temp
+AS $$
+DECLARE
+  c_senkron_esik  constant interval := interval '3 hours';
+  c_http_pencere  constant interval := interval '2 hours';
+  c_http_min      constant int      := 6;
+  c_cron_pencere  constant interval := interval '2 hours';
+  c_cron_min      constant int      := 3;
+  c_mood_esik     constant interval := interval '3 hours';
+  c_zip_esik      constant interval := interval '3 hours';
+  c_tekrar        constant interval := interval '12 hours';
+
+  v_sorunlar   jsonb := '[]'::jsonb;
+  v_olcum      jsonb := '{}'::jsonb;
+  v_son_senkron timestamptz;
+  v_http_top   int;
+  v_http_hata  int;
+  v_cron_hata  int;
+  v_son_mood   timestamptz;
+  v_zip_takili int;
+  v_onceki     record;
+  v_son_alarm  timestamptz;
+  v_olay       text;
+  v_token      text;
+  v_repo       text;
+  v_istek      bigint;
+  v_kanal      text := 'yok';
+BEGIN
+  -- spotify_senkron (yalnız bağlı bir Spotify hesabı varsa anlamlı)
+  IF EXISTS (SELECT 1 FROM platform_connections WHERE platform = 'spotify' AND coalesce(is_active, true)) THEN
+    SELECT max(created_at) INTO v_son_senkron FROM pipeline_runs
+     WHERE run_type = 'spotify_recently_played' AND outcome IN ('success', 'empty', 'partial');
+    v_olcum := v_olcum || jsonb_build_object('son_senkron', v_son_senkron);
+    IF v_son_senkron IS NULL OR v_son_senkron < now() - c_senkron_esik THEN
+      v_sorunlar := v_sorunlar || jsonb_build_array(format('Spotify senkronu %s saattir başarılı değil',
+        coalesce(round(extract(epoch FROM now() - v_son_senkron) / 3600)::text, '?')));
+    END IF;
+  END IF;
+
+  -- http_hata (pg_net yanıtları; NULL durum kodu = zaman aşımı/bağlantı hatası)
+  SELECT count(*), count(*) FILTER (WHERE status_code IS NULL OR status_code NOT BETWEEN 200 AND 299)
+    INTO v_http_top, v_http_hata
+    FROM net._http_response WHERE created > now() - c_http_pencere;
+  v_olcum := v_olcum || jsonb_build_object('http_toplam', v_http_top, 'http_hata', v_http_hata);
+  IF v_http_hata >= c_http_min AND v_http_hata * 2 > v_http_top THEN
+    v_sorunlar := v_sorunlar || jsonb_build_array(format(
+      'Cron istekleri başarısız: son 2 saatte %s/%s yanıt 2xx değil (401 ise CRON_SECRET ya da app_url yönlendirmesi)',
+      v_http_hata, v_http_top));
+  END IF;
+
+  -- cron_hata
+  SELECT count(*) INTO v_cron_hata FROM cron.job_run_details
+   WHERE start_time > now() - c_cron_pencere AND status = 'failed';
+  v_olcum := v_olcum || jsonb_build_object('cron_hata', v_cron_hata);
+  IF v_cron_hata >= c_cron_min THEN
+    v_sorunlar := v_sorunlar || jsonb_build_array(format('Son 2 saatte %s pg_cron çalışması başarısız', v_cron_hata));
+  END IF;
+
+  -- mood_turu
+  SELECT max(created_at) INTO v_son_mood FROM pipeline_runs WHERE run_type = 'mood_pkg';
+  v_olcum := v_olcum || jsonb_build_object('son_mood', v_son_mood);
+  IF v_son_mood IS NULL OR v_son_mood < now() - c_mood_esik THEN
+    v_sorunlar := v_sorunlar || jsonb_build_array('Mood turu 3 saattir hiç kayıt düşmedi');
+  END IF;
+
+  -- zip_takili
+  SELECT count(*) INTO v_zip_takili FROM export_jobs
+   WHERE status NOT IN ('completed', 'failed', 'error', 'cancelled')
+     AND coalesce(updated_at, created_at) < now() - c_zip_esik;
+  v_olcum := v_olcum || jsonb_build_object('zip_takili', v_zip_takili);
+  IF v_zip_takili > 0 THEN
+    v_sorunlar := v_sorunlar || jsonb_build_array(format('%s ZIP işi 3 saattir bitmedi (worker uyanmıyor olabilir)', v_zip_takili));
+  END IF;
+
+  -- Önceki durum ve son alarm zamanı
+  SELECT outcome, created_at INTO v_onceki FROM pipeline_runs
+   WHERE run_type = 'saglik' AND NOT coalesce((stats ->> 'test')::boolean, false)
+   ORDER BY created_at DESC LIMIT 1;
+  SELECT max((stats ->> 'alarm_at')::timestamptz) INTO v_son_alarm FROM pipeline_runs
+   WHERE run_type = 'saglik' AND stats ? 'alarm_at' AND NOT coalesce((stats ->> 'test')::boolean, false);
+
+  IF p_test = 'alarm' THEN
+    v_olay := 'saglik_alarm';
+    v_sorunlar := jsonb_build_array('TEST: sağlık nöbetçisi deneme alarmı (gerçek arıza değil)');
+  ELSIF p_test = 'duzeldi' THEN
+    v_olay := 'saglik_duzeldi';
+  ELSIF jsonb_array_length(v_sorunlar) > 0 THEN
+    IF v_onceki.outcome IS DISTINCT FROM 'error' OR v_son_alarm IS NULL OR v_son_alarm < now() - c_tekrar THEN
+      v_olay := 'saglik_alarm';
+    END IF;
+  ELSIF v_onceki.outcome = 'error' THEN
+    v_olay := 'saglik_duzeldi';
+  END IF;
+
+  -- Alarm kanalı (Vault). Yoksa sessizce yalnız kayıt.
+  IF v_olay IS NOT NULL THEN
+    SELECT decrypted_secret INTO v_token FROM vault.decrypted_secrets WHERE name = 'saglik_github_token' LIMIT 1;
+    SELECT decrypted_secret INTO v_repo  FROM vault.decrypted_secrets WHERE name = 'saglik_github_repo'  LIMIT 1;
+    IF coalesce(v_token, '') <> '' AND coalesce(v_repo, '') ~ '^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$' THEN
+      SELECT net.http_post(
+        url := 'https://api.github.com/repos/' || v_repo || '/dispatches',
+        headers := jsonb_build_object(
+          'Authorization', 'Bearer ' || v_token,
+          'Accept', 'application/vnd.github+json',
+          'X-GitHub-Api-Version', '2022-11-28',
+          'User-Agent', 'rosso-saglik-nobetcisi',
+          'Content-Type', 'application/json'),
+        body := jsonb_build_object('event_type', v_olay, 'client_payload',
+          jsonb_build_object('sorunlar', v_sorunlar, 'olcum', v_olcum, 'zaman', now())),
+        timeout_milliseconds := 15000
+      ) INTO v_istek;
+      v_kanal := 'github';
+    END IF;
+  END IF;
+
+  INSERT INTO pipeline_runs (run_type, outcome, stats, error)
+  VALUES (
+    'saglik',
+    CASE WHEN p_test IS NOT NULL OR jsonb_array_length(v_sorunlar) = 0 THEN 'success' ELSE 'error' END,
+    v_olcum || jsonb_build_object('sorunlar', v_sorunlar, 'olay', v_olay, 'kanal', v_kanal, 'istek', v_istek)
+      || CASE WHEN v_olay = 'saglik_alarm' AND v_kanal = 'github' THEN jsonb_build_object('alarm_at', now()) ELSE '{}'::jsonb END
+      || CASE WHEN p_test IS NOT NULL THEN jsonb_build_object('test', true) ELSE '{}'::jsonb END,
+    CASE WHEN jsonb_array_length(v_sorunlar) > 0 AND p_test IS NULL THEN left(v_sorunlar ->> 0, 500) END
+  );
+
+  RETURN v_olcum || jsonb_build_object('sorunlar', v_sorunlar, 'olay', v_olay, 'kanal', v_kanal);
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.saglik_kontrolu(text) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.saglik_kontrolu(text) TO service_role;

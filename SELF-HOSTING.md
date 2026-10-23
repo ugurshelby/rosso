@@ -133,3 +133,21 @@ See [docs/reference/kimlik-v2-kurulum.md](docs/reference/kimlik-v2-kurulum.md).
 | Spotify says "not registered for this application" | Add the account under *User Management* in the Spotify developer dashboard |
 | Login mail never arrives | Turn off *Confirm email* (single user) or configure custom SMTP in Supabase |
 | Nothing syncs | `app_url`/`cron_secret` in Vault don't match Vercel (`select * from cron.job_run_details order by start_time desc limit 5;` shows cron activity; `select * from net._http_response order by created desc limit 5;` shows the responses) |
+| Every cron response is 401 although the secrets match | `app_url` points at a domain that **redirects** (e.g. apex → `www`). The redirect drops the `Authorization` header. Set `app_url` to the exact primary domain shown in Vercel → Domains. |
+
+## Optional: health alarm (e-mail when something breaks)
+
+Every hour `saglik_kontrolu()` checks Spotify sync freshness, failing cron responses, failed `pg_cron` runs, the mood job and stuck ZIP imports, and records the result in `pipeline_runs` (`run_type = 'saglik'`). To get an e-mail when something breaks:
+
+1. Keep the workflow `.github/workflows/saglik-alarm.yml` in your fork (it opens one issue labelled `saglik` as `github-actions[bot]` and mentions you, so GitHub e-mails you; it closes the issue when things recover).
+2. Create a fine-grained GitHub token for **your fork only** with *Contents: Read and write* (needed for `repository_dispatch`).
+3. In the Supabase SQL editor:
+
+```sql
+select vault.create_secret('<your token>', 'saglik_github_token');
+select vault.create_secret('<you>/<your-fork>', 'saglik_github_repo');
+select public.saglik_kontrolu('alarm');   -- test: an issue should open within a minute
+select public.saglik_kontrolu('duzeldi'); -- test: it should close
+```
+
+Without these two secrets the check still runs and records its result; it just doesn't alert.
