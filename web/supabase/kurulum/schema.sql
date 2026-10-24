@@ -999,7 +999,7 @@ ALTER TABLE ONLY public.pipeline_runs ADD CONSTRAINT pipeline_runs_outcome_check
 
 ALTER TABLE ONLY public.pipeline_runs ADD CONSTRAINT pipeline_runs_pkey PRIMARY KEY (id);
 
-ALTER TABLE ONLY public.pipeline_runs ADD CONSTRAINT pipeline_runs_run_type_check CHECK ((run_type = ANY (ARRAY['export'::text, 'enrichment'::text, 'spotify_recently_played'::text, 'playlist_refresh'::text, 'nightly_sync'::text, 'ytmusic_liked'::text, 'ytmusic_history'::text, 'taste_refresh'::text, 'recap_refresh'::text, 'auto_playlist'::text, 'catalog_backfill'::text, 'migration_queue'::text, 'match_batch'::text, 'isrc_backfill'::text, 'cover_backfill'::text, 'account_purge'::text, 'artist_image_backfill'::text, 'journey_pkg'::text, 'taste_pkg'::text, 'pattern_pkg'::text, 'stats_pkg'::text, 'period_pkg'::text, 'mood_pkg'::text, 'playlist_reco_pkg'::text, 'log_cleanup'::text, 'deezer_cover_backfill'::text, 'sarki_butunlugu'::text, 'sarki_butunlugu_ilk'::text, 'saglik'::text])));
+ALTER TABLE ONLY public.pipeline_runs ADD CONSTRAINT pipeline_runs_run_type_check CHECK ((run_type = ANY (ARRAY['export'::text, 'enrichment'::text, 'spotify_recently_played'::text, 'playlist_refresh'::text, 'nightly_sync'::text, 'ytmusic_liked'::text, 'ytmusic_history'::text, 'taste_refresh'::text, 'recap_refresh'::text, 'auto_playlist'::text, 'catalog_backfill'::text, 'migration_queue'::text, 'match_batch'::text, 'isrc_backfill'::text, 'cover_backfill'::text, 'account_purge'::text, 'artist_image_backfill'::text, 'journey_pkg'::text, 'taste_pkg'::text, 'pattern_pkg'::text, 'stats_pkg'::text, 'period_pkg'::text, 'mood_pkg'::text, 'playlist_reco_pkg'::text, 'log_cleanup'::text, 'deezer_cover_backfill'::text, 'sarki_butunlugu'::text, 'sarki_butunlugu_ilk'::text, 'saglik'::text, 'db_yedek'::text])));
 
 ALTER TABLE ONLY public.platform_connections ADD CONSTRAINT platform_connections_pkey PRIMARY KEY (id);
 
@@ -12212,6 +12212,41 @@ CREATE TRIGGER davet_listeli_kayit_kapisi
 
 -- Sağlık nöbetçisi (kişisel Rosso migration 0365). Alarm kanalı isteğe bağlı:
 -- Vault 'saglik_github_token' + 'saglik_github_repo' (bkz. SELF-HOSTING.md).
+CREATE OR REPLACE FUNCTION public.invoke_db_yedek()
+RETURNS bigint
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, vault, net, pg_temp
+AS $$
+DECLARE
+  v_token text;
+  v_repo  text;
+  v_istek bigint;
+BEGIN
+  SELECT decrypted_secret INTO v_token FROM vault.decrypted_secrets WHERE name = 'saglik_github_token' LIMIT 1;
+  SELECT decrypted_secret INTO v_repo  FROM vault.decrypted_secrets WHERE name = 'saglik_github_repo'  LIMIT 1;
+  IF coalesce(v_token, '') = '' OR coalesce(v_repo, '') !~ '^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$' THEN
+    RAISE WARNING '[invoke_db_yedek] saglik_github_token / saglik_github_repo Vault''ta yok; yedek tetiklenmedi';
+    RETURN NULL;
+  END IF;
+  SELECT net.http_post(
+    url := 'https://api.github.com/repos/' || v_repo || '/dispatches',
+    headers := jsonb_build_object(
+      'Authorization', 'Bearer ' || v_token,
+      'Accept', 'application/vnd.github+json',
+      'X-GitHub-Api-Version', '2022-11-28',
+      'User-Agent', 'rosso-db-yedek',
+      'Content-Type', 'application/json'),
+    body := jsonb_build_object('event_type', 'db_yedek', 'client_payload', jsonb_build_object('zaman', now())),
+    timeout_milliseconds := 15000
+  ) INTO v_istek;
+  RETURN v_istek;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.invoke_db_yedek() FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.invoke_db_yedek() TO service_role;
+
 CREATE OR REPLACE FUNCTION public.saglik_kontrolu(p_test text DEFAULT NULL)
 RETURNS jsonb
 LANGUAGE plpgsql
@@ -12227,6 +12262,7 @@ DECLARE
   c_mood_esik     constant interval := interval '3 hours';
   c_zip_esik      constant interval := interval '3 hours';
   c_tekrar        constant interval := interval '12 hours';
+  c_yedek_esik    constant interval := interval '8 days';
 
   v_sorunlar   jsonb := '[]'::jsonb;
   v_olcum      jsonb := '{}'::jsonb;
@@ -12236,6 +12272,8 @@ DECLARE
   v_cron_hata  int;
   v_son_mood   timestamptz;
   v_zip_takili int;
+  v_son_yedek  record;
+  v_son_basari timestamptz;
   v_onceki     record;
   v_son_alarm  timestamptz;
   v_olay       text;
@@ -12288,6 +12326,18 @@ BEGIN
   v_olcum := v_olcum || jsonb_build_object('zip_takili', v_zip_takili);
   IF v_zip_takili > 0 THEN
     v_sorunlar := v_sorunlar || jsonb_build_array(format('%s ZIP işi 3 saattir bitmedi (worker uyanmıyor olabilir)', v_zip_takili));
+  END IF;
+
+  -- yedek (0366): haftalık db_yedek. Hiç başarılı kayıt yoksa ilk yedeği bekle,
+  -- ama son kayıt hata ise hemen söyle.
+  SELECT outcome, created_at, error INTO v_son_yedek FROM pipeline_runs
+   WHERE run_type = 'db_yedek' ORDER BY created_at DESC LIMIT 1;
+  SELECT max(created_at) INTO v_son_basari FROM pipeline_runs WHERE run_type = 'db_yedek' AND outcome = 'success';
+  v_olcum := v_olcum || jsonb_build_object('son_yedek', v_son_basari);
+  IF v_son_yedek.outcome = 'error' THEN
+    v_sorunlar := v_sorunlar || jsonb_build_array(format('Son veritabanı yedeği başarısız (%s)', coalesce(left(v_son_yedek.error, 120), 'ayrıntı yok')));
+  ELSIF v_son_basari IS NOT NULL AND v_son_basari < now() - c_yedek_esik THEN
+    v_sorunlar := v_sorunlar || jsonb_build_array(format('Veritabanı yedeği %s gündür alınmadı', round(extract(epoch FROM now() - v_son_basari) / 86400)));
   END IF;
 
   -- Önceki durum ve son alarm zamanı

@@ -9,18 +9,21 @@ name: DB Yedek (Supabase dışına şifreli dump)
 # "dün 14:00'e dön" diyebileceğin bir mekanizma zaten yok. Bu workflow o boşluğu
 # haftalık anlık görüntülerle doldurur.
 #
-# ⚠ ZAMANLAMA UYARISI: GitHub, repoda 60 gün boyunca hiç commit/push olmazsa
-# `schedule:` tetikleyicilerini OTOMATİK DURDURUR (ve uyarı e-postası atar).
-# Worker reposu seyrek değişir, yani bu gerçek bir risk. İki savunma:
-#   1) Aşağıdaki `workflow_dispatch` ile istediğin an elle çalıştırabilirsin.
-#   2) Uyarı e-postası gelirse repoda herhangi bir commit atmak sayacı sıfırlar.
-# Durumu `docs/reference/yillik-bakim-kontrol-listesi.md` üzerinden takip et.
+# ZAMANLAMA (2026-10-24, web migration 0366): GitHub `schedule` KULLANILMAZ —
+# repoya 60 gün push gelmezse GitHub onu durduruyordu. Pazar 04:00 UTC'de
+# Supabase pg_cron (`rosso-db-yedek-cron` → `invoke_db_yedek()`) bu workflow'u
+# `repository_dispatch` (`db_yedek`) ile uyandırır. Sonuç `pipeline_runs`'a
+# (`db_yedek`) yazılır; sağlık nöbetçisi yedek 8 günden eskiyse ya da başarısızsa
+# alarm verir. Elle çalıştırmak için `workflow_dispatch` duruyor.
 
 on:
-  # Haftalık otomatik çalıştırmak için şu iki satırı aç (Secrets: SUPABASE_DB_URL, YEDEK_PAROLA):
-  # schedule:
-  #   - cron: '0 4 * * 0'
+  repository_dispatch:
+    types: [db_yedek]
   workflow_dispatch:
+
+concurrency:
+  group: db-yedek
+  cancel-in-progress: false
 
 jobs:
   yedek:
@@ -92,6 +95,8 @@ jobs:
 
           BOYUT=$(du -h "$DOSYA" | cut -f1)
           echo "Yedek alındı: $DOSYA ($BOYUT)"
+          echo "YEDEK_DOSYA=$DOSYA" >> "$GITHUB_ENV"
+          echo "YEDEK_BAYT=$(stat -c%s "$DOSYA")" >> "$GITHUB_ENV"
           # Sıfır baytlık/çöp bir dosyayı "başarı" sanmamak için asgari boyut kontrolü.
           if [ "$(stat -c%s "$DOSYA")" -lt 10000 ]; then
             echo "::error::Yedek şüpheli derecede küçük — dump başarısız olmuş olabilir."
@@ -107,3 +112,17 @@ jobs:
           # artifact'i indirip kendi diskinde tut (bkz. geri yükleme rehberi).
           retention-days: 90
           if-no-files-found: error
+
+      - name: Sonucu kaydet (başarılı)
+        if: success()
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -q -c "insert into public.pipeline_runs (run_type, outcome, stats) values ('db_yedek', 'success', jsonb_build_object('dosya', '${YEDEK_DOSYA}', 'bayt', ${YEDEK_BAYT}, 'calisma', ${{ github.run_id }}, 'tetik', '${{ github.event_name }}'))"
+
+      - name: Sonucu kaydet (başarısız)
+        if: failure()
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -q -c "insert into public.pipeline_runs (run_type, outcome, stats, error) values ('db_yedek', 'error', jsonb_build_object('calisma', ${{ github.run_id }}), 'GitHub Actions db-yedek çalışması ${{ github.run_id }} başarısız')" || true

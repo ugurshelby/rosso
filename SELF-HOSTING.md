@@ -105,7 +105,7 @@ Within minutes the scheduler starts syncing your recent plays.
 ### The worker (ZIP import + catalog upkeep + backups)
 Heavy jobs run in **GitHub Actions**, on demand, so nothing runs 24/7.
 1. Use your own copy of this repo (fork).
-2. *Settings → Secrets and variables → Actions* → add: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `LASTFM_API_KEY` (free at last.fm/api), `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`. For weekly encrypted DB backups also `SUPABASE_DB_URL` and `YEDEK_PAROLA` (a passphrase you keep in a password manager, *not* in Supabase).
+2. *Settings → Secrets and variables → Actions* → add: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `LASTFM_API_KEY` (free at last.fm/api), `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`. For weekly encrypted DB backups also `SUPABASE_DB_URL` and `YEDEK_PAROLA` (a passphrase you keep in a password manager, *not* in Supabase). The weekly run is started by `pg_cron` (Sunday 04:00 UTC, `invoke_db_yedek()`), not by a GitHub schedule (GitHub stops schedules after 60 days without a push), so it needs the same two Vault secrets as the health alarm below (`saglik_github_token`, `saglik_github_repo`). Each run records `pipeline_runs.run_type = 'db_yedek'`; the health check alarms when the last backup failed or is older than 8 days.
 3. Create a fine-grained GitHub token limited to your fork with **Contents: read/write** (used for `repository_dispatch`) and set in Vercel: `WORKER_GITHUB_PAT=<token>` and `WORKER_GITHUB_REPO=<you>/<fork>`.
 
 Without the worker, live listening sync and everything except large ZIP imports and catalog cover/genre upkeep still work.

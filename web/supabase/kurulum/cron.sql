@@ -3,6 +3,7 @@ SELECT cron.schedule('rosso-auto-playlists-cron', '0 * 1-3 * *', 'SELECT public.
 SELECT cron.schedule('rosso-catalog-enrichment-cron', '10 3 * * *', 'SELECT public.invoke_catalog_enrichment_cron();');
 SELECT cron.schedule('rosso-catalog-maintenance-cron', '0 6 * * *', 'SELECT public.invoke_worker_maintenance_cron(''catalog_maintenance'');');
 SELECT cron.schedule('rosso-daily-stats-refresh-cron', '2-59/5 * * * *', 'SELECT public.refresh_active_users_batch(30);');
+SELECT cron.schedule('rosso-db-yedek-cron', '0 4 * * 0', 'SELECT public.invoke_db_yedek();');
 SELECT cron.schedule('rosso-log-cleanup-cron', '0 5 * * 0', 'SELECT public.cleanup_old_logs(30);');
 SELECT cron.schedule('rosso-mood-pkg-cron', '4-59/10 * * * *', 'SELECT public.invoke_cron_rota(''/api/cron/mood-pkg'');');
 SELECT cron.schedule('rosso-playlist-refresh-cron', '9-59/15 * * * *', 'SELECT public.invoke_cron_rota(''/api/cron/playlist-refresh'');');
