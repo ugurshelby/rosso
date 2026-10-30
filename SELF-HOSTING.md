@@ -140,7 +140,7 @@ See [docs/reference/kimlik-v2-kurulum.md](docs/reference/kimlik-v2-kurulum.md).
 
 ## Optional: health alarm (e-mail when something breaks)
 
-Every hour `saglik_kontrolu()` checks Spotify sync freshness, failing cron responses, failed `pg_cron` runs, the mood job and stuck ZIP imports, and records the result in `pipeline_runs` (`run_type = 'saglik'`). To get an e-mail when something breaks:
+Every hour `saglik_kontrolu()` checks Spotify sync freshness, failing cron responses, failed `pg_cron` runs, the mood job, stuck ZIP imports, the weekly backup, last month's automatic playlist and per-user background jobs that failed 6 times in a row, and records the result in `pipeline_runs` (`run_type = 'saglik'`). To get an e-mail when something breaks:
 
 1. Keep the workflow `.github/workflows/saglik-alarm.yml` in your fork (it opens one issue labelled `saglik` as `github-actions[bot]` and mentions you, so GitHub e-mails you; it closes the issue when things recover).
 2. Create a fine-grained GitHub token for **your fork only** with *Contents: Read and write* (needed for `repository_dispatch`).

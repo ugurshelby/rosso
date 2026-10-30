@@ -3632,7 +3632,7 @@ AS $function$
   UNION ALL
   SELECT pc.user_id
   FROM public.platform_connections pc
-  WHERE p_is = 'playlist_refresh'
+  WHERE p_is IN ('playlist_refresh', 'liked_sync')
     AND pc.platform = 'spotify'
     AND pc.is_active = true
   UNION ALL
@@ -12265,6 +12265,7 @@ DECLARE
   c_zip_esik      constant interval := interval '3 hours';
   c_tekrar        constant interval := interval '12 hours';
   c_yedek_esik    constant interval := interval '8 days';
+  c_sira_hata     constant int      := 6;
 
   v_sorunlar   jsonb := '[]'::jsonb;
   v_olcum      jsonb := '{}'::jsonb;
@@ -12277,6 +12278,7 @@ DECLARE
   v_son_yedek  record;
   v_son_basari timestamptz;
   v_liste_eksik int;
+  v_sira_hatali jsonb;
   v_onceki     record;
   v_son_alarm  timestamptz;
   v_olay       text;
@@ -12362,6 +12364,22 @@ BEGIN
     END IF;
   END IF;
 
+  -- kuyruk_hata (0369): kullanıcı başına kayan sıra işlerinde art arda hata.
+  -- Geri çekilme 5 dk → 6 sa; 6 ardışık hata ≈ 5 saattir hiç başaramıyor demek.
+  -- Yalnız son 1 günde denenen satırlar (uygunluğu düşen kullanıcı sayılmaz).
+  SELECT coalesce(jsonb_agg(jsonb_build_object('is', is_adi, 'kullanici', n, 'hata', son)), '[]'::jsonb)
+    INTO v_sira_hatali
+    FROM (SELECT is_adi, count(*) AS n, left(max(son_hata), 120) AS son
+            FROM cron_kullanici_sirasi
+           WHERE ardisik_hata >= c_sira_hata AND guncellendi > now() - interval '1 day'
+           GROUP BY is_adi) x;
+  v_olcum := v_olcum || jsonb_build_object('sira_hatali', v_sira_hatali);
+  IF jsonb_array_length(v_sira_hatali) > 0 THEN
+    v_sorunlar := v_sorunlar || jsonb_build_array(format('Kullanıcı kuyruğunda art arda hata: %s',
+      (SELECT string_agg(format('%s (%s kullanıcı: %s)', e ->> 'is', e ->> 'kullanici', e ->> 'hata'), '; ')
+         FROM jsonb_array_elements(v_sira_hatali) e)));
+  END IF;
+
   -- Önceki durum ve son alarm zamanı
   SELECT outcome, created_at INTO v_onceki FROM pipeline_runs
    WHERE run_type = 'saglik' AND NOT coalesce((stats ->> 'test')::boolean, false)
@@ -12374,6 +12392,8 @@ BEGIN
     v_sorunlar := jsonb_build_array('TEST: sağlık nöbetçisi deneme alarmı (gerçek arıza değil)');
   ELSIF p_test = 'duzeldi' THEN
     v_olay := 'saglik_duzeldi';
+  ELSIF p_test IS NOT NULL THEN
+    v_olay := NULL;  -- 'kuru' ya da başka bir test değeri: ölç, kaydet, ALARM GÖNDERME (0368)
   ELSIF jsonb_array_length(v_sorunlar) > 0 THEN
     IF v_onceki.outcome IS DISTINCT FROM 'error' OR v_son_alarm IS NULL OR v_son_alarm < now() - c_tekrar THEN
       v_olay := 'saglik_alarm';
