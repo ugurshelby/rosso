@@ -90,17 +90,20 @@ Open your site → **Register**. The very first account on a fresh install becom
 
 You bring your own (free) Spotify developer app — Rosso never shares credentials between installs.
 
+**Spotify's Development Mode rules (since February/March 2026):** the app owner's account needs **Spotify Premium** (if it lapses the app stops working until you resubscribe), one Development Mode app per developer, and **at most 5 authorized users** per app. Rosso fits inside this: you plus up to 4 invited friends (`MAX_DAVET = 4`). Some endpoints changed too: playlist contents are read from `/playlists/{id}/items`, the bulk `/v1/tracks?ids=` call is closed, and "is this playlist still in my library" uses `/me/library/contains`. Source: Spotify's [February 2026 migration guide](https://developer.spotify.com/documentation/web-api/tutorials/february-2026-migration-guide).
+
 1. <https://developer.spotify.com/dashboard> → **Create app**. Redirect URI: `https://YOUR-APP/api/spotify/callback`. Select *Web API*.
 2. In Rosso open **Data** (the setup wizard shows exactly this redirect URI), paste the **Client ID** and **Client Secret**, then connect.
 3. In the Spotify dashboard → your app → **User Management**, add the email of *your own* Spotify account (Development Mode only lets listed users through).
-4. Optional but recommended: request your **Extended streaming history** at <https://www.spotify.com/account/privacy/> and upload the ZIP on the **Data** page when it arrives (it can take a few days). That is what powers Journey and multi-year Recaps.
+4. If Spotify ever revokes access (you removed the app from your account, or rotated the Client Secret), Rosso marks the connection inactive and the bell menu says *Your Spotify connection dropped* with a link to **Data**; reconnect there.
+5. Optional but recommended: request your **Extended streaming history** at <https://www.spotify.com/account/privacy/> and upload the ZIP on the **Data** page when it arrives (it can take a few days). That is what powers Journey and multi-year Recaps.
 
 Within minutes the scheduler starts syncing your recent plays.
 
 ## 9. Optional extras
 
 ### Invite a friend
-*Settings → Invite a friend* → add their email. Then add the same email in your Spotify dashboard → **User Management** (Spotify has no API for this step). Development Mode allows roughly 25 users; your friends' data lives in *your* database, so only invite people you trust and tell them so.
+*Settings → Invite a friend* → add their email. Then add the same email in your Spotify dashboard → **User Management** (Spotify has no API for this step). Development Mode allows 5 users per app (you + 4 invites); your friends' data lives in *your* database, so only invite people you trust and tell them so.
 
 ### The worker (ZIP import + catalog upkeep + backups)
 Heavy jobs run in **GitHub Actions**, on demand, so nothing runs 24/7.

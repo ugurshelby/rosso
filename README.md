@@ -24,7 +24,7 @@ Rosso turns your Spotify listening history into a personal mirror: yearly and mo
 
 **One song, one count.** Spotify serves the same recording under different IDs (single vs. album, "Remastered", "[From …]") and the two export formats plus live sync can record the same listen twice. Rosso merges duplicate recordings (keeping real versions like Acoustic, Live or Remix apart) and removes double-counted plays — hourly, in the database, with an archive so nothing is lost.
 
-Data comes from two places: the **Spotify Web API** (recent plays, synced every few minutes) and your **Spotify "Extended streaming history" ZIP** (your whole past). Both are optional to start with; the app has a demo preview so it never looks empty.
+Data comes from two places: the **Spotify Web API** (recent plays, synced every few minutes) and your **Spotify privacy ZIP** — the *Extended streaming history* (your whole past) or the quicker *Account data* export (last year), both recognised automatically. Both are optional to start with; the app has a demo preview so it never looks empty.
 
 ## Why self-hosted, and why no social features
 
@@ -46,7 +46,7 @@ The architecture is built around **zero running cost**:
 
 ## Invite-only by design
 
-The first account created on a fresh install becomes the **owner**; sign-ups then close. The owner can invite a few friends from **Settings → Invite a friend**. (Spotify's Development Mode also requires adding each friend under *User Management* in your Spotify developer dashboard — the app reminds you.) The gate lives in the database (`auth.users` trigger), not just in the UI.
+The first account created on a fresh install becomes the **owner**; sign-ups then close. The owner can invite a few friends from **Settings → Invite a friend**. (Spotify's Development Mode caps an app at 5 users and needs Premium on the owner's account, so the invite limit is 4; each friend is also added under *User Management* in your Spotify developer dashboard — the app reminds you.) The gate lives in the database (`auth.users` trigger), not just in the UI.
 
 ## Repository layout
 
