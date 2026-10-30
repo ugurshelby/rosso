@@ -128,6 +128,18 @@ export const metadata: Metadata = {
     template: '%s — Rosso',
   },
   description: ACIKLAMA,
+  applicationName: 'Rosso',
+
+  /*
+   * iPhone "Ana Ekrana Ekle" (PLAN 2.3): tam ekran açılır. `black` durum çubuğu
+   * opaktır, içerik altından başlar (`black-translucent` üst boşluk ister,
+   * üst gezinme buna göre yazılmadı).
+   */
+  appleWebApp: {
+    capable: true,
+    title: 'Rosso',
+    statusBarStyle: 'black',
+  },
 
   /*
    * ⚠ Kökte `alternates.canonical` YOK (2026-09-22, canlıda ölçüldü): burada
@@ -196,6 +208,14 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   interactiveWidget: 'resizes-content',
+  /*
+   * Ana ekran uygulaması (PLAN 2.3): `cover` olmadan `env(safe-area-inset-*)`
+   * hep 0 döner ve alt gezinme iPhone'un ev çubuğunun altında kalır; CSS'teki
+   * inset hesapları buna göre yazılmış. Tema rengi `--bg` ile aynı.
+   */
+  viewportFit: 'cover',
+  themeColor: '#0a0910',
+  colorScheme: 'dark',
 }
 
 export default function RootLayout({
