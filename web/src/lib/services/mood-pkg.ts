@@ -10,6 +10,7 @@ import { runUserIntelligence, type UserIntelligenceResult } from '@/lib/ai/user-
 import { kuratorNotunuKaydet, runEditorial, type EditorialResult } from '@/lib/ai/editorial'
 import { havuzlaCalistir, Semafor } from '@/lib/ai/concurrency'
 import { siraylaIsle } from '@/lib/cron/kullanici-sirasi-db'
+import { moodSpotifyDurumunuDogrula } from '@/lib/services/mood-spotify-dogrula'
 // enerjiEgrisiUygula: 0334'te devre dışı (bkz. aşağıdaki gerekçe). Modül duruyor.
 import { MOOD_MIN_TRACKS, MOOD_TRACK_LIMIT, type MoodKey } from '@/lib/analytics/mood'
 import {
@@ -634,6 +635,19 @@ export async function runMoodTuru(force = false): Promise<{
       moodPkg.aiCurated += m.aiCurated
       if (m.moodsWritten > 0) moodPkg.usersProcessed += 1
       islenenKullanicilar.push(uid)
+
+      // Senkrondan ÖNCE Spotify'da silinmiş listeleri ayır — yoksa senkron
+      // görünmeyen (silinmiş) listeye şarkı yazmaya devam ederdi.
+      try {
+        await moodSpotifyDurumunuDogrula(uid)
+      } catch (err) {
+        void systemLog({
+          operation: 'mood_spotify_dogrula',
+          userId: uid,
+          severity: 'warn',
+          errorMessage: `doğrulama atlandı — senkron eski durumla sürüyor: ${hataMetni(err)}`,
+        })
+      }
 
       try {
         const w = await runMoodWeeklySync(uid)

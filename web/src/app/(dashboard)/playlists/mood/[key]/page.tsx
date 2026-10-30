@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { requireAuth } from '@/lib/auth'
+import { moodSpotifyDurumunuDogrula } from '@/lib/services/mood-spotify-dogrula'
 import { moodByKey, getMoodPackage, getMoodWorkspace, getMoodEtiketleri } from '@/lib/analytics/mood'
 import { getKuratorNotu } from '@/lib/analytics/editorial-read'
 import { MoodWorkspace } from '@/components/mood/mood-workspace'
@@ -46,7 +47,11 @@ export default async function MoodDetailPage({ params }: PageProps) {
   // ikisi ayrı tablo (migration 0255), biri diğerini beklemez.
   const [pkg, calismaAlani, kuratorNotu, etiketler, { t }] = await Promise.all([
     getMoodPackage(user.id, mood.key),
-    getMoodWorkspace(mood.key),
+    // "Spotify'a eklendi" durumu önce Spotify'la doğrulanır: liste orada silindiyse
+    // çalışma alanı temizlenir ve sayfa "ekle" durumuyla açılır.
+    moodSpotifyDurumunuDogrula(user.id, mood.key)
+      .catch(() => null)
+      .then(() => getMoodWorkspace(mood.key)),
     // Liner Notes (AI, opsiyonel): yoksa null → sayfa notsuz, eksiksiz.
     getLocale().then((l) => getKuratorNotu(user.id, mood.key, l === 'en' ? 'en' : 'tr')),
     // Uygunluk etiketleri (migration 0338): yoksa boş → etiketsiz liste.
