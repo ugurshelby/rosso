@@ -1,5 +1,5 @@
 SELECT cron.schedule('rosso-account-purge-cron', '0 * * * *', 'SELECT public.invoke_cron_rota(''/api/cron/account-purge'');');
-SELECT cron.schedule('rosso-auto-playlists-cron', '0 * 1-3 * *', 'SELECT public.invoke_cron_rota(''/api/cron/auto-playlists'');');
+SELECT cron.schedule('rosso-auto-playlists-cron', '25 */6 * * *', 'SELECT public.invoke_cron_rota(''/api/cron/auto-playlists'');');
 SELECT cron.schedule('rosso-catalog-enrichment-cron', '10 3 * * *', 'SELECT public.invoke_catalog_enrichment_cron();');
 SELECT cron.schedule('rosso-catalog-maintenance-cron', '0 6 * * *', 'SELECT public.invoke_worker_maintenance_cron(''catalog_maintenance'');');
 SELECT cron.schedule('rosso-daily-stats-refresh-cron', '2-59/5 * * * *', 'SELECT public.refresh_active_users_batch(30);');

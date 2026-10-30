@@ -131,7 +131,8 @@ CREATE TABLE public.auto_playlist_runs (
   status text DEFAULT 'pending'::text NOT NULL,
   track_count integer DEFAULT 0 NOT NULL,
   error_message text,
-  ran_at timestamp with time zone DEFAULT now() NOT NULL
+  ran_at timestamp with time zone DEFAULT now() NOT NULL,
+  donem text
 );
 
 CREATE TABLE public.car_sessions (
@@ -860,6 +861,7 @@ ALTER TABLE ONLY public.auto_playlist_rules ADD CONSTRAINT auto_playlist_rules_s
 ALTER TABLE ONLY public.auto_playlist_rules ADD CONSTRAINT auto_playlist_rules_track_count_check CHECK ((track_count = ANY (ARRAY[20, 50, 100])));
 
 ALTER TABLE ONLY public.auto_playlist_runs ADD CONSTRAINT auto_playlist_runs_pkey PRIMARY KEY (id);
+CREATE INDEX IF NOT EXISTS idx_auto_playlist_runs_rule_donem ON public.auto_playlist_runs (rule_id, donem) WHERE status = 'completed';
 
 ALTER TABLE ONLY public.auto_playlist_runs ADD CONSTRAINT auto_playlist_runs_status_check CHECK ((status = ANY (ARRAY['pending'::text, 'completed'::text, 'partial'::text, 'failed'::text])));
 
@@ -12274,6 +12276,7 @@ DECLARE
   v_zip_takili int;
   v_son_yedek  record;
   v_son_basari timestamptz;
+  v_liste_eksik int;
   v_onceki     record;
   v_son_alarm  timestamptz;
   v_olay       text;
@@ -12338,6 +12341,25 @@ BEGIN
     v_sorunlar := v_sorunlar || jsonb_build_array(format('Son veritabanı yedeği başarısız (%s)', coalesce(left(v_son_yedek.error, 120), 'ayrıntı yok')));
   ELSIF v_son_basari IS NOT NULL AND v_son_basari < now() - c_yedek_esik THEN
     v_sorunlar := v_sorunlar || jsonb_build_array(format('Veritabanı yedeği %s gündür alınmadı', round(extract(epoch FROM now() - v_son_basari) / 86400)));
+  END IF;
+
+  -- otomatik_liste (0367): ayın 3'ünden sonra bir önceki ayın listesi hâlâ yoksa.
+  -- Yalnız açık aylık kuralı ve aktif Spotify bağlantısı olan kullanıcılar.
+  IF extract(day FROM now() AT TIME ZONE 'UTC') > 3 THEN
+    SELECT count(*) INTO v_liste_eksik
+      FROM auto_playlist_rules r
+     WHERE r.enabled AND r.rule_type = 'top_month'
+       AND r.created_at < date_trunc('month', now()) - interval '1 month'
+       AND EXISTS (SELECT 1 FROM platform_connections c
+                    WHERE c.user_id = r.user_id AND c.platform = 'spotify' AND coalesce(c.is_active, true))
+       AND NOT EXISTS (SELECT 1 FROM auto_playlist_runs x
+                        WHERE x.rule_id = r.id AND x.status = 'completed'
+                          AND x.donem = to_char(date_trunc('month', now()) - interval '1 month', 'YYYY-MM'));
+    v_olcum := v_olcum || jsonb_build_object('liste_eksik', v_liste_eksik);
+    IF v_liste_eksik > 0 THEN
+      v_sorunlar := v_sorunlar || jsonb_build_array(format('%s kullanıcının geçen ay otomatik listesi üretilmedi (%s)',
+        v_liste_eksik, to_char(date_trunc('month', now()) - interval '1 month', 'YYYY-MM')));
+    END IF;
   END IF;
 
   -- Önceki durum ve son alarm zamanı

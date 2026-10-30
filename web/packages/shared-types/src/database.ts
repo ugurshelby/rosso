@@ -372,6 +372,7 @@ export type Database = {
       }
       auto_playlist_runs: {
         Row: {
+          donem: string | null
           error_message: string | null
           generated_playlist_id: string | null
           id: string
@@ -382,6 +383,7 @@ export type Database = {
           track_count: number
         }
         Insert: {
+          donem?: string | null
           error_message?: string | null
           generated_playlist_id?: string | null
           id?: string
@@ -392,6 +394,7 @@ export type Database = {
           track_count?: number
         }
         Update: {
+          donem?: string | null
           error_message?: string | null
           generated_playlist_id?: string | null
           id?: string
