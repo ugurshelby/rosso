@@ -4,6 +4,7 @@ import { timingSafeEqualString } from '@/lib/security/timing-safe-equal'
 import { PRIORITY_NORMAL } from '@/lib/spotify/api-gate'
 import { recordSiraRun } from '@/lib/observability/pipeline-run'
 import { siraylaIsle } from '@/lib/cron/kullanici-sirasi-db'
+import { syncLikedSongs } from '@/lib/library/sync-liked'
 
 export const dynamic = 'force-dynamic'
 /*
@@ -60,7 +61,35 @@ export async function POST(req: NextRequest) {
     },
   })
 
-  await recordSiraRun('playlist_refresh', sonuc, { playlistsUpdated, playlistsDeleted })
+  /*
+   * Beğeniler (PLAN 1.5): eskiden yalnız kullanıcı düğmesiyle tazeleniyordu;
+   * sahibi girmezse beğeni ve "unliked" olayları donuyordu. Kullanıcı başına
+   * günde bir, aynı süre bütçesiyle. Tek senkron ~54 istek; `pacedFetch`
+   * zaten dizdiği için paralellik kazandırmaz → eşzamanlılık 1.
+   * Kayıt ayrı `pipeline_runs` türü değil, playlist_refresh satırının
+   * `stats.liked` alanı (yeni tür CHECK kısıtı için migration isterdi).
+   */
+  let likedAdded = 0
+  let likedRemoved = 0
+  const begeni = await siraylaIsle('liked_sync', {
+    eszamanlilik: 1,
+    baslangic: startTime,
+    butceMs: SURE_BUTCESI_MS,
+    isle: async (uid) => {
+      const r = await syncLikedSongs(uid)
+      if (!r.ok) throw new Error(`beğeni senkronu: ${r.reason}`)
+      likedAdded += r.added
+      likedRemoved += r.removed
+    },
+  })
+  const liked = {
+    usersProcessed: begeni.islenen,
+    usersFailed: begeni.hatali,
+    added: likedAdded,
+    removed: likedRemoved,
+  }
+
+  await recordSiraRun('playlist_refresh', sonuc, { playlistsUpdated, playlistsDeleted, liked })
 
   return NextResponse.json({
     ok: true,
@@ -69,6 +98,7 @@ export async function POST(req: NextRequest) {
     budgetExhausted: sonuc.butceDoldu,
     playlistsUpdated,
     playlistsDeleted,
+    liked,
     durationMs: Date.now() - startTime,
   })
 }

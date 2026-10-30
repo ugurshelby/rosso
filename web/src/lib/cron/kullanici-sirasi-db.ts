@@ -22,6 +22,8 @@ export const CRON_ISLERI = {
   mood_pkg: { aralik: '20 hours', kilit: '15 minutes' },
   /** Günlük recap üretimi. */
   recap: { aralik: '20 hours', kilit: '10 minutes' },
+  /** Günlük beğeni senkronu (tam liste, unliked dahil); playlist rotasında koşar. */
+  liked_sync: { aralik: '20 hours', kilit: '10 minutes' },
 } as const
 
 export type CronIsi = keyof typeof CRON_ISLERI
