@@ -93,7 +93,7 @@ const TR: BlogPost[] = [
       'Rosso bunu tersine çevirir: her ay için bir Spotify recap üretir. En çok dinlediğin şarkılar, sanatçılar ve albümler, o ayın en yoğun günü, dinleme serin ve o dönemin küçük bir hikâyesi story akışıyla gelir.',
       'Recap sayıları verir; Taste ise nasıl bir dinleyici olduğunu anlatır: tür karışımın, gün içindeki ritmin ve yıllardır bırakmadığın sanatçılar. İkisi farklı sorulara cevap verir, bu yüzden ayrı sayfalarda yaşar.',
       'Geçmiş yılların recap’i için Spotify’dan indirdiğin dinleme geçmişini yüklemen yeter; Rosso geçmiş ayları ve yılları da oluşturur. Hesabını bağlamak yeni dinlemeleri otomatik getirir.',
-      'Rosso alfa süresince ücretsizdir ve kimse başkasının verisini göremez: profil, takip ya da mesajlaşma yok. Recap yalnızca sana aittir.',
+      'Rosso ücretsizdir ve kimse başkasının verisini göremez: profil, takip ya da mesajlaşma yok. Recap yalnızca sana aittir.',
     ],
   },
 ]
@@ -169,7 +169,7 @@ const EN: BlogPost[] = [
       'Rosso turns that around: it produces a Spotify recap for every month. Your top songs, artists and albums, the busiest day of the month, your listening streak and a short story of the period arrive as a story-style flow.',
       'Recap gives you the numbers; Taste tells you what kind of listener you are: your genre mix, your rhythm through the day and the artists you have never left. They answer different questions, so they live on different pages.',
       'For recaps of past years, upload the listening history you downloaded from Spotify; Rosso builds past months and years too. Connecting your account brings in new listening automatically.',
-      'Rosso is free during the alpha and nobody can see anyone else’s data: there are no profiles, follows or messages. Your recap belongs only to you.',
+      'Rosso is free and nobody can see anyone else’s data: there are no profiles, follows or messages. Your recap belongs only to you.',
     ],
   },
 ]

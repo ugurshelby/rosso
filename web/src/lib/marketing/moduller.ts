@@ -185,7 +185,7 @@ const TR: Record<ModulAnahtari, ModulIcerigi> = {
       },
       {
         q: 'Recap ücretsiz mi?',
-        a: 'Rosso alfa süresince tamamen ücretsizdir.',
+        a: 'Evet. Rosso ücretsizdir; ücretli bir plan yoktur.',
       },
     ],
     cta: 'Aylık Spotify recap’ini başlat',
@@ -409,7 +409,7 @@ const EN: Record<ModulAnahtari, ModulIcerigi> = {
       },
       {
         q: 'Is Recap free?',
-        a: 'Rosso is completely free during the alpha.',
+        a: 'Yes. Rosso is free; there is no paid plan.',
       },
     ],
     cta: 'Start your monthly Spotify recap',

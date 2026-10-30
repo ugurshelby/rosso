@@ -64,7 +64,7 @@ const tr = {
     platformDestekleniyor: 'destekleniyor',
     kapanisUstYazi: 'Son',
     kapanisBaslik: 'Perde burada açılıyor',
-    kapanisAlt: 'Spotify’ını bağla; müzik kimliğin birkaç dakikada hazır.\nDavetli alfada, şimdilik ücretsiz.',
+    kapanisAlt: 'Spotify’ını bağla; müzik kimliğin birkaç dakikada hazır.\nDavetli alfa, ücretsiz.',
   },
   kimlikSeridi: {
     ekranOkuyucu: 'Rosso’nun çıkardığı dinleme profili örnekleri: ',
@@ -196,7 +196,7 @@ const en: MarketingSozluk = {
     platformDestekleniyor: 'supported',
     kapanisUstYazi: 'Finale',
     kapanisBaslik: 'The curtain rises here',
-    kapanisAlt: 'Connect Spotify; your musical identity is ready in minutes.\nInvite-only alpha, free for now.',
+    kapanisAlt: 'Connect Spotify; your musical identity is ready in minutes.\nInvite-only alpha, free.',
   },
   kimlikSeridi: {
     ekranOkuyucu: 'Examples of listening profiles Rosso creates: ',
