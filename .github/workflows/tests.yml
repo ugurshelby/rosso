@@ -34,6 +34,28 @@ jobs:
       - name: Build
         run: npm run build
 
+  mobile:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - run: npm ci
+      - name: Type-check
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: Unit tests
+        run: npm test
+      - name: Expo doctor
+        run: npx --yes expo-doctor@1.21.5
+
   worker:
     runs-on: ubuntu-latest
     defaults:
