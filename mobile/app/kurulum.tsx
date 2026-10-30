@@ -5,10 +5,10 @@ import { ortamOku } from '@/ortam'
 import { bosluk, KENAR, renk } from '@/tema'
 
 /**
- * İskelet açılış ekranı (PLAN 4.4). Gerçek ekranlar 4.7'de; burada yalnız
- * derlemenin doğru arka uca bağlandığı görülür.
+ * Derleme kendi arka ucunu almadıysa (M3) gösterilen tek ekran: neyin eksik
+ * olduğunu söyler, hiçbir adrese istek atmaz.
  */
-export default function Acilis() {
+export default function Kurulum() {
   const ust = useSafeAreaInsets().top
   const { ortam, eksik } = ortamOku()
   return (
