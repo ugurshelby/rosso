@@ -13,6 +13,7 @@ import {
   CheckCircle2,
 } from 'lucide-react'
 import type { Dil } from '@/lib/marketing/dil'
+import { ornekYillar } from '@/lib/marketing/ornek-yillar'
 import styles from './living-mockups.module.css'
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -285,8 +286,11 @@ export const TasteMockup = memo(function TasteMockup({
 /**
  * 3. JOURNEY LIVING MOCKUP
  * Yıllar arası müzikal değişimi sergileyen yatay bir timeline / film şeridi parçası.
- * 2020 ile 2024 arasındaki tür evrimini gösteren parlayan yüksek kontrastlı hat
- * ve iki büyük albüm kapağının karşılaştırması.
+ * İlk keşif yılı ile bugün arasındaki tür evrimini gösteren parlayan yüksek
+ * kontrastlı hat ve iki büyük albüm kapağının karşılaştırması.
+ *
+ * Yıllar örnek görseldir ve her zaman bugünde biter (`ornekYillar`): elle
+ * yazılı "2020 … 2024" iki yıl içinde bayatlamıştı. Etiketlerde "DNA" yok.
  */
 export const JourneyMockup = memo(function JourneyMockup({
   accent,
@@ -295,13 +299,16 @@ export const JourneyMockup = memo(function JourneyMockup({
   accent: string
   dil?: Dil
 }) {
+  const yillar = ornekYillar(5)
+  const ilkYil = yillar[0]
+  const sonYil = yillar[yillar.length - 1]
   const metin =
     dil === 'tr'
       ? {
-          year2020: '2020 · İLK KEŞİF',
+          year2020: `${ilkYil} · İLK KEŞİF`,
           era2020: 'Dream Pop & Indie',
           track2020: 'Tame Impala — Currents',
-          year2024: '2024 · GÜNCEL DNA',
+          year2024: `${sonYil} · BUGÜNÜN KİMLİĞİ`,
           era2024: 'Post-Punk & Dark Wave',
           track2024: 'Fontaines D.C. — Romance',
           metrics: '+847 Yeni Sanatçı',
@@ -310,10 +317,10 @@ export const JourneyMockup = memo(function JourneyMockup({
           filmStrip: 'ROSSO ÖMÜR BOYU ARŞİV',
         }
       : {
-          year2020: '2020 · FIRST DISCOVERY',
+          year2020: `${ilkYil} · FIRST DISCOVERY`,
           era2020: 'Dream Pop & Indie',
           track2020: 'Tame Impala — Currents',
-          year2024: '2024 · CURRENT DNA',
+          year2024: `${sonYil} · TODAY’S IDENTITY`,
           era2024: 'Post-Punk & Dark Wave',
           track2024: 'Fontaines D.C. — Romance',
           metrics: '+847 New Artists',
@@ -332,25 +339,30 @@ export const JourneyMockup = memo(function JourneyMockup({
       <div className={styles.journeyContainer}>
         {/* Yıllar Yatay Rayı (Timeline Rail) */}
         <nav className={styles.journeyRailHead} aria-label="Timeline Years">
-          <span className={`${styles.journeyRailPill} ${styles.journeyRailPillOrigin}`}>
-            2020
-          </span>
-          <span className={styles.journeyRailPill}>2021</span>
-          <span className={styles.journeyRailPill}>2022</span>
-          <span className={styles.journeyRailPill}>2023</span>
-          <span className={`${styles.journeyRailPill} ${styles.journeyRailPillActive}`}>
-            2024
-          </span>
+          {yillar.map((yil, i) => (
+            <span
+              key={yil}
+              className={
+                i === 0
+                  ? `${styles.journeyRailPill} ${styles.journeyRailPillOrigin}`
+                  : i === yillar.length - 1
+                    ? `${styles.journeyRailPill} ${styles.journeyRailPillActive}`
+                    : styles.journeyRailPill
+              }
+            >
+              {yil}
+            </span>
+          ))}
         </nav>
 
         {/* İki Büyük Albüm Kapağının Karşılaştırması ve Parlayan Evrim Çizgisi */}
         <div className={styles.journeyStageRow}>
-          {/* 2020 Çağı */}
+          {/* İlk keşif çağı */}
           <div className={styles.journeyCardCol}>
             <div className={styles.journeyCardCover}>
               <Image
                 src="/vibe-cards/twilight-terraced-hills-monolith.webp"
-                alt="2020 Origin Era Cover"
+                alt={`${ilkYil} Origin Era Cover`}
                 fill
                 sizes="(max-width: 768px) 90px, 120px"
                 className={styles.recapCoverImage}
@@ -372,12 +384,12 @@ export const JourneyMockup = memo(function JourneyMockup({
             </div>
           </div>
 
-          {/* 2024 Çağı */}
+          {/* Bugünün çağı */}
           <div className={styles.journeyCardCol}>
             <div className={styles.journeyCardCover}>
               <Image
                 src="/vibe-cards/stormbearer.webp"
-                alt="2024 Current Era Cover"
+                alt={`${sonYil} Current Era Cover`}
                 fill
                 sizes="(max-width: 768px) 90px, 120px"
                 className={styles.recapCoverImage}

@@ -8,29 +8,41 @@ import {
 } from 'lucide-react'
 import { yerelYol } from '@/lib/marketing/dil'
 import { modulYolu } from '@/lib/marketing/moduller'
+import { ornekYillar } from '@/lib/marketing/ornek-yillar'
 import styles from './depth-ecosystem.module.css'
 
 export type DepthLang = 'tr' | 'en'
 
+/*
+ * Metin notları (2026-10-12):
+ *  - Örnek tarih YOK ("25/11/2023", "Mart–Ekim 2023", "2018-2023" bayatlamıştı).
+ *    Yıl hapları `ornekYillar()` ile her zaman bugünde biter.
+ *  - Ton: "analiz / DNA" yerine hikâye, dönem, ayna, kimlik, frekans.
+ *  - Madde listeleri `lib/marketing/moduller.ts`teki GERÇEK özelliklerle
+ *    hizalı; üründe karşılığı olmayan vaatler ("Zaman Tüneli", "Mevsimlik
+ *    Favoriler", vokal/enstrümantal haritası) kaldırıldı.
+ */
 export const DEPTH_ECOSYSTEM_COPY = {
   tr: {
     sectionTag: 'DERİNLİK',
     title: 'İstatistikten öteye.',
     subhead:
-      "Müzik dinleme alışkanlıkların sadece sayılar değil, hikayeler anlatır. Rosso, bu verileri derinlemesine analiz ederek senin müzikal DNA'nı keşfeder ve sana özel bir deneyim sunar.",
+      'Dinleme alışkanlıkların yalnızca sayılardan ibaret değil; bir hikâye anlatır. Rosso bu geçmişi okur, müzik kimliğini ortaya çıkarır ve sana bir ayna tutar.',
     detailsText: 'Detaylar',
+    featuresSuffix: 'özellikleri',
+    yearsLabel: 'Arşiv yılları',
     modules: {
       taste: {
         step: '01 / IDENTITY',
         badge: 'Taste',
         title: 'Müzikal Kimliğin',
-        desc: 'Ne dinlediğini değil, nasıl bir dinleyici olduğunu analiz et.',
+        desc: 'Ne dinlediğini değil, nasıl bir dinleyici olduğunu gör.',
         items: [
-          'Tür Analizi (Rock/Pop/Elektronik)',
-          'Duygu Durum Haritası (Mutlu/Hüzünlü)',
-          'Kritik Dinleme Analizi (Vokal/Enstrümantal)',
+          'Tür Frekansın (Rock/Pop/Elektronik)',
+          'Gün İçi Ritmin: saat saat dinleme yoğunluğu',
+          'Şu An ve Değişmeyenler',
         ],
-        meta: 'Kimlik Güncellemesi: 25/11/2023',
+        meta: 'Yeni dinlemelerle güncel kalır',
       },
       recap: {
         step: '02 / SNAPSHOTS',
@@ -38,11 +50,11 @@ export const DEPTH_ECOSYSTEM_COPY = {
         title: 'Dönemsel Aynalar',
         desc: 'Her ayın ve dönemin müzikal ruhunu zaman çizgisine dök.',
         items: [
-          'Zaman Tüneli: Yılın Enleri',
-          'Mevsimlik Favoriler',
-          'Yıllık Özet: 2023 Özeti',
+          'Aylık ve yıllık özetler',
+          'Dönemin zirve günü ve dinleme serisi',
+          'Paylaşılabilir görsel kartlar',
         ],
-        meta: 'Kapsam: Mart 2023 - Ekim 2023',
+        meta: 'Kapsam: aylık ve yıllık dönemler',
       },
       journey: {
         step: '03 / TIME',
@@ -50,24 +62,23 @@ export const DEPTH_ECOSYSTEM_COPY = {
         title: 'Ömür Boyu Arşiv',
         desc: 'Yıllara yayılan dinleme serüvenini kalıcı bir hafızaya dönüştür.',
         items: [
-          'Tüm Dinleme Geçmişi (2018-2023)',
+          'Tüm Dinleme Geçmişi (ilk dinlemeden bugüne)',
           'Zamana Direnen Parçalar',
-          'Keşfedilen Sanatçılar Arşivi',
+          'Keşif Patlamaları ve Kırılma Anları',
         ],
-        years: ['2019', '2020', '2021', '2022', '2023'],
       },
       playlists: {
         step: '04 / CREATION',
         badge: 'Playlists',
         title: 'Yaşayan Listeler',
-        desc: 'Statik listeleri unut; dinleme ritmine göre canlı güncellenen mixler.',
+        desc: 'Statik listelerin ötesinde: ruh haline ve kurallarına göre şekillenen listeler.',
         items: [
-          'Haftalık Modunuza Göre Oluşturulan Listeler',
-          'Duygu Durum Odaklı Çalma Listeleri',
-          'Dinleme Alışkanlıklarınıza Göre Canlı Güncellenen Mix\'ler',
+          'Ruh haline göre çalma listeleri',
+          'Kendi kurallarınla otomatik oluşan listeler',
+          'Tek dokunuşla Spotify hesabına ekleme',
         ],
-        tag: 'Canlı Liste',
-        liveMeta: 'Alışkanlıklara göre anlık mix',
+        tag: 'Yaşayan Liste',
+        liveMeta: 'Ruh haline ve kurallara göre şekillenir',
       },
     },
   },
@@ -75,20 +86,22 @@ export const DEPTH_ECOSYSTEM_COPY = {
     sectionTag: 'DEPTH',
     title: 'Beyond the numbers.',
     subhead:
-      "Your listening habits don't just tell numbers—they tell stories. Rosso deeply analyzes this data to discover your musical DNA and craft a tailored experience.",
+      'Your listening habits are more than numbers; they tell a story. Rosso reads that history, brings out your musical identity and holds up a mirror for you.',
     detailsText: 'Details',
+    featuresSuffix: 'features',
+    yearsLabel: 'Archive years',
     modules: {
       taste: {
         step: '01 / IDENTITY',
         badge: 'Taste',
         title: 'Musical Identity',
-        desc: 'Analyze not just what you listen to, but who you are as a listener.',
+        desc: 'See not just what you listen to, but who you are as a listener.',
         items: [
-          'Genre Analysis (Rock/Pop/Electronic)',
-          'Mood State Mapping (Upbeat/Melancholic)',
-          'Critical Listening Analysis (Vocal/Instrumental)',
+          'Genre Frequency (Rock/Pop/Electronic)',
+          'Your Daily Rhythm: hour-by-hour listening intensity',
+          'Right Now and Constants',
         ],
-        meta: 'Identity Update: 25/11/2023',
+        meta: 'Stays current with new listens',
       },
       recap: {
         step: '02 / SNAPSHOTS',
@@ -96,11 +109,11 @@ export const DEPTH_ECOSYSTEM_COPY = {
         title: 'Periodic Mirrors',
         desc: 'Map the musical essence of every month and season onto your timeline.',
         items: [
-          'Time Capsule: Best of the Year',
-          'Seasonal Favorites',
-          'Annual Wrap: 2023 Summary',
+          'Monthly and yearly summaries',
+          'Peak day and listening streak of the period',
+          'Shareable image cards',
         ],
-        meta: 'Scope: March 2023 - October 2023',
+        meta: 'Scope: monthly and yearly periods',
       },
       journey: {
         step: '03 / TIME',
@@ -108,24 +121,23 @@ export const DEPTH_ECOSYSTEM_COPY = {
         title: 'Lifelong Archive',
         desc: 'Turn years of music listening into an enduring personal heritage.',
         items: [
-          'Full Listening History (2018-2023)',
+          'Full Listening History (from your first play to today)',
           'Timeless Tracks',
-          'Discovered Artists Archive',
+          'Discovery Waves and Turning Points',
         ],
-        years: ['2019', '2020', '2021', '2022', '2023'],
       },
       playlists: {
         step: '04 / CREATION',
         badge: 'Playlists',
         title: 'Living Playlists',
-        desc: 'Forget static playlists; enjoy live mixes adapting dynamically to your routine.',
+        desc: 'Beyond static playlists: lists shaped by your mood and your own rules.',
         items: [
-          'Playlists Generated from Weekly Vibes',
-          'Mood-Driven Smart Playlists',
-          'Live Mixes Auto-Updated from Listening Habits',
+          'Mood-based playlists',
+          'Automatic playlists built from your own rules',
+          'Add a playlist to Spotify in one tap',
         ],
-        tag: 'Live Flow',
-        liveMeta: 'Adaptive real-time mix',
+        tag: 'Living List',
+        liveMeta: 'Shaped by your mood and rules',
       },
     },
   },
@@ -137,6 +149,8 @@ interface DepthEcosystemSectionProps {
 
 export function DepthEcosystemSection({ lang = 'tr' }: DepthEcosystemSectionProps) {
   const c = DEPTH_ECOSYSTEM_COPY[lang]
+  // Örnek arşiv yılları: bugünden geriye 5 yıl (elle yazılı yıl bayatlıyordu).
+  const arsivYillari = ornekYillar(5).map(String)
 
   return (
     <section id="derinlik" className={styles.section} aria-label={c.title}>
@@ -177,7 +191,7 @@ export function DepthEcosystemSection({ lang = 'tr' }: DepthEcosystemSectionProp
               </div>
 
               {/* Feature Highlight Listesi */}
-              <ul className={styles.featureList} aria-label={`${c.modules.taste.title} özellikleri`}>
+              <ul className={styles.featureList} aria-label={`${c.modules.taste.title} ${c.featuresSuffix}`}>
                 {c.modules.taste.items.map((item) => (
                   <li key={item} className={styles.featureItem}>
                     <span className={styles.featureBullet} aria-hidden />
@@ -224,7 +238,7 @@ export function DepthEcosystemSection({ lang = 'tr' }: DepthEcosystemSectionProp
               </div>
 
               {/* Feature Highlight Listesi */}
-              <ul className={styles.featureList} aria-label={`${c.modules.recap.title} özellikleri`}>
+              <ul className={styles.featureList} aria-label={`${c.modules.recap.title} ${c.featuresSuffix}`}>
                 {c.modules.recap.items.map((item) => (
                   <li key={item} className={styles.featureItem}>
                     <span className={styles.featureBullet} aria-hidden />
@@ -271,7 +285,7 @@ export function DepthEcosystemSection({ lang = 'tr' }: DepthEcosystemSectionProp
               </div>
 
               {/* Feature Highlight Listesi */}
-              <ul className={styles.featureList} aria-label={`${c.modules.journey.title} özellikleri`}>
+              <ul className={styles.featureList} aria-label={`${c.modules.journey.title} ${c.featuresSuffix}`}>
                 {c.modules.journey.items.map((item) => (
                   <li key={item} className={styles.featureItem}>
                     <span className={styles.featureBullet} aria-hidden />
@@ -282,11 +296,11 @@ export function DepthEcosystemSection({ lang = 'tr' }: DepthEcosystemSectionProp
 
               {/* Yıllar Listesi & Detaylar */}
               <div className={styles.cardBottom}>
-                <div className={styles.yearsList} aria-label="Arşiv Yılları">
-                  {c.modules.journey.years.map((year, idx) => (
+                <div className={styles.yearsList} aria-label={c.yearsLabel}>
+                  {arsivYillari.map((year, idx) => (
                     <span
                       key={year}
-                      className={`${styles.yearPill} ${idx === c.modules.journey.years.length - 1 ? styles.yearPillActive : ''}`}
+                      className={`${styles.yearPill} ${idx === arsivYillari.length - 1 ? styles.yearPillActive : ''}`}
                     >
                       {year}
                     </span>
@@ -328,7 +342,7 @@ export function DepthEcosystemSection({ lang = 'tr' }: DepthEcosystemSectionProp
               </div>
 
               {/* Feature Highlight Listesi */}
-              <ul className={styles.featureList} aria-label={`${c.modules.playlists.title} özellikleri`}>
+              <ul className={styles.featureList} aria-label={`${c.modules.playlists.title} ${c.featuresSuffix}`}>
                 {c.modules.playlists.items.map((item) => (
                   <li key={item} className={styles.featureItem}>
                     <span className={styles.featureBullet} aria-hidden />
