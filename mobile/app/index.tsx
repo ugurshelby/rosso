@@ -1,6 +1,8 @@
-import { StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { Metin } from '@/bilesen'
 import { ortamOku } from '@/ortam'
+import { bosluk, KENAR, renk } from '@/tema'
 
 /**
  * İskelet açılış ekranı (PLAN 4.4). Gerçek ekranlar 4.7'de; burada yalnız
@@ -10,21 +12,22 @@ export default function Acilis() {
   const ust = useSafeAreaInsets().top
   const { ortam, eksik } = ortamOku()
   return (
-    <View style={[stil.kap, { paddingTop: ust + 48 }]}>
-      <Text style={stil.marka}>ROSSO</Text>
+    <View style={[stil.kap, { paddingTop: ust + bosluk[12] }]}>
+      <Metin rol="etiket">Rosso</Metin>
       {eksik.length > 0 ? (
-        <Text style={stil.not} accessibilityRole="alert">
-          Kurulum eksik: {eksik.join(', ')}. `.env` dosyasını doldurup yeniden derle.
-        </Text>
+        <Metin rol="govde" renkAdi="sonuk" accessibilityRole="alert" style={stil.not}>
+          {`Kurulum eksik: ${eksik.join(', ')}. .env dosyasını doldurup yeniden derle.`}
+        </Metin>
       ) : (
-        <Text style={stil.not}>{new URL(ortam.webUrl).host}</Text>
+        <Metin rol="govde" renkAdi="sonuk" style={stil.not}>
+          {new URL(ortam.webUrl).host}
+        </Metin>
       )}
     </View>
   )
 }
 
 const stil = StyleSheet.create({
-  kap: { flex: 1, backgroundColor: '#0a0910', alignItems: 'center', paddingHorizontal: 24 },
-  marka: { color: '#f4f2f8', fontSize: 15, letterSpacing: 6, fontWeight: '700' },
-  not: { color: '#9d97ad', fontSize: 14, marginTop: 16, textAlign: 'center' },
+  kap: { flex: 1, backgroundColor: renk.zemin, alignItems: 'center', paddingHorizontal: KENAR },
+  not: { marginTop: bosluk[4], textAlign: 'center' },
 })

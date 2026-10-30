@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "main": "expo-router/entry",
   "dependencies": {
+    "@expo-google-fonts/bodoni-moda": "^0.4.2",
+    "@expo-google-fonts/geist": "^0.4.2",
+    "@expo-google-fonts/geist-mono": "^0.4.3",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@shopify/flash-list": "2.3.2",
     "@supabase/supabase-js": "^2.118.0",
@@ -51,7 +54,9 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "jest --ci",
-    "doctor": "expo-doctor"
+    "doctor": "expo-doctor",
+    "tokenlar": "node scripts/tokenlari-uret.mjs",
+    "tokenlar:kontrol": "node scripts/tokenlari-uret.mjs --kontrol"
   },
   "private": true,
   "jest": {

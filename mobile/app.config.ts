@@ -33,7 +33,20 @@ const config: ExpoConfig = {
   web: { favicon: './assets/favicon.png' },
   plugins: [
     'expo-router',
-    'expo-font',
+    [
+      'expo-font',
+      {
+        // Derlemeye gömülü: çalışma anında yükleme yok, ilk kare doğru fontla (spec §1, §4).
+        fonts: [
+          'node_modules/@expo-google-fonts/geist/400Regular/Geist_400Regular.ttf',
+          'node_modules/@expo-google-fonts/geist/500Medium/Geist_500Medium.ttf',
+          'node_modules/@expo-google-fonts/geist/600SemiBold/Geist_600SemiBold.ttf',
+          'node_modules/@expo-google-fonts/geist/700Bold/Geist_700Bold.ttf',
+          'node_modules/@expo-google-fonts/geist-mono/500Medium/GeistMono_500Medium.ttf',
+          'node_modules/@expo-google-fonts/bodoni-moda/400Regular_Italic/BodoniModa_400Regular_Italic.ttf',
+        ],
+      },
+    ],
     'expo-image',
     'expo-secure-store',
     'expo-web-browser',

@@ -51,6 +51,8 @@ jobs:
         run: npm run typecheck
       - name: Lint
         run: npm run lint
+      - name: Colour tokens match web
+        run: npm run tokenlar:kontrol
       - name: Unit tests
         run: npm test
       - name: Expo doctor
