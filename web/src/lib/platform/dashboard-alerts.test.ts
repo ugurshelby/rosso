@@ -21,6 +21,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 const cooldownRpc = vi.fn()
 const connSorgusu = vi.fn()
+const pasifSorgusu = vi.fn()
 const kimlikDurumu = vi.fn()
 
 vi.mock('@/lib/supabase/server', () => ({
@@ -30,6 +31,7 @@ vi.mock('@/lib/supabase/server', () => ({
       select: () => ({
         eq: () => ({
           eq: () => ({
+            maybeSingle: pasifSorgusu,
             eq: () => ({ maybeSingle: connSorgusu }),
           }),
         }),
@@ -55,6 +57,7 @@ function temizDurum() {
   connSorgusu.mockResolvedValue({
     data: { last_recently_played_sync_at: new Date().toISOString() },
   })
+  pasifSorgusu.mockResolvedValue({ data: { is_active: true } })
 }
 
 describe('getDashboardAlerts — öncelik sırası', () => {
@@ -139,5 +142,23 @@ describe('getDashboardAlerts — öncelik sırası', () => {
 
     const alerts = await getDashboardAlerts('u1')
     expect(alerts.some((a) => a.kind === 'spotify_veri_izni_gerekli')).toBe(false)
+  })
+
+  it('is_active=false bağlantı yeniden bağlan uyarısı verir', async () => {
+    pasifSorgusu.mockResolvedValue({ data: { is_active: false } })
+
+    expect(await getDashboardAlerts('u1')).toEqual([{ kind: 'spotify_yeniden_baglan' }])
+  })
+
+  it('cooldown yeniden bağlan uyarısından önceliklidir', async () => {
+    cooldownRpc.mockResolvedValue({
+      data: [{ blocked_until: new Date(Date.now() + 3600_000).toISOString() }],
+      error: null,
+    })
+    pasifSorgusu.mockResolvedValue({ data: { is_active: false } })
+
+    const alerts = await getDashboardAlerts('u1')
+    expect(alerts).toHaveLength(1)
+    expect(alerts[0].kind).toBe('spotify_cooldown')
   })
 })

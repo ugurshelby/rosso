@@ -28,6 +28,7 @@ interface NotificationMenuProps {
 function getAlertKey(alert: DashboardAlert): string {
   if (alert.kind === 'spotify_cooldown') return `cooldown:${alert.remainingSeconds}`
   if (alert.kind === 'spotify_veri_izni_gerekli') return 'permission'
+  if (alert.kind === 'spotify_yeniden_baglan') return 'reconnect'
   return `sync_delay:${alert.hoursSinceSync}`
 }
 
@@ -214,6 +215,39 @@ export function NotificationMenu({
                         onClick={() => setOpen(false)}
                       >
                         {t('dashboard.notifications.grantPermission')}
+                      </Link>
+                    </div>
+                  </div>
+                )
+              }
+
+              if (alert.kind === 'spotify_yeniden_baglan') {
+                return (
+                  <div key={key} className={styles.card}>
+                    <div className={cn(styles.cardIconBox, styles.iconToneWarning)}>
+                      <AlertTriangle size={16} strokeWidth={1.75} aria-hidden />
+                    </div>
+                    <div className={styles.cardContent}>
+                      <div className={styles.cardTop}>
+                        <span className={styles.cardTitle}>{t('dashboard.notifications.reconnectTitle')}</span>
+                        <button
+                          type="button"
+                          className={styles.dismissBtn}
+                          onClick={() => dismissAlert(key)}
+                          aria-label={t('dashboard.notifications.dismiss')}
+                        >
+                          <X size={14} aria-hidden />
+                        </button>
+                      </div>
+                      <p className={styles.cardBody}>
+                        {t('dashboard.notifications.reconnectBody')}
+                      </p>
+                      <Link
+                        href="/data"
+                        className={styles.cardLink}
+                        onClick={() => setOpen(false)}
+                      >
+                        {t('dashboard.notifications.reconnectLink')}
                       </Link>
                     </div>
                   </div>

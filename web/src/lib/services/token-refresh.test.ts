@@ -22,6 +22,11 @@ vi.mock('@/lib/crypto/token-cipher', () => ({
   decrypt: (v: string) => v.replace('enc:', ''),
 }))
 
+const systemLog = vi.fn()
+vi.mock('@/lib/observability/logger', () => ({
+  systemLog: (...a: unknown[]) => systemLog(...a),
+}))
+
 vi.mock('@/lib/env.server', () => ({
   serverEnv: {
     SPOTIFY_CLIENT_ID: 'client_id',
@@ -177,23 +182,120 @@ describe('ensureValidToken', () => {
     )
     expect(result).toBe('new-token')
   })
+})
 
-  it('returns null without throwing when spotify refresh returns 401', async () => {
+describe('refreshSpotifyToken — kalıcı / geçici ret', () => {
+  const soonExpiry = () => new Date(Date.now() + 60 * 1000).toISOString()
+
+  /** İlk çağrı: ensureValidToken okuması; sonraki: pasife alma (update→eq→eq→eq→select). */
+  function kur(updatedRows: unknown[]) {
+    const selectMock = vi.fn().mockResolvedValue({ data: updatedRows, error: null })
+    const updateMock = vi.fn(() => {
+      const chain = { eq: vi.fn(() => chain), select: selectMock }
+      return chain
+    })
+    const client = {
+      from: vi.fn(() => ({
+        select: vi.fn(() => ({
+          eq: vi.fn().mockReturnThis(),
+          single: vi.fn().mockResolvedValue({
+            data: {
+              access_token: 'enc:old',
+              refresh_token: 'enc:refresh-token',
+              token_expires: soonExpiry(),
+              is_active: true,
+            },
+            error: null,
+          }),
+        })),
+        update: updateMock,
+      })),
+    }
+    return { client, updateMock }
+  }
+
+  async function calistir(updatedRows: unknown[] = [{ user_id: 'user1' }]) {
     const { createServiceClient } = await import('@/lib/supabase/server')
-    const soonExpiry = new Date(Date.now() + 1 * 60 * 1000).toISOString()
-
-    ;(createServiceClient as ReturnType<typeof vi.fn>).mockResolvedValue(
-      makeMockSupabase({
-        access_token: 'enc:old-token',
-        refresh_token: 'enc:refresh-token',
-        token_expires: soonExpiry,
-        is_active: true,
-      }),
-    )
-
-    global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 401 })
-
+    const k = kur(updatedRows)
+    ;(createServiceClient as ReturnType<typeof vi.fn>).mockResolvedValue(k.client)
     const { ensureValidToken } = await import('./token-refresh')
-    await expect(ensureValidToken('user1', 'spotify')).resolves.toBeNull()
+    const result = await ensureValidToken('user1', 'spotify')
+    return { ...k, result }
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('400 invalid_grant → is_active=false + error log', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 400,
+      json: async () => ({ error: 'invalid_grant', error_description: 'secret-detail' }),
+    })
+    const { updateMock, result } = await calistir()
+    expect(result).toBeNull()
+    expect(updateMock).toHaveBeenCalledWith({ is_active: false })
+    expect(systemLog).toHaveBeenCalledTimes(1)
+    const entry = systemLog.mock.calls[0][0]
+    expect(entry.severity).toBe('error')
+    expect(entry.errorMessage).toBe('Spotify yenilemeyi reddetti: 400 invalid_grant')
+    expect(JSON.stringify(entry)).not.toContain('secret-detail')
+    expect(JSON.stringify(entry)).not.toContain('refresh-token')
+  })
+
+  it('401 → is_active=false + error log', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 401,
+      json: async () => ({ error: 'invalid_client' }),
+    })
+    const { updateMock } = await calistir()
+    expect(updateMock).toHaveBeenCalledWith({ is_active: false })
+    expect(systemLog.mock.calls[0][0].severity).toBe('error')
+  })
+
+  it('zaten pasif bağlantı → güncelleme satır etkilemez, log yazılmaz', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 400,
+      json: async () => ({ error: 'invalid_grant' }),
+    })
+    await calistir([])
+    expect(systemLog).not.toHaveBeenCalled()
+  })
+
+  it('500 → is_active değişmez + warn log', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: async () => ({}),
+    })
+    const { updateMock, result } = await calistir()
+    expect(result).toBeNull()
+    expect(updateMock).not.toHaveBeenCalled()
+    expect(systemLog).toHaveBeenCalledTimes(1)
+    expect(systemLog.mock.calls[0][0].severity).toBe('warn')
+  })
+
+  it('400 ama gövde JSON değil → geçici', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 400,
+      json: async () => {
+        throw new Error('not json')
+      },
+    })
+    const { updateMock } = await calistir()
+    expect(updateMock).not.toHaveBeenCalled()
+    expect(systemLog.mock.calls[0][0].severity).toBe('warn')
+  })
+
+  it('ağ hatası → is_active değişmez, null döner', async () => {
+    global.fetch = vi.fn().mockRejectedValue(new Error('network'))
+    const { updateMock, result } = await calistir()
+    expect(result).toBeNull()
+    expect(updateMock).not.toHaveBeenCalled()
+    expect(systemLog.mock.calls[0][0].severity).toBe('warn')
   })
 })

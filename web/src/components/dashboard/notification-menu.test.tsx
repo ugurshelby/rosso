@@ -156,4 +156,13 @@ describe('NotificationMenu', () => {
     expect(screen.queryByText('Listening Sync Status')).not.toBeInTheDocument()
     expect(screen.getByText('All caught up')).toBeInTheDocument()
   })
+
+  it('renders the reconnect alert with a /data link', () => {
+    renderWithI18n(<NotificationMenu alerts={[{ kind: 'spotify_yeniden_baglan' }]} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /notifications, 1 unread/i }))
+
+    expect(screen.getByText(dashboardEn.notifications.reconnectTitle)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /reconnect spotify/i })).toHaveAttribute('href', '/data')
+  })
 })

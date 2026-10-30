@@ -13,3 +13,8 @@ export type DashboardAlert =
    * Karar: `docs/decisions/spotify-giris-saglayicisi-3-soru.md`
    */
   | { kind: 'spotify_veri_izni_gerekli' }
+  /**
+   * Spotify yenilemeyi kalıcı reddetti (erişim iptal / BYOC gizli anahtarı
+   * değişti): bağlantı `is_active=false`. Kullanıcı `/data`'dan yeniden bağlar.
+   */
+  | { kind: 'spotify_yeniden_baglan' }

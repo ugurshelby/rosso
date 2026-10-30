@@ -21,6 +21,18 @@ async function getSpotifyCooldownRemaining(): Promise<number> {
   return Math.max(0, Math.round((new Date(row.blocked_until).getTime() - Date.now()) / 1000))
 }
 
+async function spotifyBaglantiPasif(userId: string): Promise<boolean> {
+  const supabase = await createClient()
+  const { data: conn } = await supabase
+    .from('platform_connections')
+    .select('is_active')
+    .eq('user_id', userId)
+    .eq('platform', SPOTIFY_PROVIDER)
+    .maybeSingle()
+
+  return conn?.is_active === false
+}
+
 async function getSyncDelayHours(userId: string): Promise<number | null> {
   const supabase = await createClient()
   const { data: conn } = await supabase
@@ -53,7 +65,9 @@ async function getSyncDelayHours(userId: string): Promise<number | null> {
  *    dashboard'ı boş gösteren şey bu. Gecikme uyarısından önce gelir:
  *    hiç bağlantısı olmayan birine "veriler biraz geride" demek yanıltıcı
  *    olur (geride değil, hiç yok).
- * 3. **Senkron gecikmesi** — veri var, sadece tazeliği düşük.
+ * 3. **Yeniden bağlan** — Spotify yenilemeyi reddetti (`is_active=false`);
+ *    senkron sessizce durmuştur, kullanıcı `/data`'dan bağlantıyı yeniler.
+ * 4. **Senkron gecikmesi** — veri var, sadece tazeliği düşük.
  */
 export const getDashboardAlerts = cache(async (userId: string): Promise<DashboardAlert[]> => {
   const remaining = await getSpotifyCooldownRemaining()
@@ -64,6 +78,10 @@ export const getDashboardAlerts = cache(async (userId: string): Promise<Dashboar
   const kimlik = await spotifyKimlikDurumu(userId)
   if (kimlik.veriBaglantisiEksik) {
     return [{ kind: 'spotify_veri_izni_gerekli' }]
+  }
+
+  if (await spotifyBaglantiPasif(userId)) {
+    return [{ kind: 'spotify_yeniden_baglan' }]
   }
 
   const hours = await getSyncDelayHours(userId)

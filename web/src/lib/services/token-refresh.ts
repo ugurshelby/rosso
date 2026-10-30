@@ -3,6 +3,7 @@ import { encrypt, decrypt } from '@/lib/crypto/token-cipher'
 import { createServiceClient } from '@/lib/supabase/server'
 import { ZAMAN_ASIMI_KIMLIK } from '@/lib/fetch/zaman-asimi'
 import { resolveSpotifyCredentialsForConnection } from '@/lib/spotify/byoc'
+import { systemLog } from '@/lib/observability/logger'
 
 /**
  * ⚠ NEDEN `createServiceClient` (2026-08-13, migration 0275):
@@ -29,6 +30,31 @@ const REFRESH_THRESHOLD_MS = 5 * 60 * 1000
 // Dashboard layout: 10 dakika kala proaktif yenile
 const LAYOUT_REFRESH_BUFFER_MS = 10 * 60 * 1000
 
+/**
+ * Kalıcı ret (kullanıcı erişimi iptal etti ya da BYOC gizli anahtarı değişti):
+ * bağlantıyı pasife al ki arayüz "yeniden bağlan" desin. Log yalnız aktiften
+ * pasife geçişte yazılır; pasif bağlantı her senkron turunda yeniden denenir.
+ */
+async function baglantiyiPasifeAl(userId: string, status: number, errorCode: string): Promise<void> {
+  const supabase = await createServiceClient()
+  const { data } = await supabase
+    .from('platform_connections')
+    .update({ is_active: false })
+    .eq('user_id', userId)
+    .eq('platform', 'spotify')
+    .eq('is_active', true)
+    .select('user_id')
+
+  if (data && data.length > 0) {
+    void systemLog({
+      operation: 'spotify_token_refresh',
+      userId,
+      severity: 'error',
+      errorMessage: `Spotify yenilemeyi reddetti: ${status} ${errorCode}`.trim(),
+    })
+  }
+}
+
 // ─── Spotify refresh ─────────────────────────────────────────────────────────
 
 async function refreshSpotifyToken(
@@ -52,25 +78,61 @@ async function refreshSpotifyToken(
   const { clientId, clientSecret } = credentials
 
   const basic = Buffer.from(`${clientId}:${clientSecret}`).toString('base64')
-  const res = await fetch('https://accounts.spotify.com/api/token', {
-    method: 'POST',
-    headers: {
-      Authorization: `Basic ${basic}`,
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: new URLSearchParams({
-      grant_type: 'refresh_token',
-      refresh_token: refreshToken,
-    }),
-    signal: AbortSignal.timeout(ZAMAN_ASIMI_KIMLIK),
-  })
+  let res: Response
+  try {
+    res = await fetch('https://accounts.spotify.com/api/token', {
+      method: 'POST',
+      headers: {
+        Authorization: `Basic ${basic}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        grant_type: 'refresh_token',
+        refresh_token: refreshToken,
+      }),
+      signal: AbortSignal.timeout(ZAMAN_ASIMI_KIMLIK),
+    })
+  } catch {
+    // Ağ hatası / zaman aşımı: geçici, bağlantıya dokunma.
+    void systemLog({
+      operation: 'spotify_token_refresh',
+      userId,
+      severity: 'warn',
+      errorMessage: 'Spotify yenileme isteği ağ hatasıyla başarısız (geçici)',
+    })
+    return false
+  }
 
-  if (!res.ok) return false
+  if (!res.ok) {
+    let errorCode = ''
+    try {
+      const body = (await res.json()) as { error?: unknown }
+      if (typeof body?.error === 'string') errorCode = body.error
+    } catch {
+      // Gövde JSON değil → geçici say.
+    }
+    const kalici =
+      res.status === 401 ||
+      (res.status === 400 && (errorCode === 'invalid_grant' || errorCode === 'invalid_client'))
 
-  const data = (await res.json()) as {
-    access_token: string
-    expires_in: number
-    refresh_token?: string
+    if (kalici) {
+      await baglantiyiPasifeAl(userId, res.status, errorCode)
+    } else {
+      void systemLog({
+        operation: 'spotify_token_refresh',
+        userId,
+        severity: 'warn',
+        errorMessage: `Spotify yenileme geçici hata: ${res.status} ${errorCode}`.trim(),
+      })
+    }
+    return false
+  }
+
+  let data: { access_token: string; expires_in: number; refresh_token?: string }
+  try {
+    data = (await res.json()) as typeof data
+  } catch {
+    return false
   }
 
   const supabase = await createServiceClient()
