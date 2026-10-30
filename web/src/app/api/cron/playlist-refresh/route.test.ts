@@ -72,8 +72,19 @@ describe('/api/cron/playlist-refresh', () => {
     expect(json.liked).toEqual({ usersProcessed: 1, usersFailed: 1, added: 2, removed: 1 })
     expect(recordSiraRun).toHaveBeenCalledWith(
       'playlist_refresh',
-      expect.objectContaining({ islenen: 1 }),
-      expect.objectContaining({ liked: json.liked }),
+      expect.objectContaining({ islenen: 2, hatali: 1 }),
+      expect.objectContaining({ playlistUsers: 1, liked: json.liked }),
+    )
+  })
+
+  it('yalnız beğeni turu iş yaptıysa da kayıt düşer', async () => {
+    siralar.liked_sync = ['u1']
+    vi.mocked(syncLikedSongs).mockResolvedValueOnce({ ok: true, spotifyTotal: 1, added: 0, removed: 0, catalogAdded: 0 })
+    await POST(istek())
+    expect(recordSiraRun).toHaveBeenCalledWith(
+      'playlist_refresh',
+      expect.objectContaining({ islenen: 1, hatali: 0 }),
+      expect.objectContaining({ playlistUsers: 0 }),
     )
   })
 })

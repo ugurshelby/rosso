@@ -89,7 +89,19 @@ export async function POST(req: NextRequest) {
     removed: likedRemoved,
   }
 
-  await recordSiraRun('playlist_refresh', sonuc, { playlistsUpdated, playlistsDeleted, liked })
+  /*
+   * Tek kayıt, iki tur: yalnız beğeni turu iş yaptıysa da satır düşsün
+   * (`recordSiraRun` boş turu yazmaz). Playlist sayıları ayrıca stats'ta.
+   */
+  await recordSiraRun(
+    'playlist_refresh',
+    {
+      islenen: sonuc.islenen + begeni.islenen,
+      hatali: sonuc.hatali + begeni.hatali,
+      butceDoldu: sonuc.butceDoldu || begeni.butceDoldu,
+    },
+    { playlistUsers: sonuc.islenen, playlistsUpdated, playlistsDeleted, liked },
+  )
 
   return NextResponse.json({
     ok: true,
