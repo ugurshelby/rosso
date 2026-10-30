@@ -3,8 +3,7 @@ import 'server-only'
 import { cache } from 'react'
 import type { User } from '@supabase/supabase-js'
 import { redirect } from 'next/navigation'
-import { headers } from 'next/headers'
-import { createClient, createServiceClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 
 /**
  * Mevcut oturum kullanıcısını döner, yoksa null.
@@ -67,29 +66,11 @@ export async function requireAuth(next?: string): Promise<User> {
 export async function apiAuth(): Promise<
   { ok: true; user: User } | { ok: false; response: Response }
 > {
+  // Bearer kanalı `createClient()` içinde (çerez yoksa ve token JWT biçimindeyse);
+  // `getCurrentUser()` iki kanalı da aynı doğrulamayla görür.
   const user = await getCurrentUser()
   if (user) {
     return { ok: true, user }
-  }
-
-  // Mobil istemci veya harici istek: Authorization: Bearer <token> kontrolü
-  try {
-    const headerStore = await headers()
-    const authHeader = headerStore.get('authorization')
-    if (authHeader?.startsWith('Bearer ')) {
-      const token = authHeader.slice(7).trim()
-      if (token) {
-        const supabase = await createServiceClient()
-        const {
-          data: { user: bearerUser },
-        } = await supabase.auth.getUser(token)
-        if (bearerUser) {
-          return { ok: true, user: bearerUser }
-        }
-      }
-    }
-  } catch {
-    // headers() çağrısı veya token doğrulama başarısız olursa 401'e düşer
   }
 
   return {

@@ -97,25 +97,10 @@ describe('apiAuth', () => {
     expect(sonuc.user.id).toBe('kullanici-1')
   })
 
-  it('Authorization: Bearer başlığı varsa kullanıcıyı doğrular (mobil istemci)', async () => {
-    vi.doMock('next/headers', () => ({
-      headers: async () => new Headers({ authorization: 'Bearer test-token-123' }),
-    }))
-    vi.doMock('@/lib/supabase/server', () => ({
-      createClient: async () => ({ auth: { getUser: async () => ({ data: { user: null } }) } }),
-      createServiceClient: async () => ({
-        auth: {
-          getUser: async (token: string) => {
-            if (token === 'test-token-123') {
-              return { data: { user: { id: 'mobil-kullanici-1' } }, error: null }
-            }
-            return { data: { user: null }, error: new Error('invalid') }
-          },
-        },
-      }),
-    }))
-    const mod = await import('./index')
-    const sonuc = await mod.apiAuth()
+  it('Bearer kanalı createClient içinde: istemci Bearer kullanıcısını görürse apiAuth geçer (mobil)', async () => {
+    // Bearer'ın çerezle önceliği ve JWT biçim kontrolü: src/lib/supabase/server.test.ts
+    const apiAuth = await apiAuthYukle({ id: 'mobil-kullanici-1' })
+    const sonuc = await apiAuth()
 
     expect(sonuc.ok).toBe(true)
     if (!sonuc.ok) return
