@@ -35,6 +35,8 @@ export const tip = {
   govde: { ...geist('500'), fontSize: 15, lineHeight: 20, letterSpacing: 0 },
   ustVeri: { ...geist('400'), fontSize: 13, lineHeight: 18, letterSpacing: 0 },
   etiket: { ...mono, fontSize: 11, lineHeight: 14, letterSpacing: 0.6, textTransform: 'uppercase' },
+  /** Yalnız Recap/Journey anlatı katmanı (recap-journey-design.md): tek büyük sayı ya da dönem adı. */
+  hikaye: { ...geist('700'), fontSize: 44, lineHeight: 48, letterSpacing: -1 },
 } satisfies Record<string, TextStyle>
 
 export type TipRolu = keyof typeof tip

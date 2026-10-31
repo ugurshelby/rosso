@@ -75,6 +75,7 @@ function Rotalar() {
         <Stack.Screen name="(sekmeler)" />
         <Stack.Screen name="mood/[anahtar]" />
         <Stack.Screen name="ayarlar" />
+        <Stack.Screen name="recap/[etiket]" options={{ presentation: 'fullScreenModal', animation: 'fade' }} />
         <Stack.Screen name="hareket-lab" />
       </Stack.Protected>
       <Stack.Protected guard={!kurulumEksik && !girisli}>
