@@ -116,6 +116,10 @@ Without the worker, live listening sync and everything except large ZIP imports 
 ### AI (Gemini on Vertex AI) — optional
 Set `GCP_PROJECT_ID` and `GCP_SERVICE_ACCOUNT_JSON` in Vercel. Every AI feature has a fallback, so skipping this loses only editorial copy. To cap spend, `AI_KAPANIS_TARIHI=YYYY-MM-DD` switches AI off automatically on that date (useful when free credits expire).
 
+### On your phone
+- **Any phone:** open your site and add it to the home screen (iPhone: Safari → Share → *Add to Home Screen*; Android: Chrome menu → *Install app*). It opens full screen like an app.
+- **Android app (early, not yet tested on a device):** [`mobile/README.md`](mobile/README.md). Before the first build, add `rosso://**` in Supabase → Authentication → URL Configuration → Redirect URLs so confirmation and reset e-mails return to the app.
+
 ### Sign-in with Google/Spotify/Apple
 See [docs/reference/kimlik-v2-kurulum.md](docs/reference/kimlik-v2-kurulum.md).
 
