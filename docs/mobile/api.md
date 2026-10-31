@@ -1,6 +1,6 @@
 # Rosso Mobil — API sözleşmesi (PLAN 4.2)
 
-Son doğrulama: 2026-10-31 (web `9a3b4244`; rotalar koddan okundu, RPC yetkileri canlıda `has_function_privilege` ile ölçüldü).
+Son doğrulama: 2026-10-31 (web `9a3b4244`, `/api/mood/dogrula` web `bd2fc186`; rotalar koddan okundu, RPC yetkileri canlıda `has_function_privilege` ile ölçüldü).
 Kararlar: `mimari.md` M3–M8. Bu belge mobil kodun tek sözleşmesidir; rota değişirse aynı commit'te güncellenir.
 
 ## Kimlik
@@ -22,7 +22,7 @@ Web bunları sunucu eylemiyle çağırıyor; mobil aynı RPC'yi kendi oturumuyla
 | `set_mood_track_feedback` | mood şarkı etiketi (uygun / uygun değil) |
 | `set_mood_hidden_tracks` | mood listesinde gizlenenler |
 | `set_mood_weekly_sync` | haftalık Spotify senkronu aç/kapa |
-| `mark_mood_exported` | yalnız web akışının iç adımı; mobil çağırmaz (`mood/create-playlist` kendisi damgalar) |
+| `mark_mood_exported` | `mood/create-playlist` başarılı döndükten SONRA çağrılır (`p_mood_key`, `p_playlist_id` = `result.outcomes[0].playlistId`); rota kendisi damgalamaz (web `mood-hero.tsx` aynı sırayı izler) |
 Parametre adları: `web/src/app/(dashboard)/playlists/mood/[key]/actions.ts`.
 
 ## Yazmalar — web rotaları (Bearer)
@@ -30,6 +30,7 @@ Taban: `EXPO_PUBLIC_WEB_URL`. Hepsi JSON 401 döner, yönlendirmez. "Pahalı" = 
 | Rota | Yöntem | İstek | Başarı | Not |
 | --- | --- | --- | --- | --- |
 | `/api/mood/create-playlist` | POST | `{ moodKey, platforms?: ['spotify'] }` | 200 `{ result }` | pahalı; şarkıları sunucu seçer, gizlenenleri atar; 404 şarkı yok |
+| `/api/mood/dogrula` | POST | `{ moodKey? }` | 200 `{ kontrol, kaldirilan }` | 10/60 sn; Spotify'da silinen mood listesinin durumunu temizler (PLAN 1.3); mobil liste/detay açılışında |
 | `/api/mood/remove-track` | POST | `{ moodKey, spotifyTrackId }` (22 karakter) | 200 `{ success, spotifySynced, warning? }` | 20/60 sn; Spotify hatası 200 + `warning` |
 | `/api/mood/year-export` | POST | `{ year }` | 200 `{ result }` | pahalı; 404 yıl arşivde yok |
 | `/api/export/upload` | POST | `{ fileName, fileSize, fileType }` | 200 `{ jobId, signedUrl, path, token }` | ZIP'i mobil `signedUrl`'e doğrudan PUT eder (Storage `spotify-exports`, 2 saat geçerli); en çok 200 MB; 3 aktif iş, saatte 10 |
