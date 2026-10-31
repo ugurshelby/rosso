@@ -34,3 +34,61 @@ export function tekillestir<T extends { trackId: string }>(liste: T[], enCok: nu
   }
   return sonuc
 }
+
+/** Geçmiş dönem hapları (spec §9.5). */
+export type Donem = 'bugun' | '7gun' | '30gun' | 'yil'
+
+export const DONEM_ETIKETI: Record<Donem, string> = {
+  bugun: 'Bugün',
+  '7gun': '7 gün',
+  '30gun': '30 gün',
+  yil: 'Yıl',
+}
+
+/** Yerel saatle dönemin başı: bugün gece yarısı, son 7/30 gün, yılın ilk günü. */
+export function donemBaslangici(donem: Donem, simdi = new Date()): Date {
+  const gece = new Date(simdi.getFullYear(), simdi.getMonth(), simdi.getDate())
+  if (donem === 'bugun') return gece
+  if (donem === '7gun') return new Date(gece.getTime() - 6 * 86400000)
+  if (donem === '30gun') return new Date(gece.getTime() - 29 * 86400000)
+  return new Date(simdi.getFullYear(), 0, 1)
+}
+
+const AYLAR = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık']
+
+/** Gün başlığı: "Bugün", "Dün", yoksa "28 Ekim" (yıl farklıysa yılla). */
+export function gunBasligi(iso: string, simdi = new Date()): string {
+  const t = new Date(iso)
+  const gun = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
+  const fark = Math.round((gun(simdi) - gun(t)) / 86400000)
+  if (fark === 0) return 'Bugün'
+  if (fark === 1) return 'Dün'
+  const metin = `${t.getDate()} ${AYLAR[t.getMonth()]}`
+  return t.getFullYear() === simdi.getFullYear() ? metin : `${metin} ${t.getFullYear()}`
+}
+
+/** "14:05" — yerel saat. */
+export function saatMetni(iso: string): string {
+  const t = new Date(iso)
+  return `${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')}`
+}
+
+/** Düz dinleme listesine gün başlıklarını yerleştirir (FlashList yapışkan başlıkları için). */
+export function gunlereBol<T extends { zaman: string }>(
+  liste: T[],
+  simdi = new Date(),
+): { ogeler: ({ tur: 'baslik'; baslik: string; anahtar: string } | { tur: 'oge'; oge: T; anahtar: string })[]; basliklar: number[] } {
+  const ogeler: ({ tur: 'baslik'; baslik: string; anahtar: string } | { tur: 'oge'; oge: T; anahtar: string })[] = []
+  const basliklar: number[] = []
+  let son = ''
+  liste.forEach((o, i) => {
+    const b = gunBasligi(o.zaman, simdi)
+    if (b !== son) {
+      basliklar.push(ogeler.length)
+      ogeler.push({ tur: 'baslik', baslik: b, anahtar: `b-${b}` })
+      son = b
+    }
+    ogeler.push({ tur: 'oge', oge: o, anahtar: `o-${i}` })
+  })
+  return { ogeler, basliklar }
+}
