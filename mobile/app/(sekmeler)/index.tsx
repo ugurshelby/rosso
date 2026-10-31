@@ -1,11 +1,13 @@
+import Ionicons from '@expo/vector-icons/Ionicons'
+import { router } from 'expo-router'
 import * as WebBrowser from 'expo-web-browser'
 import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
-import { Bolum, Hap, KapakRayi, Metin, SarkiSatiri, SEKME_YUKSEKLIGI, YerTutucu, Yuzey } from '@/bilesen'
+import { Basilabilir, Bolum, Hap, KapakRayi, Metin, SarkiSatiri, SEKME_YUKSEKLIGI, YerTutucu, Yuzey } from '@/bilesen'
 import { ortamOku } from '@/ortam'
-import { bosluk, KENAR, renk } from '@/tema'
+import { bosluk, hitSlopIcin, KENAR, renk } from '@/tema'
 import { sureMetni, useAyinEnCoklari, useSonDinlenenler, type StatsPayload } from '@/veri/anaSayfa'
 import { useOturum } from '@/veri/oturum'
 import { useRecapler, useStatsPaketi } from '@/veri/paketler'
@@ -45,10 +47,13 @@ export default function AnaSayfa() {
         <RefreshControl refreshing={yenileniyor} onRefresh={yenile} tintColor={renk.vurgu} colors={[renk.vurgu]} progressBackgroundColor={renk.yuzey2} />
       }
     >
-      <View style={stil.kenar}>
-        <Metin rol="buyukBaslik" accessibilityRole="header">
+      <View style={[stil.kenar, stil.ustSatir]}>
+        <Metin rol="buyukBaslik" accessibilityRole="header" style={{ flex: 1 }}>
           Bugün
         </Metin>
+        <Basilabilir onPress={() => router.push('/ayarlar')} accessibilityLabel="Ayarlar ve veri" hitSlop={hitSlopIcin(32)}>
+          <Ionicons name="person-circle-outline" size={32} color={renk.sonuk} />
+        </Basilabilir>
       </View>
 
       {ilkYukleme ? (
@@ -150,6 +155,7 @@ function VeriYok() {
 const stil = StyleSheet.create({
   kap: { flex: 1, backgroundColor: renk.zemin },
   kenar: { paddingHorizontal: KENAR },
+  ustSatir: { flexDirection: 'row', alignItems: 'center' },
   kenarIc: { marginHorizontal: KENAR },
   sayilar: { flexDirection: 'row', gap: bosluk[2], marginTop: bosluk[6] },
   sayi: { flex: 1, padding: bosluk[3], gap: bosluk[1] },

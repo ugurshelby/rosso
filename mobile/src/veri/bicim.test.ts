@@ -1,4 +1,5 @@
-import { ayBaslangici, sanatciMetni, sureMetni, tekillestir , donemBaslangici, gunBasligi, gunlereBol, saatMetni } from './bicim'
+import { ayBaslangici, sanatciMetni, sureMetni, tekillestir , donemBaslangici, gunBasligi, gunlereBol, saatMetni , zipKontrol } from './bicim'
+
 
 
 describe('ana sayfa yardımcıları', () => {
@@ -52,5 +53,14 @@ describe('geçmiş yardımcıları', () => {
     const { ogeler, basliklar } = gunlereBol(l, simdi)
     expect(ogeler.map((o) => (o.tur === 'baslik' ? o.baslik : 'x'))).toEqual(['Bugün', 'x', 'x', 'Dün', 'x'])
     expect(basliklar).toEqual([0, 3])
+  })
+})
+
+describe('zipKontrol', () => {
+  it('yalnız .zip, en çok 200 MB, boş değil', () => {
+    expect(zipKontrol({ uri: 'x', ad: 'my_spotify_data.zip', boyut: 10 })).toBeNull()
+    expect(zipKontrol({ uri: 'x', ad: 'veri.json', boyut: 10 })).toMatch(/zip/)
+    expect(zipKontrol({ uri: 'x', ad: 'b.ZIP', boyut: 201 * 1024 * 1024 })).toMatch(/200 MB/)
+    expect(zipKontrol({ uri: 'x', ad: 'b.zip', boyut: 0 })).toMatch(/boş/)
   })
 })

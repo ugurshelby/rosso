@@ -74,6 +74,7 @@ function Rotalar() {
       <Stack.Protected guard={!kurulumEksik && girisli}>
         <Stack.Screen name="(sekmeler)" />
         <Stack.Screen name="mood/[anahtar]" />
+        <Stack.Screen name="ayarlar" />
         <Stack.Screen name="hareket-lab" />
       </Stack.Protected>
       <Stack.Protected guard={!kurulumEksik && !girisli}>

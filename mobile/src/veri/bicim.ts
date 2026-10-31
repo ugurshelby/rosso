@@ -92,3 +92,19 @@ export function gunlereBol<T extends { zaman: string }>(
   })
   return { ogeler, basliklar }
 }
+
+/** Mobilden yüklenen ZIP (spec §9.7). */
+export interface SecilenDosya {
+  uri: string
+  ad: string
+  boyut: number
+}
+
+export const EN_BUYUK_ZIP = 200 * 1024 * 1024
+
+export function zipKontrol(d: SecilenDosya): string | null {
+  if (!/\.zip$/i.test(d.ad)) return 'Spotify\'dan gelen .zip dosyasını seç.'
+  if (d.boyut > EN_BUYUK_ZIP) return 'Dosya 200 MB\'tan büyük.'
+  if (d.boyut <= 0) return 'Dosya boş görünüyor.'
+  return null
+}
